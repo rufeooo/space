@@ -1,0 +1,3 @@
+add_subdirectory(ecs)
+add_subdirectory(graphics)
+add_subdirectory(stl)
