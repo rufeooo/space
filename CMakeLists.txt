@@ -2,7 +2,8 @@ cmake_minimum_required(VERSION 3.1)
 
 project(games)
 
-# Build with c++14 support.
+# 17 required for pack fold expression in ecs. Can probably figure
+# out an impl without but need this for now.
 set(CMAKE_CXX_STANDARD 17)
 
 # Output compile_commands.json for autocomplete.
