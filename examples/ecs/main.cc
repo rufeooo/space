@@ -182,8 +182,18 @@ int main() {
   //auto comps = ecs::Gather<PositionComponent, VelocityComponent>();
   ecs::Enumerate<PositionComponent, VelocityComponent>(
     [](auto& position_component, auto& velocity_component) {
+      std::cout << "ENTITY IDS" << std::endl;
       std::cout << position_component->first << " ";
       std::cout << velocity_component->first << std::endl;
+
+      std::cout << "POSITION" << std::endl;
+      std::cout << position_component->second.x_ << " " <<
+                   position_component->second.y_ << std::endl;
+      std::cout << "VELOCITY" << std::endl;
+      std::cout << velocity_component->second.x_ << " " <<
+                   velocity_component->second.y_ << std::endl;
+
+
     }
   );
 
