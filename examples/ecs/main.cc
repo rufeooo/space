@@ -12,14 +12,14 @@ using Entity = uint64_t;
 template <typename T>
 std::vector<std::pair<Entity, T>> components_;
 
-template <class Tup, class Func, std::size_t ...Is>
+template <class Tup, class Func, std::size_t... Is>
 constexpr void StaticForImpl(Tup&& t, Func &&f,
                              std::index_sequence<Is...> ) {
   (f(std::integral_constant<std::size_t, Is>{}, std::get<Is>(t)),...);
 }
 
 template <class ... T, class Func >
-constexpr void StaticFor(std::tuple<T...>&t, Func &&f) {
+constexpr void StaticFor(std::tuple<T...>&t, Func&& f) {
   StaticForImpl(t, std::forward<Func>(f),
                 std::make_index_sequence<sizeof...(T)>{});
 }
@@ -79,12 +79,13 @@ bool AllEqual(Tup&& tup) {
 }
 
 template <class Tup>
-bool AllZero(Tup&& tup) {
-  bool all_zero = true;
+bool AnyZero(Tup&& tup) {
+  bool any_zero = false;
+  // TODO: Implmement templated FirstOf. 
   ecs::StaticFor(tup, [&](auto i, auto*& p) {
-    if (p->first != 0) all_zero = false;
+    if (p->first == 0) any_zero = true;
   });
-  return all_zero;
+  return any_zero;
 }
 
 template <class Tup>
@@ -120,7 +121,7 @@ decltype(auto) ApplyFromTuple(F&& fn, Tuple&& t) {
 template <typename... Args, typename F>
 void Enumerate(F f) {
   auto tup = Gather<Args...>();
-  while (!AllZero(tup)) {
+  while (!AnyZero(tup)) {
     if (AllEqual(tup)) {
       ApplyFromTuple(f, tup);
     }
@@ -138,11 +139,18 @@ struct PositionComponent {
 };
 
 struct VelocityComponent {
-  VelocityComponent(double x, double y) : x_(x), y_(y) {};
+  VelocityComponent(double dx, double dy) : dx_(dx), dy_(dy) {};
 
-  double x_;
-  double y_;
+  double dx_;
+  double dy_;
+};
 
+struct AccelerationComponent {
+  AccelerationComponent(double ddx, double ddy)
+    : ddx_(ddx), ddy_(ddy) {};
+
+  double ddx_;
+  double ddy_;
 };
 
 
@@ -154,17 +162,18 @@ int main() {
   ecs::Assign<VelocityComponent>(4, 10.3f, 20.15f);
   ecs::Assign<PositionComponent>(6, 1, 2);
   ecs::Assign<VelocityComponent>(6, 10.3f, 20.15f);
+  ecs::Assign<AccelerationComponent>(6, 23.4f, 12.0f);
 
   // TODO: Current impl needs 0 at end of list to work fix that.
   ecs::Assign<PositionComponent>(0, 0, 0);
   ecs::Assign<VelocityComponent>(0, 0.0f, 0.0f);
 
   assert(ecs::Get<VelocityComponent>(1) == nullptr);
-  ecs::Get<VelocityComponent>(2)->x_ = 40.0f;
+  ecs::Get<VelocityComponent>(2)->dx_ = 40.0f;
 
 
   auto* velocity = ecs::Get<VelocityComponent>(2);
-  std::cout << velocity->x_ << " " << velocity->y_;
+  std::cout << velocity->dx_ << " " << velocity->dy_;
   std::cout << std::endl;
 
   auto* position = ecs::Get<PositionComponent>(1);
@@ -172,14 +181,14 @@ int main() {
   std::cout << std::endl;
 
   auto* velocity3 = ecs::Get<VelocityComponent>(3);
-  std::cout << velocity3->x_ << " " << velocity3->y_;
+  std::cout << velocity3->dx_ << " " << velocity3->dy_;
   std::cout << std::endl;
 
   auto* position3 = ecs::Get<PositionComponent>(3);
   std::cout << position3->x_ << " " << position3->y_;
   std::cout << std::endl;
 
-  //auto comps = ecs::Gather<PositionComponent, VelocityComponent>();
+  // Runs on entity 3 and 6 
   ecs::Enumerate<PositionComponent, VelocityComponent>(
     [](auto& position_component, auto& velocity_component) {
       std::cout << "ENTITY IDS" << std::endl;
@@ -190,14 +199,25 @@ int main() {
       std::cout << position_component->second.x_ << " " <<
                    position_component->second.y_ << std::endl;
       std::cout << "VELOCITY" << std::endl;
-      std::cout << velocity_component->second.x_ << " " <<
-                   velocity_component->second.y_ << std::endl;
+      std::cout << velocity_component->second.dx_ << " " <<
+                   velocity_component->second.dy_ << std::endl;
 
-
+      velocity_component->second.dy_ = 34.34;
     }
   );
 
-  
+  // Runs on entity 6
+  ecs::Enumerate<PositionComponent, VelocityComponent, AccelerationComponent>(
+    [](auto& position_component, auto& velocity_component, auto& acceleration_component) {
+      std::cout << "ENTITY IDS" << std::endl;
+      std::cout << position_component->first << " ";
+      std::cout << velocity_component->first << std::endl;
+      std::cout << acceleration_component->first << std::endl;
+    }
+  );
+
+  std::cout << ecs::Get<VelocityComponent>(6)->dy_ << std::endl;
+
   return 0;
 
 }
