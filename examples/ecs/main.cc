@@ -108,6 +108,7 @@ decltype(auto) ApplyTupleImpl(F&& fn, Tuple&& t,
                               std::index_sequence<S...>) {
   return std::forward<F>(fn)(std::get<S>(std::forward<Tuple>(t))...);
 }
+
 template<typename F, typename Tuple>
 decltype(auto) ApplyFromTuple(F&& fn,
                               Tuple&& t) {
@@ -173,6 +174,7 @@ struct AccelerationComponent {
 
 
 int main() {
+  // TODO: Assumes entity lists are sorted, note the sorted insertion.
   ecs::Assign<PositionComponent>(1, 2, 3);
   ecs::Assign<VelocityComponent>(2, 3.0f, 34.3f);
   ecs::Assign<PositionComponent>(3, 10, 20);
@@ -185,6 +187,7 @@ int main() {
   // TODO: Current impl needs 0 at end of list to work fix that.
   ecs::Assign<PositionComponent>(0, 0, 0);
   ecs::Assign<VelocityComponent>(0, 0.0f, 0.0f);
+  ecs::Assign<AccelerationComponent>(0, 0.0f, 0.0f);
 
   assert(ecs::Get<VelocityComponent>(1) == nullptr);
   ecs::Get<VelocityComponent>(2)->dx_ = 40.0f;
