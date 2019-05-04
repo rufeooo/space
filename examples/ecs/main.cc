@@ -18,7 +18,7 @@ constexpr void StaticForImpl(Tup&& t, Func &&f,
   (f(std::integral_constant<std::size_t, Is>{}, std::get<Is>(t)),...);
 }
 
-template <class... T, class Func >
+template <class... T, class Func>
 constexpr void StaticFor(std::tuple<T...>&t, Func&& f) {
   StaticForImpl(t, std::forward<Func>(f),
                 std::make_index_sequence<sizeof...(T)>{});
@@ -103,7 +103,7 @@ void AdvanceMin(Tup&& tup) {
   });
 }
 
-template<typename F, typename Tuple, size_t ...S >
+template<typename F, typename Tuple, size_t... S>
 decltype(auto) ApplyTupleImpl(F&& fn, Tuple&& t,
                               std::index_sequence<S...>) {
   return std::forward<F>(fn)(std::get<S>(std::forward<Tuple>(t))...);
