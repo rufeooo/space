@@ -71,9 +71,7 @@ bool AllEqual(Tup&& tup) {
   Entity id = 0xFFFFFFFF;
   ecs::StaticFor(tup, [&](auto i, auto*& p) {
     if (id == 0xFFFFFFFF) id = p->first;
-    else {
-      if (id != p->first) all_equal = false;
-    }
+    else if (id != p->first) all_equal = false;
   });
   return id != 0 && all_equal;
 }
@@ -190,6 +188,12 @@ int main() {
   auto* position3 = ecs::Get<PositionComponent>(3);
   std::cout << position3->x_ << " " << position3->y_;
   std::cout << std::endl;
+
+  // Runs on entities 1, 3 and 6
+  ecs::Enumerate<PositionComponent>([](auto& position_component){
+    std::cout << "ENTITY ID" << std::endl;
+    std::cout << position_component->first << std::endl;
+  });
 
   // Runs on entity 3 and 6 
   ecs::Enumerate<PositionComponent, VelocityComponent>(
