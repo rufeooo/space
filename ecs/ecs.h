@@ -18,7 +18,6 @@
 
 namespace ecs {
 
-
 // Given an entity retrieves a pointer to the component specified
 // by the templated argument. For example -
 //
@@ -97,9 +96,6 @@ void Assign(Entity entity, Args&& ...args) {
 // The type expected in the functor for each component is -
 // std::pair<Entity, ComponentType>*.
 //
-// TODO: If all the entities are matching all the pointers should be
-// moved forward after the functor is run. Currently it moves forward
-// only min.
 // TODO: This intersection relies on a component with entity 0 being
 // at the end of each component lists. Mantain that invariant via this
 // api or remove it with a better approach.
@@ -109,6 +105,8 @@ void Enumerate(F&& f) {
   while (!internal::AnyZero(tup)) {
     if (internal::AllEqual(tup)) {
       util::ApplyFromTuple(f, tup);
+      internal::AdvanceAll(tup);
+      continue;
     }
     internal::AdvanceMin(tup); 
   }

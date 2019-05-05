@@ -70,5 +70,14 @@ void AdvanceMin(Tup&& tup) {
   });
 }
 
+template <class Tup>
+void AdvanceAll(Tup&& tup) {
+  util::StaticFor(tup, [&](auto i, auto*& p) {
+    if (p->first != 0) {
+      ++p;
+    }
+  });
+}
+
 }  // namespace internal
 }  // namespace ecs
