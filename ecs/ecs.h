@@ -115,4 +115,10 @@ void Enumerate(F&& f) {
   }
 }
 
+// Removes all components from the given list
+template <typename T>
+void Clear() {
+  internal::components_<T>.clear(); 
+}
+
 }

@@ -42,6 +42,7 @@ TEST_CASE("Enumerate", "[ecs]") {
   // This Section is to verify the example in the comments of ecs.h
   // works correctly.
   SECTION("Comments section enumeration test.") {
+    ecs::Clear<Foo>(); ecs::Clear<Bar>(); ecs::Clear<Baz>();
     // Entity 1 has all the components.
     ecs::Assign<Foo>(1);
     ecs::Assign<Bar>(1);
@@ -84,5 +85,20 @@ TEST_CASE("Enumerate", "[ecs]") {
       entities.push_back(foo->first);
     });
     REQUIRE(entities == std::vector<ecs::Entity>({1}));
+  }
+
+  SECTION("Large scale test.") {
+    ecs::Clear<Foo>(); ecs::Clear<Bar>(); ecs::Clear<Baz>();
+    for (int i = 1; i < 15000; ++i) ecs::Assign<Foo>(i);
+    for (int i = 400; i < 2000; ++i) ecs::Assign<Bar>(i);
+    //TODO: Don't manually add 0 entities to component lists.
+    ecs::Assign<Foo>(0);
+    ecs::Assign<Bar>(0);
+    int i = 0;
+    ecs::Enumerate<Foo, Bar>([&](auto& foo, auto& bar) {
+      REQUIRE(foo->first == bar->first);
+      ++i;
+    });
+    REQUIRE(i == 1600);
   }
 }
