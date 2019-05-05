@@ -70,5 +70,5 @@ void AdvanceMin(Tup&& tup) {
   });
 }
 
-}
-}
+}  // namespace internal
+}  // namespace ecs

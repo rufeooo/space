@@ -34,5 +34,5 @@ decltype(auto) ApplyFromTuple(F&& fn,
 }
 
 
-}
-}
+}  // namespace util
+}  // namespace ecs

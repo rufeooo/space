@@ -10,7 +10,6 @@
 #pragma once
 
 #include <tuple>
-#include <vector>
 
 #include "components.h"
 #include "entity.h"
@@ -121,4 +120,4 @@ void Clear() {
   internal::components_<T>.clear(); 
 }
 
-}
+}  // namespace ecs

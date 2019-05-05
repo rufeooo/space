@@ -10,5 +10,5 @@ namespace internal {
 template <typename T>
 static std::vector<std::pair<Entity, T>> components_;
 
-}
-}
+}  // namespace internal
+}  // namespace ecs
