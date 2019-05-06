@@ -123,6 +123,10 @@ TEST_CASE("Enumerate", "[ecs]") {
     for (int i = 1; i < 10000; ++i) ecs::Assign<Bar>(i);
     for (int i = 1; i < 10000; ++i) ecs::Assign<Baz>(i);
     int i = 1;
+    //TODO: Don't manually add 0 entities to component lists.
+    ecs::Assign<Foo>(0);
+    ecs::Assign<Bar>(0);
+    ecs::Assign<Baz>(0);
     ecs::Enumerate<Foo, Bar, Baz>([&](auto& foo, auto& bar,
                                       auto& baz) {
       REQUIRE(foo->first == bar->first);
