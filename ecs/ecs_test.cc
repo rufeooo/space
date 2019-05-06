@@ -38,11 +38,12 @@ TEST_CASE("Enumerate", "[ecs]") {
   struct Foo {};
   struct Bar {};
   struct Baz {};
+  // Clear all the component lists for each section.
+  ecs::Clear<Foo>(); ecs::Clear<Bar>(); ecs::Clear<Baz>();
 
   // This Section is to verify the example in the comments of ecs.h
   // works correctly.
   SECTION("Comments section enumeration test.") {
-    ecs::Clear<Foo>(); ecs::Clear<Bar>(); ecs::Clear<Baz>();
     // Entity 1 has all the components.
     ecs::Assign<Foo>(1);
     ecs::Assign<Bar>(1);
@@ -88,7 +89,6 @@ TEST_CASE("Enumerate", "[ecs]") {
   }
 
   SECTION("Large scale test.") {
-    ecs::Clear<Foo>(); ecs::Clear<Bar>(); ecs::Clear<Baz>();
     for (int i = 1; i < 15000; ++i) ecs::Assign<Foo>(i);
     for (int i = 400; i < 2000; ++i) ecs::Assign<Bar>(i);
     //TODO: Don't manually add 0 entities to component lists.
@@ -100,5 +100,35 @@ TEST_CASE("Enumerate", "[ecs]") {
       ++i;
     });
     REQUIRE(i == 1600);
+  }
+
+  SECTION("Sparse intersection.") {
+    std::vector<ecs::Entity> sparse_list(
+        {3, 76, 133, 223, 4567, 33456});
+    for (int i = 1; i < 50000; ++i) ecs::Assign<Foo>(i);
+    for (int i : sparse_list) ecs::Assign<Bar>(i);
+    //TODO: Don't manually add 0 entities to component lists.
+    ecs::Assign<Foo>(0);
+    ecs::Assign<Bar>(0);
+    std::vector<ecs::Entity> intersection_list;
+    ecs::Enumerate<Foo, Bar>([&](auto& foo, auto& bar) {
+      REQUIRE(foo->first == bar->first);
+      intersection_list.push_back(foo->first);
+    });
+    REQUIRE(sparse_list == intersection_list);
+  }
+
+  SECTION("Dense intersection.") {
+    for (int i = 1; i < 10000; ++i) ecs::Assign<Foo>(i);
+    for (int i = 1; i < 10000; ++i) ecs::Assign<Bar>(i);
+    for (int i = 1; i < 10000; ++i) ecs::Assign<Baz>(i);
+    int i = 1;
+    ecs::Enumerate<Foo, Bar, Baz>([&](auto& foo, auto& bar,
+                                      auto& baz) {
+      REQUIRE(foo->first == bar->first);
+      REQUIRE(foo->first == baz->first);
+      REQUIRE(foo->first == i);
+      ++i;
+    });
   }
 }
