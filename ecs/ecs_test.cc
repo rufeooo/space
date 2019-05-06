@@ -6,6 +6,7 @@
 #include "ecs.h"
 
 struct PositionComponent {
+  PositionComponent() = default;  // To insert 0 entities.
   PositionComponent(int x, int y) : x_(x), y_(y) {}
 
   int x_;
@@ -13,6 +14,7 @@ struct PositionComponent {
 };
 
 struct VelocityComponent {
+  VelocityComponent() = default;  // To insert 0 entities.
   VelocityComponent(float dx, float dy) : dx_(dx), dy_(dy) {}
 
   float dx_;
@@ -21,20 +23,50 @@ struct VelocityComponent {
 
 struct NullComponent {};
 
-TEST_CASE("Assign / Get", "[ecs]") {
+TEST_CASE("Sorted Assign / Get", "[ecs]") {
+  // TODO: Implement a cleaner way to address this. Since the component
+  // list is static it exists between test cases. It'd be nice to be
+  // able to clear all component lists I'm just not sure how that
+  // would be implemented.
+  ecs::Clear<PositionComponent>(); ecs::Clear<VelocityComponent>();
   ecs::Assign<PositionComponent>(1, 10, 15);
   ecs::Assign<VelocityComponent>(1, 1.0f, 3.0f);
+  // TODO: Don't manually add 0 entities to component lists.
+  ecs::Assign<PositionComponent>(0);
+  ecs::Assign<VelocityComponent>(0);
   
   REQUIRE(ecs::Get<PositionComponent>(1)->x_ == 10);
   REQUIRE(ecs::Get<PositionComponent>(1)->y_ == 15);
   REQUIRE(ecs::Get<VelocityComponent>(1)->dx_ == 1.0f);
   REQUIRE(ecs::Get<VelocityComponent>(1)->dy_ == 3.0f);
 
-  REQUIRE(ecs::Get<PositionComponent>(0) == nullptr);
+  REQUIRE(ecs::Get<PositionComponent>(15) == nullptr);
   REQUIRE(ecs::Get<NullComponent>(1) == nullptr);
 }
 
-TEST_CASE("Enumerate", "[ecs]") {
+TEST_CASE("Unsorted Assign / Get", "[ecs]") {
+  ecs::Clear<PositionComponent>(); ecs::Clear<VelocityComponent>();
+  ecs::Assign<PositionComponent>(3, 1, 2);
+  ecs::Assign<VelocityComponent>(3, 1.0f, 3.0f);
+  ecs::Assign<PositionComponent>(1, 5, 7);
+  ecs::Assign<VelocityComponent>(1, 5.0f, 15.0f);
+  ecs::Assign<PositionComponent>(2, 15, 20);
+  ecs::Assign<VelocityComponent>(2, 15.0f, 45.0f);
+  ecs::Assign<PositionComponent>(7, 20, 30);
+  ecs::Assign<VelocityComponent>(7, 5.0f, 0.0f);
+  ecs::Assign<PositionComponent>(4, 3, 4);
+  ecs::Assign<VelocityComponent>(4, 1.0f, 3.0f);
+  // TODO: Don't manually add 0 entities to component lists.
+  ecs::Assign<PositionComponent>(0);
+  ecs::Assign<VelocityComponent>(0);
+
+  REQUIRE(ecs::Get<VelocityComponent>(2)->dx_ == 15.0f);
+  REQUIRE(ecs::Get<PositionComponent>(4)->x_ == 3);
+  REQUIRE(ecs::Get<VelocityComponent>(3)->dy_ == 3.0f);
+  REQUIRE(ecs::Get<PositionComponent>(1)->y_ == 7);
+}
+
+TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
   struct Foo {};
   struct Bar {};
   struct Baz {};
@@ -135,4 +167,10 @@ TEST_CASE("Enumerate", "[ecs]") {
       ++i;
     });
   }
+}
+
+// TODO: Add sorted Assign and then enumeration this will NOT work
+// currently but will work when the lists remain sorted.
+TEST_CASE("Unsorted insertion and Enumerate", "[ecs]") {
+  REQUIRE(true == true);
 }
