@@ -112,7 +112,14 @@ void Enumerate(F&& f) {
   }
 }
 
-// Removes all components from the given list
+// Removes all components from the given componet list. For example -
+//
+// Clear<Foo>()
+// Will remove all components of type Foo.
+//
+// TODO: It would be helpful, primarily for testing, to be able to 
+// remove all components from every component lists. I'm not sure that
+// is possible though.
 template <typename T>
 void Clear() {
   internal::components_<T>.clear(); 
