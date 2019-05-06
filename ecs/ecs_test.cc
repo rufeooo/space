@@ -166,6 +166,7 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
       REQUIRE(foo->first == i);
       ++i;
     });
+    REQUIRE(i == 10000);
   }
 }
 
@@ -173,4 +174,23 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
 // currently but will work when the lists remain sorted.
 TEST_CASE("Unsorted insertion and Enumerate", "[ecs]") {
   REQUIRE(true == true);
+}
+
+TEST_CASE("Mutating components during Enumerate", "[ecs]") {
+  struct Component { Component(int n) : n_(n) {}; int n_; };
+  ecs::Clear<Component>();
+  for (int i = 0; i < 10; ++i) {
+    // Put 0 through 10 in components list.
+    ecs::Assign<Component>(i + 1, i);
+  }
+  ecs::Assign<Component>(0, 0);
+  // Increment each component so that it is 1 through 11.
+  ecs::Enumerate<Component>([](auto& comp) {
+    comp->second.n_++;
+  });
+  // Assert the above assumption is true (1 through 11).
+  int i = 1;
+  ecs::Enumerate<Component>([&](auto& comp) {
+    REQUIRE(comp->second.n_ == i++);
+  });
 }
