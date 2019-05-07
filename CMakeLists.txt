@@ -16,6 +16,7 @@ add_subdirectory(third_party/SDL-mirror)
 
 # Our stuff.
 add_subdirectory(types)
+add_subdirectory(search)
 add_subdirectory(ecs)
 add_subdirectory(tile)
 add_subdirectory(examples)

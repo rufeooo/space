@@ -58,6 +58,8 @@ T* Get(Entity entity) {
 // list components_<Foo>.
 //
 // TODO: These components should be inserted in sorted order.
+// TODO: Something should happen here if the entity already exists
+// in the lists. As of now a new one with the same entity id is added.
 template <typename T, typename... Args>
 void Assign(Entity entity, Args&& ...args) {
   internal::components_<T>.push_back({
