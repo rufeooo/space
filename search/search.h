@@ -27,17 +27,17 @@ std::vector<T> PathTo(
   open.push(PathNode(start, 0, heuristic_func(start, end)));
   // Set of open list discoveries for quick lookup. Unordered map
   // because set uses tree and needs >,< operator.
-  std::unordered_map<T, bool> openDiscovered;
+  std::unordered_map<const T&, bool> openDiscovered;
   openDiscovered[start] = true;
   // All nodes that are already evaluated. Unordered map because set
   // uses tree and needs >,< operator.
-  std::unordered_map<T, bool> closed;
+  std::unordered_map<const T&, bool> closed;
 
   // Map used to move backwards from goal node to start to get
   // pstartath.
-  std::unordered_map<T, types::GridPoint> came_from;
+  std::unordered_map<const T&, const T&> came_from;
   // The actual costs from the start node to a given node.
-  std::unordered_map<T, Score> true_costs;
+  std::unordered_map<const T&, Score> true_costs;
   // Cost from start to start is 0.
   true_costs[start].value_ = 0;
   while (!open.empty()) {
