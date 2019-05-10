@@ -1,5 +1,8 @@
 #pragma once
 
+#include <algorithm>
+#include <unordered_map>
+
 namespace search {
 
 // Score struct used in A* pathfinding cost maps.
@@ -13,8 +16,7 @@ public:
 template <typename T>
 class PathNode {
 public:
-  PathNode(const T& location, uint32_t cost,
-           uint32_t heuristic) :
+  PathNode(const T& location, uint32_t cost, uint32_t heuristic) :
     location_(location), cost_(cost), heuristic_(heuristic) {};
 
   T location_;
@@ -27,5 +29,20 @@ struct PathNodeComparator {
     return lhs.heuristic_.value_ > rhs.heuristic_.value_;
   }
 };
+
+template <typename T>
+void BuildPath(
+    const T& target,
+    std::unordered_map<T, T>& came_from,
+    std::vector<T>& path) {
+  types::GridPoint current = target;
+  path.push_back(current);
+  while (came_from.find(current) != came_from.end()) {
+    current = came_from[current];
+    path.push_back(current);
+  }
+  // Path in reverse order so reverse it.
+  std::reverse(path.begin(), path.end());
+}
 
 }

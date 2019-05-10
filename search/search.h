@@ -24,7 +24,7 @@ std::vector<T> PathTo(
   std::vector<T> coords;
   std::priority_queue<PathNode, std::vector<PathNode>,
                       PathNodeComparator> open;
-  open.push(PathNode(start, 0, HeuristicEstimate(start, end)));
+  open.push(PathNode(start, 0, heuristic_func(start, end)));
   // Set of open list discoveries for quick lookup. Unordered map
   // because set uses tree and needs >,< operator.
   std::unordered_map<T, bool> openDiscovered;
@@ -56,21 +56,13 @@ std::vector<T> PathTo(
     std::vector<T> neighbors;
     world::Neighbors(current.location_, neighbors);
     // Loop over neighbors and evaluate state of each node in path.
-    for (auto neighbor : neighbors) {
+    for (const auto& neighbor : neighbors) {
       // Ignore neighbors that have already been evaluated.
       if (closed.find(neighbor) != closed.end()) {
         continue;
       }
-      // If the neighbors location equals end, this is our destination,
-      // don't skip it or A* will never finish.
-      // If the node shouldn't be expanded add it to the closed list
-      // and continue.
-      const world::Tile* tile = world::GetTile(neighbor);
-      if (!tile) {
-        continue;
-      }
 
-      if (neighbor != end && expand && !expand(*tile)) {
+      if (neighbor != end && !expand(neighbor)) {
         closed[neighbor] = true;
         continue;
       }
@@ -80,7 +72,7 @@ std::vector<T> PathTo(
         current.cost_.value_ + tile->path_cost,
         // Heuristic cost
         current.cost_.value_ + tile->path_cost +
-        HeuristicEstimate(neighbor, end)
+        heuristic_func(neighbor, end)
       );
       // If not in open list, add it for evaluation.
       if (openDiscovered.find(neighbor) == openDiscovered.end()) {

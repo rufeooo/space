@@ -7,21 +7,6 @@
 #include <unordered_map>
 #include <vector>
 
-namespace {
-
-void BuildPath(const types::GridPoint& target,
-    std::unordered_map<types::GridPoint, types::GridPoint, VectorHash>& came_from,
-    std::vector<types::GridPoint>& path) {
-    types::GridPoint current = target;
-    path.push_back(current);
-    while (came_from.find(current) != came_from.end()) {
-        current = came_from[current];
-        path.push_back(current);
-    }
-    // Path in reverse order so reverse it.
-    std::reverse(path.begin(), path.end());
-}
-}
 
 // Bfs until the comparator returns true.
 void search::bfs(const types::GridPoint& start,
