@@ -69,6 +69,10 @@ template <typename T, typename E, typename C, typename H>
 std::vector<T> PathTo(
     const T& start, const T& end,
     E expand_func, C cost_func, H heuristic_func) {
+  using internal::BuildPath;
+  using internal::PathNode;
+  using internal::PathNodeComparator;
+  using internal::Score;
   std::vector<T> coords;
   std::priority_queue<PathNode<T>, std::vector<PathNode<T>>,
                       PathNodeComparator<T>> open;

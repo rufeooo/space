@@ -4,6 +4,7 @@
 #include <unordered_map>
 
 namespace search {
+namespace internal {
 
 // Score struct used in A* pathfinding cost maps.
 class Score {
@@ -33,8 +34,7 @@ struct PathNodeComparator {
 
 template <typename T>
 void BuildPath(
-    const T& target,
-    std::unordered_map<T, T>& came_from,
+    const T& target, std::unordered_map<T, T>& came_from,
     std::vector<T>& path) {
   T current = target;
   path.push_back(current);
@@ -42,8 +42,8 @@ void BuildPath(
     current = came_from[current];
     path.push_back(current);
   }
-  // Path in reverse order so reverse it.
   std::reverse(path.begin(), path.end());
 }
 
+}
 }
