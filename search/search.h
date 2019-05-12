@@ -10,19 +10,65 @@
 
 namespace search {
 
-// PathTo -
-// Parameters
-//  Begin, End -> node of type T (T must be hashable).
-//  A strategy for expanding nodes or type T.
-//  A cost function oftype C 
-//  A heuristic function of type F.
-// Returns
-//  A list of type T that represents the path. 
+// PathTo calculates a shortest path from start to end inclusive using
+// A*. The user is expected to provide a valid cost function and 
+// heuristic function.
+//
+// Parameters -
+//
+//   start, end: Start and end node in the graph, must be hashable.
+//
+//   expand_func: A functor for expanding nodes from a specific node
+//                on the graph. The function should return all
+//                adjacent nodes that are reachable from the current
+//                node. The signature should be:
+//
+//                std::vector<T> Expand(const T& node)
+//
+//   cost_func: The cost of going from node a to node b in the graph.
+//              This number should be non-negative and should reresent
+//              a total cost the user would like to minimize. The
+//              signature should be:
+//
+//              uint32_t Cost(const T& a, const T& b)
+//
+//   heuristic_func: The estimated cost from the current node to the
+//                   end node. The user is responsible for providing
+//                   a well-behaved and admissible heuristic function.
+//                   That is the the function should never overestimate
+//                   the total cost from the current node to end. A
+//                   good heuristic function is often Euclidean
+//                   distance if the problem can be defined in such a
+//                   manner that Euclidean distance makes sense. The
+//                   signature should be.
+//
+//                   uint32_t Heuristic(const T& a, const T& end)
+//
+// Returns -
+//  A list of type std::vector<T> that contains the shortest path
+//  from start to finish including both start and finish. 
+//
+// Example Usage -
+//
+//  To generate a path on a line from start to end assuming from any
+//  point on the line you can go up one or down one.
+//
+//  auto expand_func = [](int start) {
+//    return std::vector<int>({start + 1, start - 1});
+//  };
+//  auto cost_func = [](int, int) { return 1; };
+//  auto heuristic_func = [](int current, int end) { 
+//    return end - current;
+//  };
+//  std::vector<int> path = search::PathTo(
+//      start, end, expand_func, cost_func, heuristic_func);
+//
+//  Path contains 0-10.
 
-template <typename T, typename F, typename C, typename H>
+template <typename T, typename E, typename C, typename H>
 std::vector<T> PathTo(
     const T& start, const T& end,
-    F expand_func, C cost_func, H heuristic_func) {
+    E expand_func, C cost_func, H heuristic_func) {
   std::vector<T> coords;
   std::priority_queue<PathNode<T>, std::vector<PathNode<T>>,
                       PathNodeComparator<T>> open;
@@ -45,7 +91,7 @@ std::vector<T> PathTo(
     // Back will return path node with least path cost.
     PathNode current = open.top();
     if (current.location_ == end) {
-      BuildPath<T>(current.location_, came_from, coords);
+      BuildPath(current.location_, came_from, coords);
       return std::move(coords);
     }
     // Remove from open list.
@@ -78,49 +124,5 @@ std::vector<T> PathTo(
   }
   return coords;
 }
-
-/*void bfs(const types::GridPoint& start,
-    std::function<bool(const world::Tile& tile)> expand);
-
-bool NearestPathablePoint(const types::GridPoint& source,
-    const std::vector<types::GridPoint>& tiles,
-    types::GridPoint& out);*/
-
-    // NOTE:
-    // For bfs search, 
-    //   if the comparator returns true the bfs will stop expanding at the first found instance.
-    //   if the comparator returns false it will continue to expand all nodes.
-    // Therefore, return true if you want to find a single instance of a search, false otherwise.
-
-    // Returns true if any tile within the depth of a breadth first search meets the
-    // criteria given by the comparator.
-    //bool bfs(const sf::Vector3i& start,
-    //    uint32_t depth,
-    //    world_map::TileMap& tile_map,
-    //    std::function<bool(const Tile& tile)> comparator);
-
-    //// Run bfs for each unit to depth.
-    //bool bfs_units(const sf::Vector3i& start,
-    //    uint32_t depth,
-    //    world_map::TileMap& tile_map,
-    //    std::function<bool(const Unit&)> comparator);
-
-    //// Run bfs for each city to depth.
-    //bool bfs_cities(const sf::Vector3i& start,
-    //    uint32_t depth,
-    //    world_map::TileMap& tile_map,
-    //    std::function<bool(const City&)> comparator);
-
-    //// Run bfs for each improvement to depth.
-    //bool bfs_improvements(const sf::Vector3i& start,
-    //    uint32_t depth,
-    //    world_map::TileMap& tile_map,
-    //    std::function<bool(const Improvement&)> comparator);
-
-    //// Run bfs for each resource to depth.
-    //bool bfs_resources(const sf::Vector3i& start,
-    //    uint32_t depth,
-    //    world_map::TileMap& tile_map,
-    //    std::function<bool(const Resource&)> comparator);
 
 }
