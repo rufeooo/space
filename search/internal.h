@@ -24,8 +24,9 @@ public:
   Score heuristic_;
 };
 
+template <typename T>
 struct PathNodeComparator {
-  bool operator() (const PathNode& lhs, const PathNode& rhs) {
+  bool operator() (const PathNode<T>& lhs, const PathNode<T>& rhs) {
     return lhs.heuristic_.value_ > rhs.heuristic_.value_;
   }
 };
@@ -35,7 +36,7 @@ void BuildPath(
     const T& target,
     std::unordered_map<T, T>& came_from,
     std::vector<T>& path) {
-  types::GridPoint current = target;
+  T current = target;
   path.push_back(current);
   while (came_from.find(current) != came_from.end()) {
     current = came_from[current];

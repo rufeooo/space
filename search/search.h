@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <functional>
+#include <queue>
 #include <unordered_map>
 #include <vector>
 
@@ -13,38 +14,38 @@ namespace search {
 // Parameters
 //  Begin, End -> node of type T (T must be hashable).
 //  A strategy for expanding nodes or type T.
+//  A cost function oftype C 
 //  A heuristic function of type F.
 // Returns
 //  A list of type T that represents the path. 
 
-template <typename T, typename F, typename H>
+template <typename T, typename F, typename C, typename H>
 std::vector<T> PathTo(
     const T& start, const T& end,
-    F&& expand_func, H&& heuristic_func) {
+    F expand_func, C cost_func, H heuristic_func) {
   std::vector<T> coords;
-  std::priority_queue<PathNode, std::vector<PathNode>,
-                      PathNodeComparator> open;
+  std::priority_queue<PathNode<T>, std::vector<PathNode<T>>,
+                      PathNodeComparator<T>> open;
   open.push(PathNode(start, 0, heuristic_func(start, end)));
   // Set of open list discoveries for quick lookup. Unordered map
   // because set uses tree and needs >,< operator.
-  std::unordered_map<const T&, bool> openDiscovered;
+  std::unordered_map<T, bool> openDiscovered;
   openDiscovered[start] = true;
   // All nodes that are already evaluated. Unordered map because set
   // uses tree and needs >,< operator.
-  std::unordered_map<const T&, bool> closed;
-
+  std::unordered_map<T, bool> closed;
   // Map used to move backwards from goal node to start to get
   // pstartath.
-  std::unordered_map<const T&, const T&> came_from;
+  std::unordered_map<T, T> came_from;
   // The actual costs from the start node to a given node.
-  std::unordered_map<const T&, Score> true_costs;
+  std::unordered_map<T, Score> true_costs;
   // Cost from start to start is 0.
   true_costs[start].value_ = 0;
   while (!open.empty()) {
     // Back will return path node with least path cost.
     PathNode current = open.top();
     if (current.location_ == end) {
-      BuildPath(current.location_, came_from, coords);
+      BuildPath<T>(current.location_, came_from, coords);
       return std::move(coords);
     }
     // Remove from open list.
@@ -53,34 +54,22 @@ std::vector<T> PathTo(
     // Put into closed list.
     closed[current.location_] = true;
     // Get all of currents neighbors.
-    std::vector<T> neighbors;
-    world::Neighbors(current.location_, neighbors);
+    std::vector<T> neighbors = expand_func(current.location_);
     // Loop over neighbors and evaluate state of each node in path.
     for (const auto& neighbor : neighbors) {
       // Ignore neighbors that have already been evaluated.
       if (closed.find(neighbor) != closed.end()) {
         continue;
       }
-
-      if (neighbor != end && !expand(neighbor)) {
-        closed[neighbor] = true;
-        continue;
-      }
+      auto cost = cost_func(current.location_, neighbor);
       PathNode pn(
-        neighbor,
-        // Cost of current record to this node
-        current.cost_.value_ + tile->path_cost,
-        // Heuristic cost
-        current.cost_.value_ + tile->path_cost +
-        heuristic_func(neighbor, end)
+        neighbor, cost, cost + heuristic_func(neighbor, end)
       );
       // If not in open list, add it for evaluation.
       if (openDiscovered.find(neighbor) == openDiscovered.end()) {
         open.push(pn);
         openDiscovered[neighbor] = true;
-      }
-      // If this is not a better path than one already found continue.
-      else if (pn.cost_.value_ > true_costs[neighbor].value_) {
+      } else if (pn.cost_.value_ > true_costs[neighbor].value_) {
         continue;
       }
       came_from[neighbor] = current.location_;
@@ -90,12 +79,12 @@ std::vector<T> PathTo(
   return coords;
 }
 
-void bfs(const types::GridPoint& start,
+/*void bfs(const types::GridPoint& start,
     std::function<bool(const world::Tile& tile)> expand);
 
 bool NearestPathablePoint(const types::GridPoint& source,
     const std::vector<types::GridPoint>& tiles,
-    types::GridPoint& out);
+    types::GridPoint& out);*/
 
     // NOTE:
     // For bfs search, 
