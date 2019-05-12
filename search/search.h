@@ -4,6 +4,7 @@
 #include <functional>
 #include <queue>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include "internal.h"
@@ -77,13 +78,11 @@ std::vector<T> PathTo(
   std::priority_queue<PathNode<T>, std::vector<PathNode<T>>,
                       PathNodeComparator<T>> open;
   open.push(PathNode(start, 0, heuristic_func(start, end)));
-  // Set of open list discoveries for quick lookup. Unordered map
-  // because set uses tree and needs >,< operator.
-  std::unordered_map<T, bool> openDiscovered;
-  openDiscovered[start] = true;
-  // All nodes that are already evaluated. Unordered map because set
-  // uses tree and needs >,< operator.
-  std::unordered_map<T, bool> closed;
+  // Set of open list discoveries for quick lookup.
+  std::unordered_set<T> openDiscovered;
+  openDiscovered.insert(start);
+  // All nodes that are already evaluated.
+  std::unordered_set<T> closed;
   // Map used to move backwards from goal node to start to get
   // pstartath.
   std::unordered_map<T, T> came_from;
@@ -102,7 +101,7 @@ std::vector<T> PathTo(
     open.pop();
     openDiscovered.erase(current.location_);
     // Put into closed list.
-    closed[current.location_] = true;
+    closed.insert(current.location_);
     // Get all of currents neighbors.
     std::vector<T> neighbors = expand_func(current.location_);
     // Loop over neighbors and evaluate state of each node in path.
@@ -118,7 +117,7 @@ std::vector<T> PathTo(
       // If not in open list, add it for evaluation.
       if (openDiscovered.find(neighbor) == openDiscovered.end()) {
         open.push(pn);
-        openDiscovered[neighbor] = true;
+        openDiscovered.insert(neighbor);
       } else if (pn.cost_.value_ > true_costs[neighbor].value_) {
         continue;
       }
