@@ -153,7 +153,25 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
 // TODO: Add sorted Assign and then enumeration this will NOT work
 // currently but will work when the lists remain sorted.
 TEST_CASE("Unsorted insertion and Enumerate", "[ecs]") {
-  REQUIRE(true == true);
+  ecs::Clear<PositionComponent>(); ecs::Clear<VelocityComponent>();
+  ecs::Assign<PositionComponent>(3, 1, 2);
+  ecs::Assign<PositionComponent>(1, 5, 7);
+  ecs::Assign<VelocityComponent>(1, 5.0f, 15.0f);
+  ecs::Assign<PositionComponent>(2, 15, 20);
+  ecs::Assign<VelocityComponent>(2, 15.0f, 45.0f);
+  ecs::Assign<PositionComponent>(7, 20, 30);
+  ecs::Assign<VelocityComponent>(7, 5.0f, 0.0f);
+  ecs::Assign<PositionComponent>(4, 3, 4);
+  ecs::Assign<VelocityComponent>(4, 1.0f, 3.0f);
+
+  std::vector<ecs::Entity> entities;
+  ecs::Enumerate<PositionComponent, VelocityComponent>([&]
+      (auto& position, auto& velocity) {
+    REQUIRE(position->first == velocity->first);
+    entities.push_back(position->first);
+  });
+  REQUIRE(entities ==
+      std::vector<ecs::Entity>({1, 2, 4, 7}));
 }
 
 TEST_CASE("Mutating components during Enumerate", "[ecs]") {

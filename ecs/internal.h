@@ -79,5 +79,22 @@ void AdvanceAll(Tup&& tup) {
   });
 }
 
+// Compares entity to component pair.
+template <class T>
+struct CompareEntity {
+  Entity AsEntity(const std::pair<Entity, T>& e) const {
+    return e.first;
+  }
+
+  Entity AsEntity(Entity e) const {
+    return e;
+  }
+
+  template<typename T1, typename T2>
+  bool operator()(T1 const& t1, T2 const& t2) const {
+    return AsEntity(t1) < AsEntity(t2);
+  }
+};
+
 }  // namespace internal
 }  // namespace ecs

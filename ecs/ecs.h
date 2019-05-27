@@ -3,6 +3,7 @@
 
 #pragma once
 
+#include <algorithm>
 #include <tuple>
 
 #include "components.h"
@@ -50,10 +51,6 @@ T* Get(Entity entity) {
 //
 // Will create an object of type Foo and append it to the component
 // list components_<Foo>.
-//
-// TODO: These components should be inserted in sorted order.
-// TODO: Something should happen here if the entity already exists
-// in the lists. As of now a new one with the same entity id is added.
 template <typename T, typename... Args>
 void Assign(Entity entity, Args&& ...args) {
   // Require placeholder at end of component lists because we rely on
@@ -63,12 +60,19 @@ void Assign(Entity entity, Args&& ...args) {
     // Components must have default constructors.
     internal::components_<T>.push_back({ENTITY_LIST_END, T()});
   }
-  // Insert component second to last.
-  internal::components_<T>.insert(
-    internal::components_<T>.begin() +
-    internal::components_<T>.size() - 1,
-    {entity, T(std::forward<Args>(args)...)
-  });
+  // Binary search for the entity.
+  auto found = std::lower_bound(
+      internal::components_<T>.begin(),
+      internal::components_<T>.end(),
+      entity, internal::CompareEntity<T>());
+  // If the entity is found overwrite it's component data. Otherwise,
+  // insert a new entity in sorted order.
+  if ((*found).first == entity) {
+    (*found).second = T(std::forward<Args>(args)...);
+  } else {
+    internal::components_<T>.insert(
+        found, {entity, T(std::forward<Args>(args)...)});
+  }
 }
 
 // This function is used to implement systems. It will intersect all
