@@ -65,7 +65,6 @@ namespace search {
 //      start, end, expand_func, cost_func, heuristic_func);
 //
 //  Path contains 0-10.
-
 template <typename T, typename E, typename C, typename H>
 std::vector<T> PathTo(
     const T& start, const T& end,
@@ -150,7 +149,6 @@ std::vector<T> PathTo(
 //                 std::vector<T> Expand(const T& from)
 //
 // Example Usage - See search_test.cc TEST_CASE Path exists using bfs.
-
 template <typename T, typename E>
 void BreadthFirst(const T& start, int max_depth, E expand_func) {
   std::queue<T> to_explore;
