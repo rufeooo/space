@@ -7,6 +7,8 @@ namespace search {
 namespace internal {
 
 // Score struct used in A* pathfinding cost maps.
+// TODO: Change score to templated type. Where value_ is of type T
+// instead of uint32_t for graphs that need to use real numbers.
 class Score {
 public:
   Score() : value_(UINT32_MAX) {};
