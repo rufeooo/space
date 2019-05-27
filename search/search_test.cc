@@ -2,6 +2,7 @@
 
 #include <iostream>
 #include <unordered_map>
+#include <unordered_set>
 #include <vector>
 
 #include <catch2/catch.hpp>
@@ -13,7 +14,7 @@
 // other than these tests without significant modification.
 class SimpleGraph {
  public:
-  void Add(char from, char to, uint32_t weight) {
+  void Add(char from, char to, uint32_t weight=0) {
     Edge e;
     e.from_ = from;
     e.to_ = to;
@@ -57,7 +58,53 @@ class SimpleGraph {
 };
 
 TEST_CASE("Path exists using bfs.", "[search - bfs]") {
-  REQUIRE(true == true);
+  //   I   K
+  //   B   J
+  // D A C G H
+  //   E
+  //   F
+  SimpleGraph sg;
+  sg.Add('A', 'B');
+  sg.Add('A', 'C');
+  sg.Add('A', 'D');
+  sg.Add('A', 'E');
+  sg.Add('E', 'F');
+  sg.Add('C', 'G');
+  sg.Add('G', 'H');
+  sg.Add('G', 'J');
+  sg.Add('J', 'K');
+  sg.Add('B', 'I');
+  // Find H
+  SECTION("Path to H.") {
+    std::unordered_set<char> explored;
+    auto expand = [&explored, &sg](char from) {
+      explored.insert(from);
+      if (from == 'H') {
+        return std::vector<char>();
+      }
+      return sg.Neighbors(from);
+    };
+    search::BreadthFirst('A', 3, expand);
+    REQUIRE(explored.find('H') != explored.end());
+    explored.clear();
+    search::BreadthFirst('A', 2, expand);
+    REQUIRE(explored.find('H') == explored.end());
+  }
+  SECTION("Path to K.") {
+    std::unordered_set<char> explored;
+    auto expand = [&explored, &sg](char from) {
+      explored.insert(from);
+      if (from == 'K') {
+        return std::vector<char>();
+      }
+      return sg.Neighbors(from);
+    };
+    search::BreadthFirst('A', 4, expand);
+    REQUIRE(explored.find('K') != explored.end());
+    explored.clear();
+    search::BreadthFirst('A', 3, expand);
+    REQUIRE(explored.find('K') == explored.end());
+  }
 }
 
 TEST_CASE("Path exists using dfs.", "[search - dfs]") {

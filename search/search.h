@@ -128,4 +128,51 @@ std::vector<T> PathTo(
   return coords;
 }
 
+// BreadthFirst performs a breadth first search up until a maximum
+// depth. A user provides an expasion function that both dictates
+// when the expansion of bfs ends and/or which nodes to expand from the
+// current.
+//
+// Parameters -
+//
+//    start: Which node in the graph to begin bfs from. Must be
+//           hashable.
+//
+//    max_depth: The depth to perform a bfs to. The start node is
+//               considered to be at depth 1. Therefore a max_depth
+//               value of 0 will not expand. See search_test.cc for
+//               documentation on how to use this value correctly.
+//
+//    expand_func: Function that dictates both when bfs should
+//                 terminate and which nodes should be expanded. The
+//                 expected signature is:
+//
+//                 std::vector<T> Expand(const T& from)
+//
+// Example Usage - See search_test.cc TEST_CASE Path exists using bfs.
+
+template <typename T, typename E>
+void BreadthFirst(const T& start, int max_depth, E expand_func) {
+  std::queue<T> to_explore;
+  // Used to avoid expanding nodes already explored.
+  std::unordered_map<T, uint32_t> discovered;
+  to_explore.push(start);
+  // Start node is at depth 1.
+  discovered[start] = 1;
+  while (!to_explore.empty()) {
+    const T& neighbor = to_explore.front();
+    std::vector<T> neighbors = expand_func(neighbor);
+    to_explore.pop();
+    for (const auto& n : neighbors) {
+      const auto& found = discovered.find(n);
+      if (found != discovered.end()) continue;
+      uint32_t current_depth = discovered[neighbor];
+      if (current_depth <= max_depth) {
+        to_explore.push(n);
+        discovered[n] = current_depth + 1;
+      }
+    }
+  }
+}
+
 }
