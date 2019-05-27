@@ -26,16 +26,14 @@ namespace ecs {
 //
 //   return nullptr if the component doesn't exist in the component
 //   for that entity id.
-//
-// TODO: This iterates the component list linearly and
-// should do a binary search when the lists are sorted.
 template <typename T>
 T* Get(Entity entity) {
-  for (auto& component : internal::components_<T>) {
-    if (component.first == entity) {
-      return &component.second;
-    }
-  }
+  auto found = std::lower_bound(
+      internal::components_<T>.begin(),
+      internal::components_<T>.end(),
+      entity, internal::CompareEntity<T>());
+  if (found != internal::components_<T>.end() &&
+      (*found).first == entity) return &(*found).second;
   return nullptr;
 }
 

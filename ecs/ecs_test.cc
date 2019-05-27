@@ -6,7 +6,7 @@
 #include "ecs.h"
 
 struct PositionComponent {
-  PositionComponent() = default;  // To insert 0 entities.
+  PositionComponent() = default;
   PositionComponent(int x, int y) : x_(x), y_(y) {}
 
   int x_;
@@ -14,7 +14,7 @@ struct PositionComponent {
 };
 
 struct VelocityComponent {
-  VelocityComponent() = default;  // To insert 0 entities.
+  VelocityComponent() = default;
   VelocityComponent(float dx, float dy) : dx_(dx), dy_(dy) {}
 
   float dx_;
