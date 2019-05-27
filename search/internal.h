@@ -8,7 +8,11 @@ namespace internal {
 
 // Score struct used in A* pathfinding cost maps.
 // TODO: Change score to templated type. Where value_ is of type T
-// instead of uint32_t for graphs that need to use real numbers.
+// instead of uint32_t for graphs that need to use real numbers. This
+// is actually challengning because the type comes from the return
+// value of the cost function given by PathTo. C++ Probably allows one
+// to extract the type of a templated function somehow but I couldn't
+// figure it out.
 class Score {
 public:
   Score() : value_(UINT32_MAX) {};
