@@ -79,8 +79,8 @@ std::vector<T> PathTo(
                       PathNodeComparator<T>> open;
   open.push(PathNode(start, 0, heuristic_func(start, end)));
   // Set of open list discoveries for quick lookup.
-  std::unordered_set<T> openDiscovered;
-  openDiscovered.insert(start);
+  std::unordered_set<T> open_discovered;
+  open_discovered.insert(start);
   // All nodes that are already evaluated.
   std::unordered_set<T> closed;
   // Map used to move backwards from goal node to start to get
@@ -99,7 +99,7 @@ std::vector<T> PathTo(
     }
     // Remove from open list.
     open.pop();
-    openDiscovered.erase(current.location_);
+    open_discovered.erase(current.location_);
     // Put into closed list.
     closed.insert(current.location_);
     // Get all of currents neighbors.
@@ -115,9 +115,9 @@ std::vector<T> PathTo(
         neighbor, cost, cost + heuristic_func(neighbor, end)
       );
       // If not in open list, add it for evaluation.
-      if (openDiscovered.find(neighbor) == openDiscovered.end()) {
+      if (open_discovered.find(neighbor) == open_discovered.end()) {
         open.push(pn);
-        openDiscovered.insert(neighbor);
+        open_discovered.insert(neighbor);
       } else if (pn.cost_.value_ > true_costs[neighbor].value_) {
         continue;
       }
