@@ -91,7 +91,7 @@ struct CompareEntity {
   }
 
   template<typename T1, typename T2>
-  bool operator()(T1 const& t1, T2 const& t2) const {
+  bool operator()(const T1& t1, const T2& t2) const {
     return AsEntity(t1) < AsEntity(t2);
   }
 };
