@@ -31,9 +31,6 @@ TEST_CASE("Sorted Assign / Get", "[ecs]") {
   ecs::Clear<PositionComponent>(); ecs::Clear<VelocityComponent>();
   ecs::Assign<PositionComponent>(1, 10, 15);
   ecs::Assign<VelocityComponent>(1, 1.0f, 3.0f);
-  // TODO: Don't manually add 0 entities to component lists.
-  ecs::Assign<PositionComponent>(0);
-  ecs::Assign<VelocityComponent>(0);
   
   REQUIRE(ecs::Get<PositionComponent>(1)->x_ == 10);
   REQUIRE(ecs::Get<PositionComponent>(1)->y_ == 15);
@@ -56,9 +53,6 @@ TEST_CASE("Unsorted Assign / Get", "[ecs]") {
   ecs::Assign<VelocityComponent>(7, 5.0f, 0.0f);
   ecs::Assign<PositionComponent>(4, 3, 4);
   ecs::Assign<VelocityComponent>(4, 1.0f, 3.0f);
-  // TODO: Don't manually add 0 entities to component lists.
-  ecs::Assign<PositionComponent>(0);
-  ecs::Assign<VelocityComponent>(0);
 
   REQUIRE(ecs::Get<VelocityComponent>(2)->dx_ == 15.0f);
   REQUIRE(ecs::Get<PositionComponent>(4)->x_ == 3);
@@ -88,10 +82,6 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     // Entity 4 has components Foo and Baz.
     ecs::Assign<Foo>(4);
     ecs::Assign<Baz>(4);
-    // TODO: Don't manually add 0 entities to component lists.
-    ecs::Assign<Foo>(0);
-    ecs::Assign<Bar>(0);
-    ecs::Assign<Baz>(0);
     // Verify this runs for all entities.
     std::vector<ecs::Entity> entities;
     ecs::Enumerate<Foo>([&](auto& foo) {
@@ -123,9 +113,6 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
   SECTION("Large scale test.") {
     for (int i = 1; i < 15000; ++i) ecs::Assign<Foo>(i);
     for (int i = 400; i < 2000; ++i) ecs::Assign<Bar>(i);
-    //TODO: Don't manually add 0 entities to component lists.
-    ecs::Assign<Foo>(0);
-    ecs::Assign<Bar>(0);
     int i = 0;
     ecs::Enumerate<Foo, Bar>([&](auto& foo, auto& bar) {
       REQUIRE(foo->first == bar->first);
@@ -139,9 +126,6 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
         {3, 76, 133, 223, 4567, 33456});
     for (int i = 1; i < 50000; ++i) ecs::Assign<Foo>(i);
     for (int i : sparse_list) ecs::Assign<Bar>(i);
-    //TODO: Don't manually add 0 entities to component lists.
-    ecs::Assign<Foo>(0);
-    ecs::Assign<Bar>(0);
     std::vector<ecs::Entity> intersection_list;
     ecs::Enumerate<Foo, Bar>([&](auto& foo, auto& bar) {
       REQUIRE(foo->first == bar->first);
@@ -155,10 +139,6 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     for (int i = 1; i < 10000; ++i) ecs::Assign<Bar>(i);
     for (int i = 1; i < 10000; ++i) ecs::Assign<Baz>(i);
     int i = 1;
-    //TODO: Don't manually add 0 entities to component lists.
-    ecs::Assign<Foo>(0);
-    ecs::Assign<Bar>(0);
-    ecs::Assign<Baz>(0);
     ecs::Enumerate<Foo, Bar, Baz>([&](auto& foo, auto& bar,
                                       auto& baz) {
       REQUIRE(foo->first == bar->first);
@@ -177,13 +157,15 @@ TEST_CASE("Unsorted insertion and Enumerate", "[ecs]") {
 }
 
 TEST_CASE("Mutating components during Enumerate", "[ecs]") {
-  struct Component { Component(int n) : n_(n) {}; int n_; };
+  struct Component {
+    Component() = default;
+    Component(int n) : n_(n) {}; int n_;
+  };
   ecs::Clear<Component>();
   for (int i = 0; i < 10; ++i) {
     // Put 0 through 10 in components list.
     ecs::Assign<Component>(i + 1, i);
   }
-  ecs::Assign<Component>(0, 0);
   // Increment each component so that it is 1 through 11.
   ecs::Enumerate<Component>([](auto& comp) {
     comp->second.n_++;

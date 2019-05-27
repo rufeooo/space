@@ -1,12 +1,6 @@
 // Public API for ecs system. This header exposes all ECS functions
 // a user is meant to use.
 
-// TODO: Current implementation relies on an entity whose id is 0 be
-// put at the end of all component lists. This allows enumeration
-// to end when intersecting all component lists. Investigate
-// alternative solutions or modify the code to maintain that property
-// since it is must now be manually enforced.
-
 #pragma once
 
 #include <tuple>
@@ -62,9 +56,18 @@ T* Get(Entity entity) {
 // in the lists. As of now a new one with the same entity id is added.
 template <typename T, typename... Args>
 void Assign(Entity entity, Args&& ...args) {
-  internal::components_<T>.push_back({
-    entity,
-    T(std::forward<Args>(args)...)
+  // Require placeholder at end of component lists because we rely on
+  // pointer advancing in vectors and they must have a condition to
+  // stop.
+  if (internal::components_<T>.empty()) {
+    // Components must have default constructors.
+    internal::components_<T>.push_back({ENTITY_LIST_END, T()});
+  }
+  // Insert component second to last.
+  internal::components_<T>.insert(
+    internal::components_<T>.begin() +
+    internal::components_<T>.size() - 1,
+    {entity, T(std::forward<Args>(args)...)
   });
 }
 
@@ -76,8 +79,8 @@ void Assign(Entity entity, Args&& ...args) {
 // Assume
 // entity 1 has Components( Foo, Bar, Baz )
 // entity 2 has Components( Foo )
-// entity 3 has Components( Foo, Bar)
-// entity 4 has Components( Foo, Baz)
+// entity 3 has Components( Foo, Bar )
+// entity 4 has Components( Foo, Baz )
 //
 // Enumerate<Foo>([](auto& foo) {
 // });
@@ -97,14 +100,10 @@ void Assign(Entity entity, Args&& ...args) {
 //
 // The type expected in the functor for each component is -
 // std::pair<Entity, ComponentType>*.
-//
-// TODO: This intersection relies on a component with entity 0 being
-// at the end of each component lists. Mantain that invariant via this
-// api or remove it with a better approach.
 template <typename... Args, typename F>
 void Enumerate(F&& f) {
   auto tup = internal::Gather<Args...>();
-  while (!internal::AnyZero(tup)) {
+  while (!internal::AnyMax(tup)) {
     if (internal::AllEqual(tup)) {
       util::ApplyFromTuple(f, tup);
       internal::AdvanceAll(tup);
