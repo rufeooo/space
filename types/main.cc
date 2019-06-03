@@ -28,7 +28,7 @@ int main() {
     auto duration =
       std::chrono::duration_cast<std::chrono::microseconds>(
           stop - start); 
-    
+
     std::cout << "Flatbuffer: "
               << duration.count() << " microseconds" << std::endl;
   }

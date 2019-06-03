@@ -125,8 +125,9 @@ class Vec2 : public Vec<T, 2> {
   // math::Vec2<int> b;
   // auto c = a + b; c = a - b; etc.
   //
-  // c will be captured as type Vec<T, N> without these overloads
-  // thereby ruining the point of these additional classes.
+  // c will be captured as type Vec<int, 2> instead of Vec2<int> 
+  // without these overloads thereby ruining the point of these
+  // convenience classes.
 
   Vec2<T> operator+(const Vec2<T>& rhs) {
     Vec2<T> t = *this;

@@ -11,5 +11,8 @@ make ecs_test
 make search_test
 ./search/search_test
 
-make vec_test
-./math/vec_test
+make math_test
+./math/math_test
+
+make game_test
+./game/game_test
