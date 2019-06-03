@@ -16,8 +16,10 @@ add_subdirectory(third_party/SDL-mirror)
 
 # Our stuff.
 add_subdirectory(types)
+add_subdirectory(math)
 add_subdirectory(search)
 add_subdirectory(ecs)
 add_subdirectory(tile)
+add_subdirectory(game)
 add_subdirectory(examples)
 add_subdirectory(demos)
