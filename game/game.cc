@@ -12,14 +12,14 @@ void Game::Run(uint64_t loop_count) {
   std::chrono::time_point<std::chrono::high_resolution_clock>
     pre_render_time, post_render_time;
   uint64_t loops = 0;
-  std::chrono::microseconds frame_time;
+  std::chrono::microseconds render_time;
   while (loop_count == 0 || loops < loop_count) {
     pre_render_time = std::chrono::high_resolution_clock::now();
     RunRenderer();
     post_render_time = std::chrono::high_resolution_clock::now();
-    frame_time = std::chrono::duration_cast<std::chrono::microseconds>(
+    render_time = std::chrono::duration_cast<std::chrono::microseconds>(
         post_render_time - pre_render_time);
-    std::cout << frame_time.count() << std::endl;
+    std::cout << render_time.count() << std::endl;
     while (accumulator >= DT) {
       RunSystems();
       accumulator -= DT;
