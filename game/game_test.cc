@@ -12,5 +12,5 @@ TEST_CASE("Simple Game", "[game]") {
     void RunRenderer() override {}
   };
   TestGame game;
-  REQUIRE(true == true);
+  game.Run(50000);
 }

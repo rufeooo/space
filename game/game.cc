@@ -6,25 +6,24 @@
 namespace game {
 
 void Game::Run(uint64_t loop_count) {
-  float accumulator = 0.0f;
-  float t = 0.0f;
-  static const float DT = 1.0f / 60.0f;
-  std::chrono::time_point<std::chrono::high_resolution_clock>
-    pre_render_time, post_render_time;
+  using Seconds = std::chrono::duration<double>;
+  Seconds accumulator;
+  Seconds t = Seconds(0.0f);
+  static const Seconds DT = Seconds(1.0f / 60.0f);
+  Seconds pre_render_time, post_render_time;
   uint64_t loops = 0;
-  std::chrono::microseconds render_time;
   while (loop_count == 0 || loops < loop_count) {
-    pre_render_time = std::chrono::high_resolution_clock::now();
+    auto pre_render_time = std::chrono::system_clock::now();
     RunRenderer();
-    post_render_time = std::chrono::high_resolution_clock::now();
-    render_time = std::chrono::duration_cast<std::chrono::microseconds>(
-        post_render_time - pre_render_time);
-    std::cout << render_time.count() << std::endl;
+    auto post_render_time = std::chrono::system_clock::now();
+    accumulator += (post_render_time - pre_render_time); 
+    std::cout << accumulator.count() << std::endl;
     while (accumulator >= DT) {
       RunSystems();
       accumulator -= DT;
       t += DT;
     }
+    ++loops;
   }
 }
 
