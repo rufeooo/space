@@ -12,5 +12,5 @@ TEST_CASE("Simple Game", "[game]") {
     void RunRenderer() override {}
   };
   TestGame game;
-  game.Run(50000);
+  game.Run(5000000);
 }
