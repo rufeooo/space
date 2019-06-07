@@ -72,7 +72,7 @@ class Vec {
     *this /= l;
   }
 
-  const std::array<T, N> Data() const { return data_; }
+  const std::array<T, N>& Data() const { return data_; }
 
   std::size_t size() const { return data_.size(); }
 
