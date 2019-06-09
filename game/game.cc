@@ -1,32 +1,41 @@
 #include "game.h"
 
-#include <chrono> 
 #include <iostream>
 
 namespace game {
 
+inline std::chrono::microseconds Now() {
+  return std::chrono::duration_cast<std::chrono::microseconds>(
+      std::chrono::high_resolution_clock::now().time_since_epoch());
+}
+
 void Game::Run(uint64_t loop_count) {
-  std::chrono::microseconds accumulator(0);
-  std::chrono::microseconds time(0);
-  std::chrono::microseconds desired_delta_time(16666);
-  uint64_t loops = 0;
-  std::chrono::microseconds render_time;
-  while (loop_count == 0 || loops < loop_count) {
-    auto pre_render_time = std::chrono::high_resolution_clock::now();
-    RunRenderer();
-    auto post_render_time = std::chrono::high_resolution_clock::now();
-    render_time +=
-      std::chrono::duration_cast<std::chrono::microseconds>
-        (post_render_time - pre_render_time);
-    accumulator +=  render_time;
-    while (accumulator >= desired_delta_time) {
-      RunSystems();
-      accumulator -= desired_delta_time;
-      time += desired_delta_time;
-      std::cout << time.count() << std::endl;
+  std::chrono::microseconds previous = Now();
+  std::chrono::microseconds lag(0);
+  game_updates_ = 0;
+  game_time_ = std::chrono::microseconds(0);
+  while (loop_count == 0 || game_updates_ < loop_count) {
+    std::chrono::microseconds current = Now();
+    std::chrono::microseconds elapsed = current - previous;
+    lag += elapsed;
+    ProcessInput();
+    real_time_ += elapsed;
+    if (lag >= microseconds_per_update_) {
+      Update();
+      lag -= microseconds_per_update_;
+      game_time_ += microseconds_per_update_;
+      ++game_updates_;
     }
-    ++loops;
+    Render();
   }
+}
+
+void Game::Pause() {
+  paused_ = true;
+}
+
+void Game::Resume() {
+  paused_ = false;
 }
 
 }

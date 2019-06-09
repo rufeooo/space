@@ -8,9 +8,15 @@
 TEST_CASE("Simple Game", "[game]") {
   class TestGame : public game::Game {
    public:
-    void RunSystems() override {}
-    void RunRenderer() override {}
+    void ProcessInput() override {}
+    void Update() override {}
+    void Render() override {}
   };
+  uint64_t count = 5000;
   TestGame game;
-  game.Run(5000000);
+  game.Run(count);
+  REQUIRE(game.game_updates() == count);
+  // Total game time should be game updates * microseconds_per_update.
+  // 5000 * 10000 = 50000000
+  REQUIRE(game.game_time() == std::chrono::microseconds(50000000));
 }
