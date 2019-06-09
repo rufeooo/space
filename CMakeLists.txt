@@ -9,9 +9,14 @@ set(CMAKE_CXX_STANDARD 17)
 # Output compile_commands.json for autocomplete.
 set(CMAKE_EXPORT_COMPILE_COMMANDS 1)
 
+set(GLFW_BUILD_DOCS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_TESTS OFF CACHE BOOL "" FORCE)
+set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
+
 # Third party libraries.
 add_subdirectory(third_party/Catch2)
 add_subdirectory(third_party/flatbuffers)
+add_subdirectory(third_party/glfw)
 add_subdirectory(third_party/SDL-mirror)
 
 # Our stuff.

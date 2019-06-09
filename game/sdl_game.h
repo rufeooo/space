@@ -19,7 +19,7 @@ class SDLGame : public Game {
   SDL_Window* window() { return window_; }
   SDL_Renderer* renderer() { return renderer_; }
 
- private:
+ protected:
   int window_width_;
   int window_height_;
   SDL_Window* window_ = nullptr;

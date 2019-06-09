@@ -14,7 +14,7 @@ struct PositionComponent {
 struct PhysicsComponent {
   PhysicsComponent() = default;
   PhysicsComponent(const math::Vec2f& velocity,
-                    const math::Vec2f& acceleration)
+                   const math::Vec2f& acceleration)
     : velocity(velocity), acceleration(acceleration) {};
   math::Vec2f velocity;
   math::Vec2f acceleration;
@@ -47,7 +47,19 @@ class Asteroids : public game::SDLGame {
     ecs::Assign<ShooterComponent>(player_);
     ecs::Assign<TriangleRenderComponent>(player_);
   }
-  void Update() override {};
+  void Update() override {}
+  void Render() override {
+    // Clear the screen to white.
+    SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+    SDL_RenderClear(renderer_);
+    SDL_SetRenderDrawColor(renderer_, 255, 255, 255, SDL_ALPHA_OPAQUE);
+    //Drawing the lines we want. (-1, 0), (0, 1), (1, 0)
+    SDL_RenderDrawLine(renderer_, 0, 480, 320, 0);
+    SDL_RenderDrawLine(renderer_, 640, 480, 320, 0);
+    SDL_RenderDrawLine(renderer_, 0, 480, 640, 480);
+    // Present.
+    SDL_RenderPresent(renderer_);
+  }
  private:
   ecs::Entity player_ = 1;
 };
