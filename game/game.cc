@@ -16,6 +16,7 @@ void Game::Run(uint64_t loop_count) {
   game_updates_ = 0;
   game_time_ = std::chrono::microseconds(0);
   while (loop_count == 0 || game_updates_ < loop_count) {
+    if (end_) return;
     std::chrono::microseconds current = Now();
     std::chrono::microseconds elapsed = current - previous;
     if (!paused_) lag += elapsed;
@@ -37,6 +38,10 @@ void Game::Pause() {
 
 void Game::Resume() {
   paused_ = false;
+}
+
+void Game::End() {
+  end_ = true;
 }
 
 }

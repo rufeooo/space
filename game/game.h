@@ -16,6 +16,7 @@ class Game {
   void Run(uint64_t loop_count=0);
   void Pause();
   void Resume();
+  void End();
 
   uint64_t game_updates() const { return game_updates_; }
   std::chrono::microseconds game_time() const { return game_time_; }
@@ -25,6 +26,7 @@ class Game {
   std::chrono::microseconds game_time_;
   std::chrono::microseconds real_time_;
   bool paused_ = false;
+  bool end_ = false;
   // Number of times the game has been updated.
   uint64_t game_updates_;
 };
