@@ -1,5 +1,6 @@
 set(glfw_srcs
-    "main.cc")
+    "main.cc"
+    "${CMAKE_SOURCE_DIR}/third_party/glfw/deps/glad_gl.c")
 
 include_directories(${CMAKE_SOURCE_DIR}/third_party/glfw/deps)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/glfw/include)
