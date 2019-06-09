@@ -17,10 +17,10 @@ void Game::Run(uint64_t loop_count) {
   while (loop_count == 0 || game_updates_ < loop_count) {
     std::chrono::microseconds current = Now();
     std::chrono::microseconds elapsed = current - previous;
-    lag += elapsed;
+    if (!paused_) lag += elapsed;
     ProcessInput();
     real_time_ += elapsed;
-    if (lag >= microseconds_per_update_) {
+    if (!paused_ && lag >= microseconds_per_update_) {
       Update();
       lag -= microseconds_per_update_;
       game_time_ += microseconds_per_update_;
