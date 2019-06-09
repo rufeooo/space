@@ -10,6 +10,7 @@ inline std::chrono::microseconds Now() {
 }
 
 void Game::Run(uint64_t loop_count) {
+  Initialize();
   std::chrono::microseconds previous = Now();
   std::chrono::microseconds lag(0);
   game_updates_ = 0;
