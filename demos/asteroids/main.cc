@@ -1,5 +1,6 @@
 #include <iostream>
 
+#include "ecs/ecs.h"
 #include "game/sdl_game.h"
 #include "math/vec.h"
 
@@ -38,7 +39,17 @@ struct CircleRenderComponent {
 class Asteroids : public game::SDLGame {
  public:
   Asteroids() : game::SDLGame(640, 480) {};
+  void Initialize() override {
+    SDLGame::Initialize();
+    ecs::Assign<PositionComponent>(player_, math::Vec2f(0.0f, 0.0f));
+    ecs::Assign<PhysicsComponent>(player_);
+    ecs::Assign<InputComponent>(player_);
+    ecs::Assign<ShooterComponent>(player_);
+    ecs::Assign<TriangleRenderComponent>(player_);
+  }
   void Update() override {};
+ private:
+  ecs::Entity player_ = 1;
 };
 
 int main() {

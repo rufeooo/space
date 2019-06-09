@@ -7,6 +7,7 @@ namespace game {
 
 class Game {
  public:
+  virtual ~Game() = default;
   virtual void Initialize() {};
   virtual void ProcessInput() = 0;
   virtual void Update() = 0;

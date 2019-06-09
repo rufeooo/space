@@ -15,10 +15,11 @@ void Game::Run(uint64_t loop_count) {
   std::chrono::microseconds lag(0);
   game_updates_ = 0;
   game_time_ = std::chrono::microseconds(0);
+  std::chrono::microseconds current, elapsed;
   while (loop_count == 0 || game_updates_ < loop_count) {
     if (end_) return;
-    std::chrono::microseconds current = Now();
-    std::chrono::microseconds elapsed = current - previous;
+    current = Now();
+    elapsed = current - previous;
     if (!paused_) lag += elapsed;
     ProcessInput();
     real_time_ += elapsed;
@@ -28,6 +29,9 @@ void Game::Run(uint64_t loop_count) {
       game_time_ += microseconds_per_update_;
       ++game_updates_;
     }
+    // TODO: Throttle how often a render occurs to save precious 
+    // battery on my laptop. Should be an optional setting as we don't
+    // care as much on non battery dependent devices.
     Render();
   }
 }

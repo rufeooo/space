@@ -10,6 +10,8 @@ class SDLGame : public Game {
   SDLGame(int width, int height) :
     window_width_(width), window_height_(height) {}
 
+  ~SDLGame();
+
   void Initialize() override;
   void ProcessInput() override;
   void Render() override;

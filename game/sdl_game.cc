@@ -2,6 +2,10 @@
 
 namespace game {
 
+SDLGame::~SDLGame() {
+  SDL_Quit();
+}
+
 void SDLGame::Initialize() {
   int flags = SDL_WINDOW_SHOWN;
   if (SDL_Init(SDL_INIT_EVERYTHING)) {
@@ -26,6 +30,8 @@ void SDLGame::ProcessInput() {
 }
 
 void SDLGame::Render() {
+  SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
+  SDL_RenderClear(renderer_);
   SDL_RenderPresent(renderer_);
 }
 
