@@ -31,7 +31,7 @@ TEST_CASE("Simple SDL Game", "[sdl-game]") {
   TestSDLGame game;
   game.Run(10000);
   // Simply verify a window and renderer were properly created and
-  // initialized.
+  // initialized. You should see a red screen pop up during this test.
   REQUIRE(game.window() != nullptr);
   REQUIRE(game.renderer() != nullptr);
 }
