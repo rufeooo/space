@@ -1,4 +1,4 @@
-#include <glad/gl.h>
+#include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <iostream>
 
@@ -15,7 +15,10 @@ int main() {
   GLFWwindow* window = glfwCreateWindow(
       640, 480, "Hello Triangle", NULL, NULL);
   glfwMakeContextCurrent(window);
-  gladLoadGL(glfwGetProcAddress);
+  if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+    std::cout << "Failed to initialize OpenGL context" << std::endl;
+    return -1;
+  }
   const GLubyte* renderer = glGetString(GL_RENDERER);
   const GLubyte* version = glGetString(GL_VERSION);
   std::cout << "Renderer: " << renderer << std::endl;
