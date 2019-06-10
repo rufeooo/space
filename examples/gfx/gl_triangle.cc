@@ -6,11 +6,12 @@ const char* vertex_shader =
   "#version 410\n"
   "in vec3 vp;"
   "void main() {"
-  "  gl_position = vec4(vp, 1.0);"
+  "  gl_Position = vec4(vp, 1.0);"
   "}";
 
 const char* fragment_shader =
-  "$version 410\n"
+  "#version 410\n"
+	"out vec4 frag_colour;"
   "void main() {"
   " frag_colour = vec4(0.5, 0.0, 0.5, 1.0);"
   "}";
@@ -21,19 +22,25 @@ int main() {
     return 1;
   }
   // Only for mac I need this?
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   GLFWwindow* window = glfwCreateWindow(
       640, 480, "Hello Triangle", NULL, NULL);
+  if (!window) {
+    std::cout << "Failed to open window with GLFW3" << std::endl;
+    return 1;
+  }
   glfwMakeContextCurrent(window);
   if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
     std::cout << "Failed to initialize OpenGL context" << std::endl;
-    return -1;
+    return 1;
   }
   const GLubyte* renderer = glGetString(GL_RENDERER);
   const GLubyte* version = glGetString(GL_VERSION);
+  std::cout << renderer << std::endl;
+  std::cout << version << std::endl;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
   GLfloat points[] = {
@@ -45,7 +52,7 @@ int main() {
   GLuint vbo = 0;
   glGenBuffers(1, &vbo);
   glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(points), points,
+  glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), points,
                GL_STATIC_DRAW);
   // Create VAO bind vbo to it.
   GLuint vao = 0;
@@ -67,7 +74,6 @@ int main() {
   glAttachShader(shader_program, fs);
   glAttachShader(shader_program, vs);
   glLinkProgram(shader_program);
-  // Draw.
   while (!glfwWindowShouldClose(window)) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Set the shader program.
