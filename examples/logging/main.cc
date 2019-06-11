@@ -1,7 +1,7 @@
 #include "plog/Log.h"
 
 int main() {
-  plog::init(plog::debug, "Hello.txt");
+  plog::init(plog::debug, "logs/Hello.txt");
 
   PLOGD << "Hello!";
   PLOG_DEBUG << "Ugly Hello!";

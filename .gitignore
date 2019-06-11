@@ -1,5 +1,6 @@
 build/
 debug/
+logs/
 
 *.swp
 *_generated.h
