@@ -1,5 +1,6 @@
 add_subdirectory(ecs)
 add_subdirectory(gfx)
 add_subdirectory(glfw)
+add_subdirectory(logging)
 add_subdirectory(sdl)
 add_subdirectory(stl)

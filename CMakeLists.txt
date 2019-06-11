@@ -17,6 +17,7 @@ set(GLFW_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)
 add_subdirectory(third_party/Catch2)
 add_subdirectory(third_party/flatbuffers)
 add_subdirectory(third_party/glad)
+add_subdirectory(third_party/plog)
 add_subdirectory(third_party/glfw)
 add_subdirectory(third_party/SDL-mirror)
 
