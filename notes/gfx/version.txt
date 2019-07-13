@@ -1,3 +1,13 @@
 Running version info on the macbook I get -
   Renderer: AMD Radeon Pro 555X OpenGL Engine
   Version: 2.1 ATI-2.9.26
+
+
+glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+
+Indicates old GL features that are meant for removal are not allowed
+to be used.
+
+all functions in BLUE font are not available with the reference card.
+
+3.2 - https://www.khronos.org/files/opengl-quick-reference-card.pdf

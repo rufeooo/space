@@ -1,0 +1,38 @@
+Rendering process have distinct stages in transforming a 3d object into a final 2d image
+
+The process is called a graphics pipeline
+
+cpu -
+
+  glDrawArrays()
+
+gpu -
+
+  vertex shader <- write a shader to position each vertex animation
+
+  tesselation control shader <- write a shader to spcify amount of new vertices to generate
+
+  tesselator <- hardware unit that generates new vertices
+
+  tesselation evaluatino shader <- write a shader to positino new vertices
+
+  geometry shader <- write shader to generate or delete geometry useful for some effects
+
+  clipping <- primitives are assembled e.g. triangles. primitives out-of-shot are discarded
+
+  rasterization <- 3d primitives flattened into 2d images each shape subdivided into pixel-sized fragments
+
+  fragment shader <- write shader to color each fragment, overlapping fragments ar eblended into a signel pixel
+
+  blending
+
+  frame buffer <- final 2d image is attached to a frame buffer. done.
+
+one creates a shader for each stage - OpenGL compiles them all into a shader and whole set are lnked together to form an executable shader program called a program
+
+SHADER - A compiled shader program
+PROGRAM - Result of all the shaders linked together.
+
+Shader Parallelism -
+
+  shader programs run on the GPU and are highly parallelized.
