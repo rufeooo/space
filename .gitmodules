@@ -16,3 +16,9 @@
 [submodule "third_party/plog"]
 	path = third_party/plog
 	url = https://github.com/SergiusTheBest/plog.git
+[submodule "third_party/gflags"]
+	path = third_party/gflags
+	url = https://github.com/gflags/gflags.git
+[submodule "third_party/cppfs"]
+	path = third_party/cppfs
+	url = https://github.com/cginternals/cppfs.git

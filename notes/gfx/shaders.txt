@@ -36,3 +36,16 @@ PROGRAM - Result of all the shaders linked together.
 Shader Parallelism -
 
   shader programs run on the GPU and are highly parallelized.
+
+building and using a shader program -
+
+  1. load a vertex shader file and fragment shader file and store each in a seperate C string
+  2. call glCreateShader twice - for each shader
+  3. call glShaderSource to copy code from a string to each of the above
+  4. call glCompileShader for both shader indices
+  5. clal glCreateProgram to create an index to a new program.
+  6. call glAttachShader twice for both shader indices
+  7. call glLinkProgram
+  8. call glGetUniformLocation to get the unique location of the variables used in the shaders
+  9. call glUseProgram to switch to your shader before calling.
+  10. glUniform4f to assign an initial color to your fragment shader.
