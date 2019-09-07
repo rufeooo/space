@@ -9,6 +9,8 @@
 #include "SDL.h"
 #include <cstdio>  
 #include <map>  
+#include "SDL_main.h"
+
   
 enum {  
     DISPLAY_WIDTH  = 480  

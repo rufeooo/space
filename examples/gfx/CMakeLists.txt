@@ -13,6 +13,7 @@ function(create_gfx_example name srcs)
     ${CMAKE_SOURCE_DIR}/third_party/plog/include)
   add_executable(${name} ${${srcs}})
   target_link_libraries(${name} glfw glad plog)
+  set_target_properties(${name} PROPERTIES FOLDER Examples/gfx)
 endfunction(create_gfx_example)
 
 create_gfx_example(gl_version gl_version_srcs)
