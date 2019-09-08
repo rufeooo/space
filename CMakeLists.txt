@@ -53,6 +53,7 @@ set_target_properties(SDL2-static PROPERTIES FOLDER ThirdParty/SDL)
 # Our stuff.
 add_subdirectory(types)
 add_subdirectory(math)
+add_subdirectory(observer)
 add_subdirectory(search)
 add_subdirectory(ecs)
 add_subdirectory(tile)
