@@ -106,8 +106,9 @@ template <typename... Args, typename F>
 void Enumerate(F&& f) {
   auto tup = internal::Gather<Args...>();
   while (!internal::AnyMax(tup)) {
-    if (internal::AllEqual(tup)) {
-      util::ApplyFromTuple(f, tup);
+    Entity entity;
+    if (internal::AllEqual(tup, entity)) {
+      util::ApplyFromTuple(f, entity, tup);
       internal::AdvanceAll(tup);
       continue;
     }

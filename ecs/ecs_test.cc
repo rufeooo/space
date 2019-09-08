@@ -84,28 +84,26 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     ecs::Assign<Baz>(4);
     // Verify this runs for all entities.
     std::vector<ecs::Entity> entities;
-    ecs::Enumerate<Foo>([&](auto& foo) {
-      entities.push_back(foo->first);
+    ecs::Enumerate<Foo>([&](ecs::Entity e, Foo& /*foo*/) {
+      entities.push_back(e);
     });
     REQUIRE(entities == std::vector<ecs::Entity>({1, 2, 3, 4}));
     entities.clear();
-    ecs::Enumerate<Foo, Bar>([&](auto& foo, auto& bar) {
-      REQUIRE(foo->first == bar->first);
-      entities.push_back(foo->first);
+    ecs::Enumerate<Foo, Bar>([&](
+        ecs::Entity e, Foo& /*foo*/, Bar& /*bar*/) {
+      entities.push_back(e);
     });
     REQUIRE(entities == std::vector<ecs::Entity>({1, 3}));
     entities.clear();
-    ecs::Enumerate<Foo, Baz>([&](auto& foo, auto& baz) {
-      REQUIRE(foo->first == baz->first);
-      entities.push_back(foo->first);
+    ecs::Enumerate<Foo, Baz>([&](
+        ecs::Entity e, Foo& foo, Baz& baz) {
+      entities.push_back(e);
     });
     REQUIRE(entities == std::vector<ecs::Entity>({1, 4}));
     entities.clear();
-    ecs::Enumerate<Foo, Bar, Baz>([&](auto& foo, auto& bar,
-                                      auto& baz) {
-      REQUIRE(foo->first == bar->first);
-      REQUIRE(foo->first == baz->first);
-      entities.push_back(foo->first);
+    ecs::Enumerate<Foo, Bar, Baz>([&](
+        ecs::Entity e, Foo& foo, Bar& bar, Baz& baz) {
+      entities.push_back(e);
     });
     REQUIRE(entities == std::vector<ecs::Entity>({1}));
   }
@@ -114,8 +112,8 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     for (int i = 1; i < 15000; ++i) ecs::Assign<Foo>(i);
     for (int i = 400; i < 2000; ++i) ecs::Assign<Bar>(i);
     int i = 0;
-    ecs::Enumerate<Foo, Bar>([&](auto& foo, auto& bar) {
-      REQUIRE(foo->first == bar->first);
+    ecs::Enumerate<Foo, Bar>([&](
+        ecs::Entity e, Foo& foo, Bar& bar) {
       ++i;
     });
     REQUIRE(i == 1600);
@@ -127,9 +125,9 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     for (int i = 1; i < 50000; ++i) ecs::Assign<Foo>(i);
     for (int i : sparse_list) ecs::Assign<Bar>(i);
     std::vector<ecs::Entity> intersection_list;
-    ecs::Enumerate<Foo, Bar>([&](auto& foo, auto& bar) {
-      REQUIRE(foo->first == bar->first);
-      intersection_list.push_back(foo->first);
+    ecs::Enumerate<Foo, Bar>([&](
+        ecs::Entity e, Foo& foo, Bar& bar) {
+      intersection_list.push_back(e);
     });
     REQUIRE(sparse_list == intersection_list);
   }
@@ -139,11 +137,9 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     for (int i = 1; i < 10000; ++i) ecs::Assign<Bar>(i);
     for (int i = 1; i < 10000; ++i) ecs::Assign<Baz>(i);
     int i = 1;
-    ecs::Enumerate<Foo, Bar, Baz>([&](auto& foo, auto& bar,
-                                      auto& baz) {
-      REQUIRE(foo->first == bar->first);
-      REQUIRE(foo->first == baz->first);
-      REQUIRE(foo->first == i);
+    ecs::Enumerate<Foo, Bar, Baz>([&](
+        ecs::Entity e, Foo& foo, Bar& bar, Baz& baz) {
+      REQUIRE(e == i);
       ++i;
     });
     REQUIRE(i == 10000);
@@ -166,9 +162,10 @@ TEST_CASE("Unsorted insertion and Enumerate", "[ecs]") {
 
   std::vector<ecs::Entity> entities;
   ecs::Enumerate<PositionComponent, VelocityComponent>([&]
-      (auto& position, auto& velocity) {
-    REQUIRE(position->first == velocity->first);
-    entities.push_back(position->first);
+      (ecs::Entity e,
+       PositionComponent& /*position*/,
+       VelocityComponent& /*velocity*/) {
+    entities.push_back(e);
   });
   REQUIRE(entities ==
       std::vector<ecs::Entity>({1, 2, 4, 7}));
@@ -185,12 +182,12 @@ TEST_CASE("Mutating components during Enumerate", "[ecs]") {
     ecs::Assign<Component>(i + 1, i);
   }
   // Increment each component so that it is 1 through 11.
-  ecs::Enumerate<Component>([](auto& comp) {
-    comp->second.n_++;
+  ecs::Enumerate<Component>([](ecs::Entity /*e*/, Component& comp) {
+    comp.n_++;
   });
   // Assert the above assumption is true (1 through 11).
   int i = 1;
-  ecs::Enumerate<Component>([&](auto& comp) {
-    REQUIRE(comp->second.n_ == i++);
+  ecs::Enumerate<Component>([&](ecs::Entity /*e*/, Component& comp) {
+    REQUIRE(comp.n_ == i++);
   });
 }

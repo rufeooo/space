@@ -15,6 +15,8 @@ namespace observer {
 template <class M>
 class Observer {
  public:
+  // You are responsible for calling Detach on the subject before the
+  // observer is destroyed.
   virtual ~Observer() = default;
   virtual void OnNotification(const M& m) = 0;
 };

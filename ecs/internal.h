@@ -33,9 +33,9 @@ bool AdvanceFirst(Tup&& tup) {
 }
 
 template <class Tup>
-bool AllEqual(Tup&& tup) {
+bool AllEqual(Tup&& tup, Entity& id) {
   bool all_equal = true;
-  Entity id = ENTITY_PLACEHOLDER;
+  id = ENTITY_PLACEHOLDER;
   util::StaticFor(tup, [&](auto i, auto*& p) {
     if (id == ENTITY_PLACEHOLDER) id = p->first;
     else if (id != p->first) all_equal = false;

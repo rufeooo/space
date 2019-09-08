@@ -1,5 +1,7 @@
 #pragma once
 
+#include "entity.h"
+
 namespace ecs {
 namespace util {
 
@@ -17,20 +19,21 @@ constexpr void StaticFor(std::tuple<T...>& t, Func&& f) {
 }
 
 template<typename F, typename Tuple, size_t... S>
-decltype(auto) ApplyTupleImpl(F&& fn, Tuple&& t,
+decltype(auto) ApplyTupleImpl(F&& fn, Entity entity, Tuple&& t,
                               std::index_sequence<S...>) {
-  return std::forward<F>(fn)(std::get<S>(std::forward<Tuple>(t))...);
+  return std::forward<F>(fn)(
+      entity,
+      (std::get<S>(std::forward<Tuple>(t))->second)...);
 }
 
 template<typename F, typename Tuple>
-decltype(auto) ApplyFromTuple(F&& fn,
-                              Tuple&& t) {
+decltype(auto) ApplyFromTuple(F&& fn, Entity entity, Tuple&& t) {
   std::size_t constexpr tSize
     = std::tuple_size<
       typename std::remove_reference<Tuple>::type>::value;
-  return ApplyTupleImpl(std::forward<F>(fn),
-                          std::forward<Tuple>(t),
-                          std::make_index_sequence<tSize>());
+  return ApplyTupleImpl(std::forward<F>(fn), entity,
+                        std::forward<Tuple>(t),
+                        std::make_index_sequence<tSize>());
 }
 
 
