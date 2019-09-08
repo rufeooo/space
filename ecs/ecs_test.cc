@@ -95,8 +95,7 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     });
     REQUIRE(entities == std::vector<ecs::Entity>({1, 3}));
     entities.clear();
-    ecs::Enumerate<Foo, Baz>([&](
-        ecs::Entity e, Foo& foo, Baz& baz) {
+    ecs::Enumerate<Foo, Baz>([&](ecs::Entity e, Foo& foo, Baz& baz) {
       entities.push_back(e);
     });
     REQUIRE(entities == std::vector<ecs::Entity>({1, 4}));
@@ -112,8 +111,7 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     for (int i = 1; i < 15000; ++i) ecs::Assign<Foo>(i);
     for (int i = 400; i < 2000; ++i) ecs::Assign<Bar>(i);
     int i = 0;
-    ecs::Enumerate<Foo, Bar>([&](
-        ecs::Entity e, Foo& foo, Bar& bar) {
+    ecs::Enumerate<Foo, Bar>([&](ecs::Entity e, Foo& foo, Bar& bar) {
       ++i;
     });
     REQUIRE(i == 1600);
@@ -125,8 +123,7 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     for (int i = 1; i < 50000; ++i) ecs::Assign<Foo>(i);
     for (int i : sparse_list) ecs::Assign<Bar>(i);
     std::vector<ecs::Entity> intersection_list;
-    ecs::Enumerate<Foo, Bar>([&](
-        ecs::Entity e, Foo& foo, Bar& bar) {
+    ecs::Enumerate<Foo, Bar>([&](ecs::Entity e, Foo& foo, Bar& bar) {
       intersection_list.push_back(e);
     });
     REQUIRE(sparse_list == intersection_list);
