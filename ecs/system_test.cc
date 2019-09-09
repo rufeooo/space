@@ -1,6 +1,3 @@
-#define CATCH_CONFIG_MAIN  // Make Catch provide main.
-
-#include <iostream>
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
