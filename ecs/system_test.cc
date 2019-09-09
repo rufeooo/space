@@ -69,7 +69,10 @@ struct Baz {};
 
 class MockFooBarBaz : public ecs::System<Foo, Bar, Baz> {
  public:
-  MOCK_METHOD(void, OnEntity, (ecs::Entity, Foo&, Bar&, Baz&), (override));
+  MOCK_METHOD(void,
+              OnEntity,
+              (ecs::Entity, Foo&, Bar&, Baz&),
+              (override));
 };
 
 class MockFooBar : public ecs::System<Foo, Bar> {
