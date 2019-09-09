@@ -1,10 +1,11 @@
 #define CATCH_CONFIG_MAIN  // Make Catch provide main.
 
 #include <iostream>
+#include "gmock/gmock.h"
 #include "gtest/gtest.h"
 
 #include "ecs.h"
-#include "mock_system.h"
+#include "system.h"
 
 struct PositionComponent {
   PositionComponent() = default;
@@ -60,6 +61,56 @@ TEST(SystemTest, HappyPathTest) {
   EXPECT_EQ(position_three->y_, 10);
   EXPECT_EQ(velocity_three->dx_, 10.0f);
   EXPECT_EQ(velocity_three->dy_, 10.0f);
+}
+
+struct Foo {};
+struct Bar {};
+struct Baz {};
+
+class MockFooBarBaz : public ecs::System<Foo, Bar, Baz> {
+ public:
+  MOCK_METHOD(void, OnEntity, (ecs::Entity, Foo&, Bar&, Baz&), (override));
+};
+
+class MockFooBar : public ecs::System<Foo, Bar> {
+ public:
+  MOCK_METHOD(void, OnEntity, (ecs::Entity, Foo&, Bar&), (override));
+};
+
+class MockFooBaz : public ecs::System<Foo, Baz> {
+ public:
+  MOCK_METHOD(void, OnEntity, (ecs::Entity, Foo&, Baz&), (override));
+};
+
+
+TEST(SystemTest, ExpectCorrectRunCounts) {
+  using ::testing::Eq;
+  using ::testing::_;
+  // Entity 1 has all the components.
+  ecs::Assign<Foo>(1);
+  ecs::Assign<Bar>(1);
+  ecs::Assign<Baz>(1);
+  // Entity 2 has component Foo and Bar.
+  ecs::Assign<Foo>(2);
+  ecs::Assign<Bar>(2);
+  // Entity 3 has components Foo and Bar.
+  ecs::Assign<Foo>(3);
+  ecs::Assign<Bar>(3);
+  // Entity 4 has components Foo and Baz.
+  ecs::Assign<Foo>(4);
+  ecs::Assign<Baz>(4);
+  MockFooBarBaz foo_bar_baz_mock;
+  MockFooBar foo_bar_mock;
+  MockFooBaz foo_baz_mock;
+  // (Foo, Bar, Baz) called once with entity 1 only.
+  EXPECT_CALL(foo_bar_baz_mock, OnEntity(Eq(1), _, _, _)).Times(1);
+  foo_bar_baz_mock.Run();
+  // (Foo, Bar) called twice with entity 1, 2 and 3 .
+  EXPECT_CALL(foo_bar_mock, OnEntity(_, _, _)).Times(3);
+  foo_bar_mock.Run();
+  // (Foo, Baz) called once with entity 1 and 4.
+  EXPECT_CALL(foo_baz_mock, OnEntity(_, _, _)).Times(2);
+  foo_baz_mock.Run();
 }
 
 int main(int argc, char** argv) {
