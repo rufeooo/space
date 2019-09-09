@@ -108,11 +108,14 @@ TEST(SystemTest, ExpectCorrectRunCounts) {
   // (Foo, Bar, Baz) called once with entity 1 only.
   EXPECT_CALL(foo_bar_baz_mock, OnEntity(Eq(1), _, _, _)).Times(1);
   foo_bar_baz_mock.Run();
-  // (Foo, Bar) called twice with entity 1, 2 and 3 .
-  EXPECT_CALL(foo_bar_mock, OnEntity(_, _, _)).Times(3);
+  // (Foo, Bar) called three times with entity 1, 2 and 3 .
+  EXPECT_CALL(foo_bar_mock, OnEntity(Eq(1), _, _));
+  EXPECT_CALL(foo_bar_mock, OnEntity(Eq(2), _, _));
+  EXPECT_CALL(foo_bar_mock, OnEntity(Eq(3), _, _));
   foo_bar_mock.Run();
-  // (Foo, Baz) called once with entity 1 and 4.
-  EXPECT_CALL(foo_baz_mock, OnEntity(_, _, _)).Times(2);
+  // (Foo, Baz) called twice with entity 1 and 4.
+  EXPECT_CALL(foo_baz_mock, OnEntity(Eq(1), _, _));
+  EXPECT_CALL(foo_baz_mock, OnEntity(Eq(4), _, _));
   foo_baz_mock.Run();
 }
 
