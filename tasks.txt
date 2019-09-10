@@ -1,0 +1,13 @@
+Rendering
+[] Create interface for rendering stuff - I think this should be pretty
+   simple to start. Implements some draw calls -
+      [] DrawLine(LineComponent)
+      [] DrawTriangle(TriangleComponent)
+      
+
+Testing
+[] Use gtest in ecs_test instead of catch.
+[] Use gtest in search_test instead of catch.
+[] Use gtest in math_test instead of catch.
+[] Use gtest in game_test instead of catch.
+[] Remove catch submodule.
