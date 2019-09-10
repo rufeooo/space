@@ -52,6 +52,9 @@ TEST(SystemTest, HappyPathTest) {
   EXPECT_EQ(position_one->y_, 30);
   EXPECT_EQ(velocity_one->dx_, 2.0f);
   EXPECT_EQ(velocity_one->dy_, 6.0f);
+  auto* position_two = ecs::Get<PositionComponent>(2);
+  EXPECT_EQ(position_two->x_ == 10);
+  EXPECT_EQ(position_two->y_ == 15);
   auto* position_three = ecs::Get<PositionComponent>(3);
   auto* velocity_three = ecs::Get<VelocityComponent>(3);
   EXPECT_EQ(position_three->x_, 10);
