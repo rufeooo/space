@@ -8,7 +8,6 @@ set_target_properties(ecs_test PROPERTIES FOLDER ECS)
 
 set(system_test_srcs
     "ecs.h"
-    "mock_system.h"
     "system.h"
     "system_test.cc")
 
