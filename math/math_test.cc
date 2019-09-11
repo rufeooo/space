@@ -18,6 +18,23 @@ TEST_CASE("Add Vectors", "[vec]") {
   a += b;
   REQUIRE(a.x() == 12);
   REQUIRE(a.y() == 6);
+  math::Vec3i aa(3, 4, 9);
+  math::Vec3i bb(9, 2, 5);
+  REQUIRE(aa.x() == 3);
+  REQUIRE(aa.y() == 4);
+  REQUIRE(aa.z() == 9);
+  REQUIRE(bb.x() == 9);
+  REQUIRE(bb.y() == 2);
+  REQUIRE(bb.z() == 5);
+  auto cc = aa + bb;
+  REQUIRE(cc.x() == 12);
+  REQUIRE(cc.y() == 6);
+  REQUIRE(cc.z() == 14);
+  aa += bb;
+  REQUIRE(aa.x() == 12);
+  REQUIRE(aa.y() == 6);
+  REQUIRE(aa.z() == 14);
+
 }
 
 TEST_CASE("Subtract Vectors", "[vec]") {

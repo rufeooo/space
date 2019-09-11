@@ -33,6 +33,8 @@ bool Renderer::Start(int window_width, int window_height,
   const GLubyte* version = glGetString(GL_VERSION);
   std::cout << renderer << std::endl;
   std::cout << version << std::endl;
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
   return true;
 }
 

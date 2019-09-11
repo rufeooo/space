@@ -157,9 +157,77 @@ class Vec2 : public Vec<T, 2> {
   T& y() { return this->data_[1]; };
 };
 
+template <typename T>
+class Vec3 : public Vec<T, 3> {
+ public:
+  Vec3() {
+    this->data_[0] = T(0);
+    this->data_[1] = T(0);
+    this->data_[2] = T(0);
+  }
+
+  Vec3(const T& x, const T& y, const T& z) {
+    this->data_[0] = x;
+    this->data_[1] = y;
+    this->data_[2] = z;
+  }
+
+  Vec3(const Vec<T, 3>& v) {
+    this->data_ = v.Data();
+  }
+
+  // Following overloads required so Vec2<T> can be properly capture
+  // with auto.
+  //
+  // Example -
+  //
+  // math::Vec2<int> a;
+  // math::Vec2<int> b;
+  // auto c = a + b; c = a - b; etc.
+  //
+  // c will be captured as type Vec<int, 2> instead of Vec2<int> 
+  // without these overloads thereby ruining the point of these
+  // convenience classes.
+
+  Vec3<T> operator+(const Vec3<T>& rhs) {
+    Vec3<T> t = *this;
+    t += rhs;
+    return t;
+  }
+
+  Vec3<T> operator-(const Vec3<T>& rhs) {
+    Vec3<T> t = *this;
+    t -= rhs;
+    return t;
+  }
+
+  Vec3<T> operator*(const T& rhs) {
+    Vec3<T> t = *this;
+    t *= rhs;
+    return t;
+  }
+
+  Vec3<T> operator/(const T& rhs) {
+    Vec3<T> t = *this;
+    t /= rhs;
+    return t;
+  }
+
+  T& x() { return this->data_[0]; };
+  T& y() { return this->data_[1]; };
+  T& z() { return this->data_[2]; };
+};
+
+
 using Vec2i = Vec2<int>;
 using Vec2u = Vec2<uint32_t>;
 using Vec2f = Vec2<float>;
 using Vec2d = Vec2<double>;
+
+using Vec3i = Vec3<int>;
+using Vec3u = Vec3<uint32_t>;
+using Vec3f = Vec3<float>;
+using Vec3d = Vec3<double>;
+
 
 }
