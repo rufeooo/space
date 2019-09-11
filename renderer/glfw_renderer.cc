@@ -38,4 +38,12 @@ bool Renderer::Start(int window_width, int window_height,
   return true;
 }
 
+void Renderer::Draw(const component::LineComponent& component) {
+  std::cout << "Draw Line." << std::endl;
+}
+
+void Renderer::Draw(const component::TriangleComponent& component) {
+  std::cout << "Draw Triangle." << std::endl;
+}
+
 }  // renderer
