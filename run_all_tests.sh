@@ -22,3 +22,6 @@ make game_test
 
 make observer_test
 ./observer/observer_test
+
+make gl_shader_cache_test
+./renderer/gl_shader_cache_test

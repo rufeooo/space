@@ -38,7 +38,11 @@ bool GLShaderCache::CompileShader(
   const char* c_str = shader_src.c_str();
   glShaderSource(shader_reference, 1, &c_str, NULL);
   glCompileShader(shader_reference);
-  // TODO: Check for compilation errors.
+  int params = -1;
+  glGetShaderiv(shader_reference, GL_COMPILE_STATUS, &params);
+  if (params != GL_TRUE) {
+    return false;
+  }
   shader_reference_map_[shader_name] = shader_reference;
   compiled_shader_sources_.insert(shader_src);
   return true;
