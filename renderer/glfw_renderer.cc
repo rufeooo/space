@@ -1,13 +1,15 @@
-#include "renderer.h"
+#include "glfw_renderer.h"
 
 #include <iostream>
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "shape_verts.h"
+
 namespace renderer {
 
-bool Renderer::Start(int window_width, int window_height,
+bool GLFWRenderer::Start(int window_width, int window_height,
                      const std::string& window_title) {
   if (!glfwInit()) {
     std::cerr << "Cound not start GLFW3" << std::endl;
@@ -38,11 +40,28 @@ bool Renderer::Start(int window_width, int window_height,
   return true;
 }
 
-void Renderer::Draw(const component::LineComponent& component) {
+bool GLFWRenderer::Setup() {
+  // Create VBO.
+  GLuint vbo = 0;
+  glGenBuffers(1, &vbo);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), kTriangleVerts,
+               GL_STATIC_DRAW);
+  // Create VAO bind vbo to it.
+  GLuint vao = 0;
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
+  glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, vbo);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  return true;
+}
+
+void GLFWRenderer::Draw(const component::LineComponent& component) {
   std::cout << "Draw Line." << std::endl;
 }
 
-void Renderer::Draw(const component::TriangleComponent& component) {
+void GLFWRenderer::Draw(const component::TriangleComponent& component) {
   std::cout << "Draw Triangle." << std::endl;
 }
 

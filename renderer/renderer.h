@@ -10,11 +10,14 @@ namespace renderer {
 class Renderer {
  public:
   Renderer() = default;
-  bool Start(
+  virtual ~Renderer() = default;
+  virtual bool Start(
     int window_width, int window_height,
-    const std::string& window_title);
-  void Draw(const component::LineComponent& component);
-  void Draw(const component::TriangleComponent& component);
+    const std::string& window_title) = 0;
+  virtual bool Setup() = 0;
+
+  virtual void Draw(const component::LineComponent& component) = 0;
+  virtual void Draw(const component::TriangleComponent& component) = 0;
 };
 
 }  // renderer

@@ -1,5 +1,6 @@
 set(glfw_renderer_srcs
     "renderer.h"
+    "glfw_renderer.h"
     "glfw_renderer.cc")
 
 include_directories(${CMAKE_SOURCE_DIR})

@@ -1,10 +1,11 @@
 #include <iostream>
 
+#include "components/rendering/line_component.h"
 #include "components/rendering/triangle_component.h"
-#include "renderer/renderer.h"
+#include "renderer/glfw_renderer.h"
 
 int main() {
-  renderer::Renderer glfw_renderer;
+  renderer::GLFWRenderer glfw_renderer;
   glfw_renderer.Start(480, 680, "Test");
   component::TriangleComponent triangle;
   glfw_renderer.Draw(triangle);
