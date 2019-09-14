@@ -8,6 +8,9 @@ source run_constants.sh
 make ecs_test
 ./ecs/ecs_test
 
+make system_test
+./ecs/system_test
+
 make search_test
 ./search/search_test
 
@@ -16,3 +19,6 @@ make math_test
 
 make game_test
 ./game/game_test
+
+make observer_test
+./observer/observer_test
