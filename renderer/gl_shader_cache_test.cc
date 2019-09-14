@@ -74,6 +74,19 @@ TEST_F(GLShaderCacheTest, HappyPathShaderCompilationAndLink) {
       kValidProgramName, &program_ref));
 }
 
+TEST_F(GLShaderCacheTest,
+       ErrorOnRecompilingSameShaderSourceDifferentName) {
+  GLShaderCache shader_cache;
+  ASSERT_TRUE(shader_cache.CompileShader(
+      kValidVertexShaderName,
+      ShaderType::VERTEX,
+      kValidVertexShaderSrc));
+  ASSERT_FALSE(shader_cache.CompileShader(
+      "different_name",
+      ShaderType::VERTEX,
+      kValidVertexShaderSrc));
+}
+
 }
 
 int main(int argc, char** argv) {

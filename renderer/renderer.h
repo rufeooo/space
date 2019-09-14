@@ -14,7 +14,8 @@ class Renderer {
   virtual bool Start(
     int window_width, int window_height,
     const std::string& window_title) = 0;
-
+  virtual bool SwapBuffers() = 0;
+  virtual bool HasStopped() const = 0;
   virtual void Draw(const component::LineComponent& component) = 0;
   virtual void Draw(const component::TriangleComponent& component) = 0;
 };

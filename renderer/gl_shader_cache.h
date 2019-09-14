@@ -4,6 +4,7 @@
 
 #include <glad/glad.h>
 #include <unordered_map>
+#include <unordered_set>
 
 namespace renderer {
 
@@ -31,6 +32,8 @@ class GLShaderCache : public ShaderCache {
  private:
   std::unordered_map<std::string, uint32_t> shader_reference_map_;
   std::unordered_map<std::string, uint32_t> program_reference_map_;
+  // A set of all shader sources that have been compiled.
+  std::unordered_set<std::string> compiled_shader_sources_;
 };
 
 }  // renderer

@@ -18,8 +18,16 @@ bool GLShaderCache::CompileShader(
        const std::string& shader_name,
        ShaderType shader_type,
        const std::string& shader_src) {
+  // Don't compile a shader with the same name or the original one will
+  // be orphaned.
   if (shader_reference_map_.find(shader_name) !=
       shader_reference_map_.end()) {
+    return false;
+  }
+  // Trying to compile is likely an accident from the user. It would
+  // be good to tell them that.
+  if (compiled_shader_sources_.find(shader_src) !=
+      compiled_shader_sources_.end()) {
     return false;
   }
   GLenum gl_shader_type = ToGLEnum(shader_type);
@@ -32,6 +40,7 @@ bool GLShaderCache::CompileShader(
   glCompileShader(shader_reference);
   // TODO: Check for compilation errors.
   shader_reference_map_[shader_name] = shader_reference;
+  compiled_shader_sources_.insert(shader_src);
   return true;
 }
 
