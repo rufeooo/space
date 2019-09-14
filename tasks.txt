@@ -3,7 +3,7 @@ Rendering
    simple to start. Implements some draw calls -
       [] DrawLine(LineComponent)
       [] DrawTriangle(TriangleComponent)
-      
+[x] Create cache for compiling / linking and saving shader / program refs.      
 
 Testing
 [] Use gtest in ecs_test instead of catch.
@@ -11,3 +11,8 @@ Testing
 [] Use gtest in math_test instead of catch.
 [] Use gtest in game_test instead of catch.
 [] Remove catch submodule.
+
+Misc
+[] Return meaningful status objects from calls where important. I
+return booleans now but it'd be useful to return some sort of status
+object that can give more information on what went wrong.

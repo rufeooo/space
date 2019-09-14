@@ -28,11 +28,11 @@ int main() {
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
   GLFWwindow* window = glfwCreateWindow(
       640, 480, "Hello Triangle", NULL, NULL);
-  if (!window) {
+   if (!window) {
     std::cout << "Failed to open window with GLFW3" << std::endl;
     return 1;
   }
-  glfwMakeContextCurrent(window);
+  glfwMakeContextCurrent(window); // glad must be called after this.
   if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
     std::cout << "Failed to initialize OpenGL context" << std::endl;
     return 1;

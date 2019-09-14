@@ -49,3 +49,5 @@ building and using a shader program -
   8. call glGetUniformLocation to get the unique location of the variables used in the shaders
   9. call glUseProgram to switch to your shader before calling.
   10. glUniform4f to assign an initial color to your fragment shader.
+
+

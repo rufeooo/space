@@ -10,7 +10,7 @@
 namespace renderer {
 
 bool GLFWRenderer::Start(int window_width, int window_height,
-                     const std::string& window_title) {
+                         const std::string& window_title) {
   if (!glfwInit()) {
     std::cerr << "Cound not start GLFW3" << std::endl;
     return false;
@@ -37,23 +37,6 @@ bool GLFWRenderer::Start(int window_width, int window_height,
   std::cout << version << std::endl;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
-  return true;
-}
-
-bool GLFWRenderer::Setup() {
-  // Create VBO.
-  GLuint vbo = 0;
-  glGenBuffers(1, &vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), kTriangleVerts,
-               GL_STATIC_DRAW);
-  // Create VAO bind vbo to it.
-  GLuint vao = 0;
-  glGenVertexArrays(1, &vao);
-  glBindVertexArray(vao);
-  glEnableVertexAttribArray(0);
-  glBindBuffer(GL_ARRAY_BUFFER, vbo);
-  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
   return true;
 }
 
