@@ -76,11 +76,37 @@ TEST_F(GLShaderCacheTest, HappyPathShaderCompilationAndLink) {
       kValidVertexShaderName, &shader_ref));
   ASSERT_TRUE(shader_cache.GetShaderReference(
       kValidFragmentShaderName, &shader_ref));
+  // Link program but do not validate it as it would fail. The program
+  // does not have any bound vertex array objects which would cause
+  // validation to fail.
   ASSERT_TRUE(shader_cache.LinkProgram(
       kValidProgramName,
-      {kValidVertexShaderName, kValidFragmentShaderName}));
+      {kValidVertexShaderName, kValidFragmentShaderName},
+      false));
   uint32_t program_ref;
   ASSERT_TRUE(shader_cache.GetProgramReference(
+      kValidProgramName, &program_ref));
+}
+
+TEST_F(GLShaderCacheTest, LinkingProgramFailsDueToUnboundVAO) {
+  GLShaderCache shader_cache;
+  ASSERT_TRUE(shader_cache.CompileShader(
+      kValidVertexShaderName,
+      ShaderType::VERTEX,
+      kValidVertexShaderSrc));
+  ASSERT_TRUE(shader_cache.CompileShader(
+      kValidFragmentShaderName,
+      ShaderType::FRAGMENT,
+      kValidFragmentShaderSrc));
+  // Link program but do not validate it as it would fail. The program
+  // does not have any bound vertex array objects which would cause
+  // validation to fail.
+  ASSERT_FALSE(shader_cache.LinkProgram(
+      kValidProgramName,
+      {kValidVertexShaderName, kValidFragmentShaderName},
+      true));
+  uint32_t program_ref;
+  ASSERT_FALSE(shader_cache.GetProgramReference(
       kValidProgramName, &program_ref));
 }
 
@@ -117,7 +143,8 @@ TEST_F(GLShaderCacheTest, ShaderProgramInfo) {
       kValidFragmentShaderSrc));
   ASSERT_TRUE(shader_cache.LinkProgram(
       kValidProgramName,
-      {kValidVertexShaderName, kValidFragmentShaderName}));
+      {kValidVertexShaderName, kValidFragmentShaderName},
+      false));
   ASSERT_EQ(
       shader_cache.GetProgramInfo(kValidProgramName),
       "Shader program: valid_fragment_shader Reference: 3\n"

@@ -21,7 +21,8 @@ class GLShaderCache : public ShaderCache {
 
   bool LinkProgram(
       const std::string& program_name,
-      const std::vector<std::string>& shader_names) override;
+      const std::vector<std::string>& shader_names,
+      bool validate_program) override;
 
   bool UseProgram(const std::string& program_name) override;
 
@@ -29,6 +30,8 @@ class GLShaderCache : public ShaderCache {
       const std::string& program_name,
       uint32_t* program_reference) override;
 
+  // TODO This would probably be nice returned as a ProgramInfo struct
+  // and stringified by a helper function in gl_utils.
   std::string GetProgramInfo(const std::string& program_name) override;
 
  private:
