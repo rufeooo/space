@@ -98,9 +98,7 @@ TEST_F(GLShaderCacheTest, LinkingProgramFailsDueToUnboundVAO) {
       kValidFragmentShaderName,
       ShaderType::FRAGMENT,
       kValidFragmentShaderSrc));
-  // Link program but do not validate it as it would fail. The program
-  // does not have any bound vertex array objects which would cause
-  // validation to fail.
+  // Program fails validate due to unbound VAO.
   ASSERT_FALSE(shader_cache.LinkProgram(
       kValidProgramName,
       {kValidVertexShaderName, kValidFragmentShaderName},
