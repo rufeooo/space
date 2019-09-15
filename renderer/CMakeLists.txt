@@ -3,6 +3,8 @@ set(glfw_renderer_srcs
     "shader_cache.h"
     "gl_shader_cache.h"
     "gl_shader_cache.cc"
+    "gl_utils.h"
+    "gl_utils.cc"
     "glfw_renderer.h"
     "glfw_renderer.cc")
 

@@ -1,7 +1,11 @@
 #include "gl_shader_cache.h"
 
+#include <cstdio>
 #include <iostream>
+#include <sstream>
 #include <glad/glad.h>
+
+#include "gl_utils.h"
 
 namespace renderer {
 
@@ -25,8 +29,7 @@ std::string GetShaderInfoLog(uint32_t shader_reference) {
       shader_reference, log_length, &actual_length, log);
   return "Shader Log for reference: " +
          std::to_string(shader_reference) +
-         " log: " +
-         log;
+         " log: " + log;
 }
 
 std::string GetProgramInfoLog(uint32_t program_reference) {
@@ -37,8 +40,7 @@ std::string GetProgramInfoLog(uint32_t program_reference) {
       program_reference, log_length, &actual_length, log);
   return "Program Log for reference: " +
          std::to_string(program_reference) +
-         " log: " +
-         log;
+         " log: " + log;
 }
 
 }  // anonymous
@@ -135,6 +137,79 @@ bool GLShaderCache::GetProgramReference(
   }
   *program_reference = found->second;
   return true;
+}
+
+std::string GLShaderCache::GetProgramInfo(
+    const std::string& program_name) {
+  uint32_t program_reference;
+  if (!GetProgramReference(program_name, &program_reference)) {
+    return "Program does not exist.";
+  }
+  std::stringstream ss;
+  ss << "Shader program: " << program_name
+     << " Reference: " << program_reference << std::endl;
+  int params = -1;
+  glGetProgramiv(program_reference, GL_LINK_STATUS, &params);
+  ss << "GL_LINK_STATUS = " << params << std::endl;
+  glGetProgramiv(program_reference, GL_ATTACHED_SHADERS, &params);
+  ss << "GL_ATTACHED_SHADERS = " << params << std::endl;
+  glGetProgramiv (program_reference, GL_ACTIVE_ATTRIBUTES, &params);
+  ss << "GL_ACTIVE_ATTRIBUTES = " << params << std::endl;
+  for (GLuint i = 0; i < (GLuint)params; i++) {
+    char name[64];
+    int max_length = 64;
+    int actual_length = 0;
+    int size = 0;
+    GLenum type;
+    glGetActiveAttrib(
+        program_reference, i, max_length, &actual_length, &size,
+        &type, name);
+    if (size > 1) {
+      for (int j = 0; j < size; j++) {
+        char long_name[64];
+        std::sprintf(long_name, "%s[%i]", name, j);
+        int location = glGetAttribLocation(
+            program_reference, long_name);
+        ss << i << ") type: " << GLTypeToString(type)
+           << " name: " << long_name
+           << " location: " << location << std::endl;
+      }
+    } else {
+      int location = glGetAttribLocation(program_reference, name);
+      ss << i << ") type: " << GLTypeToString(type)
+         << " name: " << name
+         << " location: " << location << std::endl;
+    }
+  }
+  glGetProgramiv(program_reference, GL_ACTIVE_UNIFORMS, &params);
+  ss << "GL_ACTIVE_UNIFORMS = " << params << std::endl;
+  for (GLuint i = 0; i < (GLuint)params; i++) {
+    char name[64];
+    int max_length = 64;
+    int actual_length = 0;
+    int size = 0;
+    GLenum type;
+    glGetActiveUniform(
+        program_reference, i, max_length, &actual_length, &size,
+        &type, name);
+    if (size > 1) {
+      for (int j = 0; j < size; j++) {
+       char long_name[64];
+       std::sprintf(long_name, "%s[%i]", name, j);
+       int location = glGetUniformLocation(
+           program_reference, long_name);
+       ss << i << ") type: " << GLTypeToString(type)
+          << " name: " << long_name
+          << " location: " << location << std::endl;
+      }
+    } else {
+      int location = glGetUniformLocation(program_reference, name);
+      ss << i << ") type: " << GLTypeToString(type)
+         << " name: " << name
+         << " location: " << location << std::endl;
+    }
+  }
+  return ss.str();
 }
 
 }  // renderer

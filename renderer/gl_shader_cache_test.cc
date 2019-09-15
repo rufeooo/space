@@ -105,6 +105,29 @@ TEST_F(GLShaderCacheTest, ErrorCompilingInvalidShaderSource) {
       kInvalidVertexShaderSrc));
 }
 
+TEST_F(GLShaderCacheTest, ShaderProgramInfo) {
+  GLShaderCache shader_cache;
+  ASSERT_TRUE(shader_cache.CompileShader(
+      kValidVertexShaderName,
+      ShaderType::VERTEX,
+      kValidVertexShaderSrc));
+  ASSERT_TRUE(shader_cache.CompileShader(
+      kValidFragmentShaderName,
+      ShaderType::FRAGMENT,
+      kValidFragmentShaderSrc));
+  ASSERT_TRUE(shader_cache.LinkProgram(
+      kValidProgramName,
+      {kValidVertexShaderName, kValidFragmentShaderName}));
+  ASSERT_EQ(
+      shader_cache.GetProgramInfo(kValidProgramName),
+      "Shader program: valid_fragment_shader Reference: 3\n"
+      "GL_LINK_STATUS = 1\n"
+      "GL_ATTACHED_SHADERS = 2\n"
+      "GL_ACTIVE_ATTRIBUTES = 1\n"
+      "0) type: vec3 name: vp location: 0\n"
+      "GL_ACTIVE_UNIFORMS = 0\n");
+}
+
 }
 
 int main(int argc, char** argv) {

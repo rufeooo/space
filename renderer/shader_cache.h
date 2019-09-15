@@ -12,6 +12,8 @@ enum class ShaderType {
 
 class ShaderCache {
  public:
+  virtual ~ShaderCache() = default;
+
   virtual bool CompileShader(
       const std::string& shader_name,
       ShaderType shader_type,
@@ -30,6 +32,9 @@ class ShaderCache {
   virtual bool GetProgramReference(
       const std::string& program_name,
       uint32_t* program_reference) = 0;
+
+  virtual std::string GetProgramInfo(
+      const std::string& program_name) = 0;
 };
 
 }
