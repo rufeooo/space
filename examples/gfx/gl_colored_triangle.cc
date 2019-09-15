@@ -49,6 +49,11 @@ int main() {
   std::cout << version << std::endl;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+
+  glEnable(GL_CULL_FACE); // cull face
+  glCullFace(GL_BACK); // cull back face
+  glFrontFace(GL_CW); // GL_CCW for counter clock-wise
+
   GLfloat points[] = {
     0.0f, 0.5f, 0.0f,
     0.5f, -0.5f, 0.0f,

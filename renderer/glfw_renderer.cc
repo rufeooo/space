@@ -37,6 +37,12 @@ bool GLFWRenderer::Start(int window_width, int window_height,
   std::cout << version << std::endl;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+
+  // Should these be enabled?
+  //glEnable(GL_CULL_FACE);
+  //glCullFace(GL_BACK);
+  //glFrontFace(GL_CW);
+
   return true;
 }
 

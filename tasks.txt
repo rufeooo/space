@@ -12,7 +12,7 @@ that they are in the program before setting them.
 Testing
 [] Use gtest in ecs_test instead of catch.
 [] Use gtest in search_test instead of catch.
-[] Use gtest in math_test instead of catch.
+[x] Use gtest in math_test instead of catch.
 [] Use gtest in game_test instead of catch.
 [] Remove catch submodule.
 
