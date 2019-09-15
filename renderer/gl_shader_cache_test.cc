@@ -66,7 +66,7 @@ TEST_F(GLShaderCacheTest, HappyPathShaderCompilationAndLink) {
       kValidVertexShaderName, &shader_ref));
   ASSERT_TRUE(shader_cache.GetShaderReference(
       kValidFragmentShaderName, &shader_ref));
-  ASSERT_TRUE(shader_cache.LinkShaders(
+  ASSERT_TRUE(shader_cache.LinkProgram(
       kValidProgramName,
       {kValidVertexShaderName, kValidFragmentShaderName}));
   uint32_t program_ref;

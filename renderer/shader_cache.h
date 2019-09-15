@@ -21,7 +21,7 @@ class ShaderCache {
       const std::string& shader_name,
       uint32_t* shader_reference) = 0;
 
-  virtual bool LinkShaders(
+  virtual bool LinkProgram(
       const std::string& program_name,
       const std::vector<std::string>& shader_names) = 0;
 

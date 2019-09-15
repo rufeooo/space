@@ -19,7 +19,7 @@ class GLShaderCache : public ShaderCache {
       const std::string& shader_name,
       uint32_t* shader_reference) override;
 
-  bool LinkShaders(
+  bool LinkProgram(
       const std::string& program_name,
       const std::vector<std::string>& shader_names) override;
 

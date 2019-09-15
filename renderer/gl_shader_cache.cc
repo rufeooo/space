@@ -1,8 +1,11 @@
 #include "gl_shader_cache.h"
 
+#include <iostream>
 #include <glad/glad.h>
 
 namespace renderer {
+
+namespace {
 
 GLenum ToGLEnum(ShaderType shader_type) {
   switch (shader_type) {
@@ -13,6 +16,32 @@ GLenum ToGLEnum(ShaderType shader_type) {
   }
   return -1;
 }
+
+std::string GetShaderInfoLog(uint32_t shader_reference) {
+  int log_length = 4096;
+  int actual_length = 0;
+  char log[log_length];
+  glGetShaderInfoLog(
+      shader_reference, log_length, &actual_length, log);
+  return "Shader Log for reference: " +
+         std::to_string(shader_reference) +
+         " log: " +
+         log;
+}
+
+std::string GetProgramInfoLog(uint32_t program_reference) {
+  int log_length = 4096;
+  int actual_length = 0;
+  char log[log_length];
+  glGetProgramInfoLog(
+      program_reference, log_length, &actual_length, log);
+  return "Program Log for reference: " +
+         std::to_string(program_reference) +
+         " log: " +
+         log;
+}
+
+}  // anonymous
 
 bool GLShaderCache::CompileShader(
        const std::string& shader_name,
@@ -41,6 +70,8 @@ bool GLShaderCache::CompileShader(
   int params = -1;
   glGetShaderiv(shader_reference, GL_COMPILE_STATUS, &params);
   if (params != GL_TRUE) {
+    // TODO: switch to LOG
+    std::cout << GetShaderInfoLog(shader_reference) << std::endl;
     return false;
   }
   shader_reference_map_[shader_name] = shader_reference;
@@ -60,23 +91,30 @@ bool GLShaderCache::GetShaderReference(
 }
 
 
-bool GLShaderCache::LinkShaders(
+bool GLShaderCache::LinkProgram(
     const std::string& program_name,
     const std::vector<std::string>& shader_names) {
   if (program_reference_map_.find(program_name) !=
       program_reference_map_.end()) {
     return false;
   }
-  GLuint shader_program = glCreateProgram();
+  GLuint program_reference = glCreateProgram();
   for (const auto& shader : shader_names) {
     uint32_t shader_reference;
     if (!GetShaderReference(shader, &shader_reference)) {
       return false;
     }
-    glAttachShader(shader_program, shader_reference);
+    glAttachShader(program_reference, shader_reference);
   }
-  glLinkProgram(shader_program);
-  program_reference_map_[program_name] = shader_program;
+  glLinkProgram(program_reference);
+  int params = -1;
+  glGetProgramiv(program_reference, GL_LINK_STATUS, &params);
+  if (params != GL_TRUE) {
+    // TODO: switch to LOG
+    std::cout << GetProgramInfoLog(program_reference) << std::endl;
+    return false;
+  }
+  program_reference_map_[program_name] = program_reference;
   return true;
 }
 
