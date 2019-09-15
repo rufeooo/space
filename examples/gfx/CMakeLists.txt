@@ -1,6 +1,9 @@
 set(gl_version_srcs
     "gl_version.cc")
 
+set(gl_colored_triangle_srcs
+    "gl_colored_triangle.cc")
+
 set(gl_triangle_srcs
     "gl_triangle.cc")
 
@@ -17,5 +20,6 @@ function(create_gfx_example name srcs)
 endfunction(create_gfx_example)
 
 create_gfx_example(gl_version gl_version_srcs)
+create_gfx_example(gl_colored_triangle gl_colored_triangle_srcs)
 create_gfx_example(gl_triangle gl_triangle_srcs)
 create_gfx_example(gl_log gl_log_srcs)
