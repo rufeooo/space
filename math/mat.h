@@ -30,6 +30,10 @@ class Mat {
     return data_[n * M + m];
   }
 
+  T& operator[](size_t i) {
+    return data_[i];
+  }
+
   size_t rows() const { return M; }
   size_t cols() const { return N; }
 
