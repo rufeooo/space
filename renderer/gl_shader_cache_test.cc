@@ -15,6 +15,16 @@ constexpr const char* kValidVertexShaderSrc =
 
 constexpr const char* kValidVertexShaderName = "valid_vertex_shader";
 
+constexpr const char* kInvalidVertexShaderSrc =
+    "#version 410\n"
+    "in vec3 vp;"
+    "void main() {"
+    "  gl_Position = vec4(vp, 1.0)" // Syntax error - missing ;
+    "}";
+
+constexpr const char* kInvalidVertexShaderName
+    = "invalid_vertex_shader";
+
 constexpr const char* kValidFragmentShaderSrc =
     "#version 410\n"
     "out vec4 frag_colour;"
@@ -85,6 +95,14 @@ TEST_F(GLShaderCacheTest,
       "different_name",
       ShaderType::VERTEX,
       kValidVertexShaderSrc));
+}
+
+TEST_F(GLShaderCacheTest, ErrorCompilingInvalidShaderSource) {
+  GLShaderCache shader_cache;
+  ASSERT_FALSE(shader_cache.CompileShader(
+      kInvalidVertexShaderName,
+      ShaderType::VERTEX,
+      kInvalidVertexShaderSrc));
 }
 
 }

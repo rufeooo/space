@@ -90,7 +90,6 @@ bool GLShaderCache::GetShaderReference(
   return true;
 }
 
-
 bool GLShaderCache::LinkProgram(
     const std::string& program_name,
     const std::vector<std::string>& shader_names) {
