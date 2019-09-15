@@ -4,6 +4,10 @@ Rendering
       [] DrawLine(LineComponent)
       [] DrawTriangle(TriangleComponent)
 [x] Create cache for compiling / linking and saving shader / program refs.      
+[] Create a gl_program abstraction. This will take a validly linked program
+from gl_shader_cache and load its program info through GetProgramInfo.
+It will expose the calls to set attributes in the shader and will check
+that they are in the program before setting them.
 
 Testing
 [] Use gtest in ecs_test instead of catch.
