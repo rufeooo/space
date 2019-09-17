@@ -29,7 +29,7 @@ class Game {
   std::chrono::microseconds game_time() const { return game_time_; }
  private:
   std::chrono::microseconds microseconds_per_update_ = 
-    std::chrono::microseconds(10000);
+      std::chrono::microseconds(10000);
   std::chrono::microseconds game_time_;
   std::chrono::microseconds real_time_;
   bool paused_ = false;
