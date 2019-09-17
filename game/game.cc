@@ -9,15 +9,17 @@ inline std::chrono::microseconds Now() {
       std::chrono::high_resolution_clock::now().time_since_epoch());
 }
 
-void Game::Run(uint64_t loop_count) {
-  Initialize();
+bool Game::Run(uint64_t loop_count) {
+  if (!Initialize()) {
+    return false;
+  }
   std::chrono::microseconds previous = Now();
   std::chrono::microseconds lag(0);
   game_updates_ = 0;
   game_time_ = std::chrono::microseconds(0);
   std::chrono::microseconds current, elapsed;
   while (loop_count == 0 || game_updates_ < loop_count) {
-    if (end_) return;
+    if (end_) return true;
     current = Now();
     elapsed = current - previous;
     if (!paused_) lag += elapsed;
@@ -32,8 +34,9 @@ void Game::Run(uint64_t loop_count) {
     // TODO: Throttle how often a render occurs to save precious 
     // battery on my laptop. Should be an optional setting as we don't
     // care as much on non battery dependent devices.
-    Render();
+    if (!Render()) return true; // Returns ??
   }
+  return true;
 }
 
 void Game::Pause() {

@@ -1,7 +1,7 @@
 #include <iostream>
 
 #include "ecs/ecs.h"
-#include "game/sdl_game.h"
+#include "game/gl_game.h"
 #include "math/vec.h"
 
 struct PositionComponent {
@@ -36,30 +36,26 @@ struct CircleRenderComponent {
   CircleRenderComponent() = default;
 };
 
-class Asteroids : public game::SDLGame {
+class Asteroids : public game::GLGame {
  public:
-  Asteroids() : game::SDLGame(640, 480) {};
-  void Initialize() override {
-    SDLGame::Initialize();
+  Asteroids() : game::GLGame(640, 480) {};
+  bool Initialize() override {
+    if (!GLGame::Initialize()) return false;
     ecs::Assign<PositionComponent>(player_, math::Vec2f(0.0f, 0.0f));
     ecs::Assign<PhysicsComponent>(player_);
     ecs::Assign<InputComponent>(player_);
     ecs::Assign<ShooterComponent>(player_);
     ecs::Assign<TriangleRenderComponent>(player_);
+    return true;
   }
-  void Update() override {}
-  void Render() override {
-    // Clear the screen to white.
-    SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
-    SDL_RenderClear(renderer_);
-    SDL_SetRenderDrawColor(renderer_, 255, 255, 255, SDL_ALPHA_OPAQUE);
-    //Drawing the lines we want. (-1, 0), (0, 1), (1, 0)
-    SDL_RenderDrawLine(renderer_, 0, 480, 320, 0);
-    SDL_RenderDrawLine(renderer_, 640, 480, 320, 0);
-    SDL_RenderDrawLine(renderer_, 0, 480, 640, 480);
-    // Present.
-    SDL_RenderPresent(renderer_);
+  bool Update() override {
+    return true;
   }
+  bool Render() override {
+    if (!GLGame::Render()) return false;
+    return true;
+  }
+
  private:
   ecs::Entity player_ = 1;
 };
@@ -67,6 +63,5 @@ class Asteroids : public game::SDLGame {
 int main() {
   Asteroids asteroids;
   asteroids.Run();
-
   return 0;
 }

@@ -8,13 +8,13 @@ namespace game {
 class Game {
  public:
   virtual ~Game() = default;
-  virtual void Initialize() {};
-  virtual void ProcessInput() = 0;
-  virtual void Update() = 0;
-  virtual void Render() = 0;
+  virtual bool Initialize() { return true; }
+  virtual bool ProcessInput() = 0;
+  virtual bool Update() = 0;
+  virtual bool Render() = 0;
 
   // Setting to 0 runs indefinitely.
-  void Run(uint64_t loop_count=0);
+  bool Run(uint64_t loop_count=0);
   void Pause();
   void Resume();
   void End();

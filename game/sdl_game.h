@@ -12,9 +12,9 @@ class SDLGame : public Game {
 
   ~SDLGame();
 
-  void Initialize() override;
-  void ProcessInput() override;
-  void Render() override;
+  bool Initialize() override;
+  bool ProcessInput() override;
+  bool Render() override;
 
   SDL_Window* window() { return window_; }
   SDL_Renderer* renderer() { return renderer_; }
