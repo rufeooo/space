@@ -8,9 +8,15 @@ namespace game {
 class Game {
  public:
   virtual ~Game() = default;
+  // Returns true if game successfully initialized.
   virtual bool Initialize() { return true; }
+  // Returns true if input was processed sucessfully.
   virtual bool ProcessInput() = 0;
+  // Returns true if the update logic ran sucessfully.
   virtual bool Update() = 0;
+  // Returns true if the game should continue to render another frame.
+  // this gives the render engine a chance to terminate the game if
+  // the user does something like close the window.
   virtual bool Render() = 0;
 
   // Setting to 0 runs indefinitely.
