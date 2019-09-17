@@ -20,6 +20,9 @@ make vec_test
 make mat_test
 ./math/mat_test
 
+make mat_ops_test
+./math/mat_ops_test
+
 make game_test
 ./game/game_test
 

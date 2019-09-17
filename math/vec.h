@@ -216,6 +216,10 @@ class Vec3 : public Vec<T, 3> {
   T& x() { return this->data_[0]; };
   T& y() { return this->data_[1]; };
   T& z() { return this->data_[2]; };
+
+  T x() const { return this->data_[0]; };
+  T y() const { return this->data_[1]; };
+  T z() const { return this->data_[2]; };
 };
 
 
