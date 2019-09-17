@@ -9,9 +9,9 @@
 TEST_CASE("Simple Game", "[game]") {
   class TestGame : public game::Game {
    public:
-    void ProcessInput() override {}
-    void Update() override {}
-    void Render() override {}
+    bool ProcessInput() override { return true; }
+    bool Update() override { return true; }
+    bool Render() override { return true; }
   };
   uint64_t count = 5000;
   TestGame game;
@@ -26,7 +26,7 @@ TEST_CASE("Simple SDL Game", "[sdl-game]") {
   class TestSDLGame : public game::SDLGame {
    public:
     TestSDLGame() : game::SDLGame(500, 500) {}
-    void Update() override {}
+    bool Update() override { return false; }
   };
   TestSDLGame game;
   game.Run(10000);

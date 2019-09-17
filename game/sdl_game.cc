@@ -14,22 +14,23 @@ SDLGame::~SDLGame() {
   SDL_Quit();
 }
 
-void SDLGame::Initialize() {
+bool SDLGame::Initialize() {
   int flags = SDL_WINDOW_SHOWN;
   if (SDL_Init(SDL_INIT_EVERYTHING)) {
     // TODO: Implement some sort of logging here and assert.
     assert(0);
-    return;
+    return false;
   }
   if (SDL_CreateWindowAndRenderer(
       window_width_, window_height_, flags, &window_, &renderer_)) {
     // TODO: Implement some sort of logging here and assert.
     assert(0);
-    return;
+    return false;
   }
+  return true;
 }
 
-void SDLGame::ProcessInput() {
+bool SDLGame::ProcessInput() {
   if (SDL_PollEvent(&event_)) {
     switch(event_.type) {
       case SDL_QUIT: {
@@ -39,13 +40,15 @@ void SDLGame::ProcessInput() {
       default: break;
     }
   }
+  return true;
 }
 
-void SDLGame::Render() {
+bool SDLGame::Render() {
   // Clear the screen to white.
   SDL_SetRenderDrawColor(renderer_, 0, 0, 0, 255);
   SDL_RenderClear(renderer_);
   SDL_RenderPresent(renderer_);
+  return true;
 }
 
 }
