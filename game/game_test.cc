@@ -18,8 +18,8 @@ TEST_CASE("Simple Game", "[game]") {
   game.Run(count);
   REQUIRE(game.game_updates() == count);
   // Total game time should be game updates * microseconds_per_update.
-  // 5000 * 10000 = 50000000
-  REQUIRE(game.game_time() == std::chrono::microseconds(50000000));
+  // 5000 * 16666 = 50000000
+  REQUIRE(game.game_time() == std::chrono::microseconds(83330000));
 }
 
 TEST_CASE("Simple SDL Game", "[sdl-game]") {

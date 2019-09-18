@@ -5,6 +5,7 @@
 #include "components/rendering/triangle_component.h"
 #include "ecs/ecs.h"
 #include "game/gl_game.h"
+#include "math/mat_ops.h"
 #include "math/vec.h"
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
@@ -12,9 +13,9 @@
 constexpr const char* kVertexShader = R"(
   #version 410
   layout (location = 0) in vec3 vertex_position;
-  // uniform mat4 matrix;
+  uniform mat4 matrix;
   void main() {
-    gl_Position = /* matrix * */vec4(vertex_position, 1.0);
+    gl_Position = matrix * vec4(vertex_position, 1.0);
   }
 )";
 
@@ -24,7 +25,7 @@ constexpr const char* kFragmentShader = R"(
   #version 410
 	out vec4 frag_color;
   void main() {
-   frag_color = vec4(1.0, 0.0, 0.0, 1.0);
+   frag_color = vec4(1.0, 1.0, 1.0, 1.0);
   }
 )";
 
@@ -81,6 +82,8 @@ class Asteroids : public game::GLGame {
         kProgramName, &program_reference)) {
       return false;
     }
+    matrix_location_ = glGetUniformLocation(
+        program_reference, "matrix");
     // Print program info
     std::cout << shader_cache_.GetProgramInfo(kProgramName)
               << std::endl;
@@ -97,6 +100,27 @@ class Asteroids : public game::GLGame {
   // Input logic
   bool ProcessInput() override {
     glfwPollEvents();
+    ecs::Enumerate<InputComponent, component::TransformComponent>(
+        [this](ecs::Entity ent,
+           InputComponent& input,
+           component::TransformComponent& transform) {
+      int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
+      if (state == GLFW_PRESS) {
+        transform.position.y() += 0.001f;
+      }
+      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
+      if (state == GLFW_PRESS) {
+        transform.position.y() -= 0.001f;
+      }
+      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
+      if (state == GLFW_PRESS) {
+        transform.position.x() -= 0.001f;
+      }
+      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_D);
+      if (state == GLFW_PRESS) {
+        transform.position.x() += 0.001f;
+      }
+    });
     return true;
   }
 
@@ -109,9 +133,15 @@ class Asteroids : public game::GLGame {
   bool Render() override {
     if (!GLGame::Render()) return false;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    ecs::Enumerate<component::TriangleComponent>(
-        [](ecs::Entity ent, component::TriangleComponent& comp) {
+    ecs::Enumerate<component::TriangleComponent,
+                   component::TransformComponent>(
+        [&](ecs::Entity ent,
+            component::TriangleComponent& comp,
+            component::TransformComponent& transform) {
       glUseProgram(comp.program_reference);
+      math::Mat4f matrix =
+          math::CreateTranslationMatrix(transform.position);
+      glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, 3);
     });
@@ -120,6 +150,7 @@ class Asteroids : public game::GLGame {
   }
 
  private:
+  int matrix_location_;
   ecs::Entity player_ = 1;
   renderer::GLShaderCache shader_cache_;
 };

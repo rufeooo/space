@@ -5,7 +5,7 @@
 namespace component {
 
 struct TransformComponent {
-  math::Vec3f position_;
+  math::Vec3f position;
 };
 
 }

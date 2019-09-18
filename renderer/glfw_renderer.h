@@ -17,6 +17,8 @@ class GLFWRenderer : public Renderer {
 
   void Draw(const component::LineComponent& component) override;
   void Draw(const component::TriangleComponent& component) override;
+
+  GLFWwindow* window() { return window_; }
  private:
   GLFWwindow* window_;
 };
