@@ -24,9 +24,9 @@ std::string GLTypeToString(GLenum type) {
 
 uint32_t CreateTriangleVAO() {
   GLfloat points[] = {
-    0.0f, 0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
+    0.0f, 0.1f, 0.0f,
+    0.1f, -0.1f, 0.0f,
+    -0.1f, -0.1f, 0.0f,
   };
   // Create points VBO.
   GLuint points_vbo = 0;

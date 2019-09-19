@@ -59,6 +59,17 @@ class Vec {
     return t;
   }
 
+  bool operator==(const Vec<T, N>& rhs) const {
+    for (size_t i = 0; i < rhs.size(); ++i) {
+      if (data_[i] != rhs.data_[i]) return false;
+    }
+    return true;
+  }
+
+  bool operator!=(const Vec<T, N>& rhs) const {
+    return !(*this == rhs);
+  }
+
   T Dot(const Vec& rhs) const {
     T result = T(0);
     for (size_t i = 0; i < rhs.size(); ++i) {
@@ -222,6 +233,76 @@ class Vec3 : public Vec<T, 3> {
   T z() const { return this->data_[2]; };
 };
 
+template <typename T>
+class Vec4 : public Vec<T, 4> {
+ public:
+  Vec4() {
+    this->data_[0] = T(0);
+    this->data_[1] = T(0);
+    this->data_[2] = T(0);
+    this->data_[3] = T(0);
+  }
+
+  Vec4(const T& x, const T& y, const T& z, const T& w) {
+    this->data_[0] = x;
+    this->data_[1] = y;
+    this->data_[2] = z;
+    this->data_[3] = w;
+  }
+
+  Vec4(const Vec<T, 4>& v) {
+    this->data_ = v.Data();
+  }
+
+  // Following overloads required so Vec2<T> can be properly capture
+  // with auto.
+  //
+  // Example -
+  //
+  // math::Vec2<int> a;
+  // math::Vec2<int> b;
+  // auto c = a + b; c = a - b; etc.
+  //
+  // c will be captured as type Vec<int, 2> instead of Vec2<int> 
+  // without these overloads thereby ruining the point of these
+  // convenience classes.
+
+  Vec4<T> operator+(const Vec4<T>& rhs) {
+    Vec4<T> t = *this;
+    t += rhs;
+    return t;
+  }
+
+  Vec4<T> operator-(const Vec4<T>& rhs) {
+    Vec4<T> t = *this;
+    t -= rhs;
+    return t;
+  }
+
+  Vec4<T> operator*(const T& rhs) {
+    Vec4<T> t = *this;
+    t *= rhs;
+    return t;
+  }
+
+  Vec4<T> operator/(const T& rhs) {
+    Vec4<T> t = *this;
+    t /= rhs;
+    return t;
+  }
+
+  T& x() { return this->data_[0]; };
+  T& y() { return this->data_[1]; };
+  T& z() { return this->data_[2]; };
+  T& w() { return this->data_[3]; };
+
+  T x() const { return this->data_[0]; };
+  T y() const { return this->data_[1]; };
+  T z() const { return this->data_[2]; };
+  T w() const { return this->data_[3]; };
+};
+
+
 
 using Vec2i = Vec2<int>;
 using Vec2u = Vec2<uint32_t>;
@@ -233,5 +314,9 @@ using Vec3u = Vec3<uint32_t>;
 using Vec3f = Vec3<float>;
 using Vec3d = Vec3<double>;
 
+using Vec4i = Vec4<int>;
+using Vec4u = Vec4<uint32_t>;
+using Vec4f = Vec4<float>;
+using Vec4d = Vec4<double>;
 
 }

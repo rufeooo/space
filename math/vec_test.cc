@@ -100,6 +100,12 @@ TEST(VectorTest, VectorZeroInitialization) {
   ASSERT_TRUE(c.y() == 0.0);
 }
 
+TEST(VectorTest, Vector4Happy) {
+  math::Vec4i v;
+  math::Vec4i desired(0, 0, 0, 0);
+  ASSERT_EQ(v, desired);
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
