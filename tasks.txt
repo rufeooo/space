@@ -35,6 +35,8 @@ object that can give more information on what went wrong.
 now everything is in regards to opengl's coordinate system
 [] I'd like to create example projects for wrangling windows for
 mac/win32/linux.
+[] Create a mechanism for superimposing a graph onto the xy plane to
+make coordinates easier to visualize.
 
 Learn
 [] Derive rotation matrix from quaternion - Right now it all just

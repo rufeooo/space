@@ -57,7 +57,7 @@ class Asteroids : public game::GLGame {
     ecs::Assign<component::ViewComponent>(
       camera_,
       math::Vec3f(0.0f, 0.0f, -10.0f),
-      math::Quatf(180.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
+      math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, 1.0f)));
     ecs::Assign<InputComponent>(player_);
     ecs::Assign<ShooterComponent>(player_);
     ecs::Assign<PhysicsComponent>(player_);
@@ -81,8 +81,7 @@ class Asteroids : public game::GLGame {
     }
     if (!shader_cache_.LinkProgram(
         kProgramName,
-        {kVertexShaderName, kFragmentShaderName},
-        false)) {
+        {kVertexShaderName, kFragmentShaderName})) {
       std::cout << "Unable to link: "
                 << kProgramName
                 << " info: "
@@ -176,7 +175,7 @@ class Asteroids : public game::GLGame {
           camera_);
       math::Mat4f view = math::CreateViewMatrix(
           view_component->position, view_component->orientation);
-      std::cout << view_component->orientation.Left().String() << std::endl;
+      std::cout << view_component->orientation.Up().String() << std::endl;
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
