@@ -1,8 +1,12 @@
 Rendering
-[] Create interface for rendering stuff - I think this should be pretty
+[x] Create interface for rendering stuff - I think this should be pretty
    simple to start. Implements some draw calls -
-      [] DrawLine(LineComponent)
-      [] DrawTriangle(TriangleComponent)
+      [x] DrawLine(LineComponent)
+      [x] DrawTriangle(TriangleComponent)
+        * These wo are marked done because i'm unsure how useful they
+          are. It makes more sense to use a more generic draw call
+          with the program vao desired and some draw instructions
+          for the renderer (I think).
 [x] Create cache for compiling / linking and saving shader / program refs.      
 [] Create a gl_program abstraction. This will take a validly linked program
 from gl_shader_cache and load its program info through GetProgramInfo.
@@ -16,7 +20,18 @@ Testing
 [] Use gtest in game_test instead of catch.
 [] Remove catch submodule.
 
+Demos
+  [] Asteroids
+    [] Create moving asteroids.
+    [] When player goes out of screen teleport them to the other side.
+    [] When asteroid hits the player make it kill them.
+    [] Allow player to shoot dem lazerz
+
 Misc
 [] Return meaningful status objects from calls where important. I
 return booleans now but it'd be useful to return some sort of status
 object that can give more information on what went wrong.
+[] Create some more meaningful units that things move around in. Right
+now everything is in regards to opengl's coordinate system
+[] I'd like to create example projects for wrangling windows for
+mac/win32/linux.

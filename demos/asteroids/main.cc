@@ -50,7 +50,7 @@ struct PhysicsComponent {
 
 class Asteroids : public game::GLGame {
  public:
-  Asteroids() : game::GLGame(640, 480) {};
+  Asteroids() : game::GLGame(1280, 720) {};
   bool Initialize() override {
     if (!GLGame::Initialize()) return false;
     ecs::Assign<InputComponent>(player_);
