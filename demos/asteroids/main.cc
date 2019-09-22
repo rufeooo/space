@@ -97,8 +97,9 @@ class Asteroids : public game::GLGame {
               << std::endl;
     uint32_t vao_reference = renderer::CreateGeometryVAO({
         0.0f, 0.1f, 0.0f,
-        0.1f, -0.1f, 0.0f,
-        -0.1f, -0.1f, 0.0f,
+        0.05f, -0.05f, 0.0f,
+        0.00f, -0.025f, 0.0f,
+        -0.05f, -0.05f, 0.0f,
     });
     ecs::Enumerate<component::TriangleComponent>(
         [vao_reference, program_reference]
@@ -128,7 +129,6 @@ class Asteroids : public game::GLGame {
       if (state == GLFW_PRESS) {
         transform.orientation.Rotate(-0.1f);
       }
-
       // Set acceleration to facing direction times speed.
       auto u = transform.orientation.Up();
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
@@ -151,7 +151,6 @@ class Asteroids : public game::GLGame {
            PhysicsComponent& physics,
            component::TransformComponent& transform) {
       physics.velocity += physics.acceleration;
-      //std::cout << physics.velocity.String() << std::endl; 
       transform.position += physics.velocity;
     });
 
@@ -173,7 +172,7 @@ class Asteroids : public game::GLGame {
           math::CreateRotationMatrix(transform.orientation);
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
-      glDrawArrays(GL_LINE_LOOP, 0, 3);
+      glDrawArrays(GL_LINE_LOOP, 0, 4);
     });
     glfw_renderer_.SwapBuffers();
     return true;
