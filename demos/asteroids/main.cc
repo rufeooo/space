@@ -175,7 +175,7 @@ class Asteroids : public game::GLGame {
           camera_);
       math::Mat4f view = math::CreateViewMatrix(
           view_component->position, view_component->orientation);
-      std::cout << view_component->orientation.Up().String() << std::endl;
+      //std::cout << view_component->orientation.Up().String() << std::endl;
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
@@ -185,6 +185,10 @@ class Asteroids : public game::GLGame {
       glDrawArrays(GL_LINE_LOOP, 0, 4);
     });
     glfw_renderer_.SwapBuffers();
+    char title[256];
+    sprintf(title, "Asteroids MS Per Frame: %lld FPS: %.2f",
+            ms_per_frame().count(), fps());
+    glfwSetWindowTitle(glfw_renderer_.window(), title);
     return true;
   }
 
