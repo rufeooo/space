@@ -17,29 +17,26 @@ class Quat : public Vec4<T> {
   // matrix so it's only done when it needs to be.
   
 
-  Quat(float angle_degrees, const T& x, const T& y, const T& z) {
-    Set(angle_degrees, x, y, z);
+  Quat(float angle_degrees, const math::Vec3<T>& axis) {
+    Set(angle_degrees, axis);
   }
 
-  Quat() : Quat(90.0f, T(1), T(0), T(0)) {}
+  Quat() : Quat(90.0f, math::Vec3<T>(T(1), T(0), T(0))) {}
 
-  void Set(float angle_degrees, const T& x, const T& y, const T& z) {
+  void Set(float angle_degrees, const math::Vec3<T>& axis) {
     angle_degrees_ = angle_degrees;
-    axis_.x() = x;
-    axis_.y() = y;
-    axis_.z() = z;
+    axis_ = axis;
     float angle_radians = (angle_degrees) * PI / 180.0f;
     this->data_[0] = std::cos(angle_radians / 2.0f);
-    this->data_[1] = std::sin(angle_radians / 2.0f) * x;
-    this->data_[2] = std::sin(angle_radians / 2.0f) * y;
-    this->data_[3] = std::sin(angle_radians / 2.0f) * z;
+    this->data_[1] = std::sin(angle_radians / 2.0f) * axis.x();
+    this->data_[2] = std::sin(angle_radians / 2.0f) * axis.y();
+    this->data_[3] = std::sin(angle_radians / 2.0f) * axis.z();
   }
 
   void Rotate(float angle_degrees_delta) {
     // Wrap the  angle?
     float angle = angle_degrees_ + angle_degrees_delta;
-    Set(angle_degrees_ + angle_degrees_delta,
-        axis_.x(), axis_.y(), axis_.z());
+    Set(angle_degrees_ + angle_degrees_delta, axis_);
   }
 
   Vec3<T> Forward() const {

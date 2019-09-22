@@ -3,6 +3,7 @@
 #include "components/common/transform_component.h"
 #include "components/rendering/line_component.h"
 #include "components/rendering/triangle_component.h"
+#include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
 #include "game/gl_game.h"
 #include "math/mat_ops.h"
@@ -53,6 +54,10 @@ class Asteroids : public game::GLGame {
   Asteroids() : game::GLGame(1280, 720) {};
   bool Initialize() override {
     if (!GLGame::Initialize()) return false;
+    ecs::Assign<component::ViewComponent>(
+      camera_,
+      math::Vec3f(0.0f, 0.0f, -10.0f),
+      math::Quatf(180.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
     ecs::Assign<InputComponent>(player_);
     ecs::Assign<ShooterComponent>(player_);
     ecs::Assign<PhysicsComponent>(player_);
@@ -167,9 +172,15 @@ class Asteroids : public game::GLGame {
             component::TriangleComponent& comp,
             component::TransformComponent& transform) {
       glUseProgram(comp.program_reference);
-      math::Mat4f matrix =
+      auto* view_component = ecs::Get<component::ViewComponent>(
+          camera_);
+      math::Mat4f view = math::CreateViewMatrix(
+          view_component->position, view_component->orientation);
+      std::cout << view_component->orientation.Left().String() << std::endl;
+      math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
+      math::Mat4f matrix = model * view;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, 4);
@@ -180,6 +191,7 @@ class Asteroids : public game::GLGame {
 
  private:
   int matrix_location_;
+  ecs::Entity camera_ = 0;
   ecs::Entity player_ = 1;
   renderer::GLShaderCache shader_cache_;
 };
