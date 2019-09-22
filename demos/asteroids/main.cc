@@ -105,7 +105,6 @@ class Asteroids : public game::GLGame {
            InputComponent& input,
            component::TransformComponent& transform) {
       int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
-      static float angle = 0.f;
       auto u = transform.orientation.Up();
       if (state == GLFW_PRESS) {
         transform.position += u * 0.001f;
