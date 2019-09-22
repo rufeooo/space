@@ -25,8 +25,7 @@ class ShaderCache {
 
   virtual bool LinkProgram(
       const std::string& program_name,
-      const std::vector<std::string>& shader_names,
-      bool validate_program) = 0;
+      const std::vector<std::string>& shader_names) = 0;
 
   virtual bool UseProgram(const std::string& program_name) = 0;
 

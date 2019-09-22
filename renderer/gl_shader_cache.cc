@@ -94,8 +94,7 @@ bool GLShaderCache::GetShaderReference(
 
 bool GLShaderCache::LinkProgram(
     const std::string& program_name,
-    const std::vector<std::string>& shader_names,
-    bool validate_program) {
+    const std::vector<std::string>& shader_names) {
   if (program_reference_map_.find(program_name) !=
       program_reference_map_.end()) {
     return false;
@@ -115,14 +114,6 @@ bool GLShaderCache::LinkProgram(
     // TODO: switch to LOG
     std::cout << GetProgramInfoLog(program_reference) << std::endl;
     return false;
-  }
-  if (validate_program) {
-    glValidateProgram(program_reference);
-    glGetProgramiv(program_reference, GL_VALIDATE_STATUS, &params);
-    if (params != GL_TRUE) {
-      std::cout << GetProgramInfoLog(program_reference) << std::endl;
-      return false;
-    }
   }
   program_reference_map_[program_name] = program_reference;
   return true;

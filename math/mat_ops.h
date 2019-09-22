@@ -2,6 +2,7 @@
 
 #include "mat.h"
 #include "vec.h"
+#include "quat.h"
 
 namespace math {
 

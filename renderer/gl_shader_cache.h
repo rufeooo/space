@@ -21,8 +21,7 @@ class GLShaderCache : public ShaderCache {
 
   bool LinkProgram(
       const std::string& program_name,
-      const std::vector<std::string>& shader_names,
-      bool validate_program) override;
+      const std::vector<std::string>& shader_names) override;
 
   bool UseProgram(const std::string& program_name) override;
 
