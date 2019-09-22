@@ -70,6 +70,8 @@ class Vec {
     return !(*this == rhs);
   }
 
+  T& operator[](std::size_t i) { return data_[i]; }
+
   T Dot(const Vec& rhs) const {
     T result = T(0);
     for (size_t i = 0; i < rhs.size(); ++i) {
@@ -301,8 +303,6 @@ class Vec4 : public Vec<T, 4> {
   T z() const { return this->data_[2]; };
   T w() const { return this->data_[3]; };
 };
-
-
 
 using Vec2i = Vec2<int>;
 using Vec2u = Vec2<uint32_t>;

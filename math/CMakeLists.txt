@@ -11,6 +11,10 @@ set(mat_ops_test_srcs
     "mat_ops.h"
     "mat_ops_test.cc")
 
+set(quat_test_srcs
+    "quat.h"
+    "quat_test.cc")
+
 include_directories(${CMAKE_SOURCE_DIR}/third_party/googletest/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/googlemock/include)
 
@@ -25,3 +29,7 @@ set_target_properties(mat_test PROPERTIES FOLDER Math)
 add_executable(mat_ops_test ${mat_ops_test_srcs})
 target_link_libraries(mat_ops_test gtest)
 set_target_properties(mat_ops_test PROPERTIES FOLDER Math)
+
+add_executable(quat_test ${quat_test_srcs})
+target_link_libraries(quat_test gtest)
+set_target_properties(quat_test PROPERTIES FOLDER Math)

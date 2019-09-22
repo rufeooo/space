@@ -105,20 +105,22 @@ class Asteroids : public game::GLGame {
            InputComponent& input,
            component::TransformComponent& transform) {
       int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
+      static float angle = 0.f;
+      auto u = transform.orientation.Up();
       if (state == GLFW_PRESS) {
-        transform.position.y() += 0.001f;
+        transform.position += u * 0.001f;
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
       if (state == GLFW_PRESS) {
-        transform.position.y() -= 0.001f;
+        transform.position -= u * 0.001f;
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
       if (state == GLFW_PRESS) {
-        transform.position.x() -= 0.001f;
+        transform.orientation.Rotate(0.1f);
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_D);
       if (state == GLFW_PRESS) {
-        transform.position.x() += 0.001f;
+        transform.orientation.Rotate(-0.1f);
       }
     });
     return true;
@@ -140,7 +142,8 @@ class Asteroids : public game::GLGame {
             component::TransformComponent& transform) {
       glUseProgram(comp.program_reference);
       math::Mat4f matrix =
-          math::CreateTranslationMatrix(transform.position);
+          math::CreateTranslationMatrix(transform.position) *
+          math::CreateRotationMatrix(transform.orientation);
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, 3);

@@ -45,6 +45,16 @@ class Mat {
     return !(data_ == rhs.data_);
   }
 
+  Mat<T, N, M> Transpose() const {
+    Mat<T, N, M> t;
+    for (size_t i = 0; i < N; ++i) {
+      for (size_t j = 0; j < M; ++j) {
+        t(i, j) = (*this)(j, i);
+      }
+    }
+    return t;
+  }
+
   std::array<T, M * N> data_;
 };
 

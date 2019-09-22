@@ -20,6 +20,9 @@ make vec_test
 make mat_test
 ./math/mat_test
 
+make quat_test
+./math/quat_test
+
 make mat_ops_test
 ./math/mat_ops_test
 
