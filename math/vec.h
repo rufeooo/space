@@ -3,6 +3,7 @@
 #include <array>
 #include <cassert>
 #include <cmath>
+#include <string>
 
 namespace math {
 
@@ -86,6 +87,16 @@ class Vec {
   }
 
   const std::array<T, N>& Data() const { return data_; }
+
+  std::string String() const {
+    std::string str;
+    for (size_t i = 0; i < data_.size(); ++i) {
+      str += std::to_string(data_[i]);
+      if (i != data_.size() - 1) str += " ";
+    }
+    return str;
+  }
+
 
   std::size_t size() const { return data_.size(); }
 

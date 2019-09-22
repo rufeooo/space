@@ -41,6 +41,13 @@ struct ShooterComponent {
   ShooterComponent() = default;
 };
 
+struct PhysicsComponent {
+  PhysicsComponent() = default;
+  math::Vec3f velocity;
+  math::Vec3f acceleration;
+  float speed = 0.0000001f; // LOL
+};
+
 class Asteroids : public game::GLGame {
  public:
   Asteroids() : game::GLGame(640, 480) {};
@@ -48,6 +55,7 @@ class Asteroids : public game::GLGame {
     if (!GLGame::Initialize()) return false;
     ecs::Assign<InputComponent>(player_);
     ecs::Assign<ShooterComponent>(player_);
+    ecs::Assign<PhysicsComponent>(player_);
     ecs::Assign<component::TriangleComponent>(player_);
     ecs::Assign<component::TransformComponent>(player_);
     if (!shader_cache_.CompileShader(
@@ -87,7 +95,11 @@ class Asteroids : public game::GLGame {
     // Print program info
     std::cout << shader_cache_.GetProgramInfo(kProgramName)
               << std::endl;
-    uint32_t vao_reference = renderer::CreateTriangleVAO();
+    uint32_t vao_reference = renderer::CreateGeometryVAO({
+        0.0f, 0.1f, 0.0f,
+        0.1f, -0.1f, 0.0f,
+        -0.1f, -0.1f, 0.0f,
+    });
     ecs::Enumerate<component::TriangleComponent>(
         [vao_reference, program_reference]
             (ecs::Entity ent, component::TriangleComponent& comp) {
@@ -100,20 +112,15 @@ class Asteroids : public game::GLGame {
   // Input logic
   bool ProcessInput() override {
     glfwPollEvents();
-    ecs::Enumerate<InputComponent, component::TransformComponent>(
+    ecs::Enumerate<InputComponent,
+                   PhysicsComponent,
+                   component::TransformComponent>(
         [this](ecs::Entity ent,
            InputComponent& input,
+           PhysicsComponent& physics,
            component::TransformComponent& transform) {
-      int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
-      auto u = transform.orientation.Up();
-      if (state == GLFW_PRESS) {
-        transform.position += u * 0.001f;
-      }
-      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
-      if (state == GLFW_PRESS) {
-        transform.position -= u * 0.001f;
-      }
-      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
+      // Apply rotation. 
+      int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
       if (state == GLFW_PRESS) {
         transform.orientation.Rotate(0.1f);
       }
@@ -121,12 +128,33 @@ class Asteroids : public game::GLGame {
       if (state == GLFW_PRESS) {
         transform.orientation.Rotate(-0.1f);
       }
+
+      // Set acceleration to facing direction times speed.
+      auto u = transform.orientation.Up();
+      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
+      if (state == GLFW_PRESS) {
+        physics.acceleration = u * physics.speed;
+      }
+      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
+      if (state == GLFW_PRESS) {
+        physics.acceleration = u * physics.speed;
+      }
     });
     return true;
   }
 
   // Game logic
   bool Update() override {
+    ecs::Enumerate<PhysicsComponent,
+                   component::TransformComponent>(
+        [this](ecs::Entity ent,
+           PhysicsComponent& physics,
+           component::TransformComponent& transform) {
+      physics.velocity += physics.acceleration;
+      //std::cout << physics.velocity.String() << std::endl; 
+      transform.position += physics.velocity;
+    });
+
     return true;
   }
 
