@@ -31,29 +31,57 @@ Mat<T, 4, 4> CreateTranslationMatrix(const Vec3<T>& translation) {
 
 template <class T>
 Mat<T, 4, 4> CreateRotationMatrix(const Quat<T>& quat) {
-  auto f = quat.Forward();
-  auto u = quat.Up();
-  auto l = quat.Left();
-  return Mat<T, 4, 4> {
-     l.x(),  l.y(),  l.z(), T(0),
-     u.x(),  u.y(),  u.z(), T(0),
-    -f.x(), -f.y(), -f.z(), T(0),
-      T(0),   T(0),   T(0), T(1)
-  };
+  Mat<T, 4, 4> rotation;
+  auto w = quat.x();
+  auto x = quat.y();
+  auto y = quat.z();
+  auto z = quat.w();
+  rotation[0]  = 1.f - 2.f * y * y - 2.f * z * z;
+  rotation[1]  = 2.f * x * y - 2.f * w * z;
+  rotation[2]  = 2.f * x * z + 2 * w * y;
+  rotation[3]  = T(0);
+  rotation[4]  = 2.f * x * y + 2.f * w * z;
+  rotation[5]  = 1.f - 2.f * x * x - 2.f * z * z;
+  rotation[6]  = 2.f * y * z - 2.f * w * x;
+  rotation[7]  = T(0);
+  rotation[8]  = 2.f * x * z - 2.f * w * y;
+  rotation[9]  = 2.f * y * z + 2.f * w * x;
+  rotation[10] = 1.f - 2.f * x * x - 2.f * y * y;
+  rotation[11] = T(0);
+  rotation[12] = T(0);
+  rotation[13] = T(0);
+  rotation[14] = T(0);
+  rotation[15] = T(1);
+  return rotation;
 }
 
 template <class T>
 Mat<T, 4, 4> CreateViewMatrix(const Vec3<T>& translation,
                               const Quat<T>& quat) {
-  auto f = quat.Forward();
-  auto u = quat.Up();
-  auto l = quat.Left();
-  return Mat<T, 4, 4> {
-     l.x(),  l.y(),  l.z(), translation.x(), 
-     u.x(),  u.y(),  u.z(), translation.y(),
-    -f.x(), -f.y(), -f.z(), translation.z(),
-      T(0),   T(0),   T(0), T(1)
-  };
+  Mat<T, 4, 4> view;
+  // A quat is really a versor [w,(x,y,z)]. So grab the variables out
+  // with those names to make the view more clear.
+  auto w = quat.x();
+  auto x = quat.y();
+  auto y = quat.z();
+  auto z = quat.w();
+  view[0]  = 1.f - 2.f * y * y - 2.f * z * z;
+  view[1]  = 2.f * x * y - 2.f * w * z;
+  view[2]  = 2.f * x * z + 2 * w * y;
+  view[3]  = -translation.x();
+  view[4]  = 2.f * x * y + 2.f * w * z;
+  view[5]  = 1.f - 2.f * x * x - 2.f * z * z;
+  view[6]  = 2.f * y * z - 2.f * w * x;
+  view[7]  = -translation.y();
+  view[8]  = 2.f * x * z - 2.f * w * y;
+  view[9]  = 2.f * y * z + 2.f * w * x;
+  view[10] = 1.f - 2.f * x * x - 2.f * y * y;
+  view[11] = -translation.z();
+  view[12] = T(0);
+  view[13] = T(0);
+  view[14] = T(0);
+  view[15] = T(1);
+  return view;
 }
 
 }  // math

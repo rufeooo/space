@@ -46,7 +46,7 @@ struct PhysicsComponent {
   PhysicsComponent() = default;
   math::Vec3f velocity;
   math::Vec3f acceleration;
-  float speed = 0.0000001f; // LOL
+  float speed = 0.00001f; // LOL
 };
 
 class Asteroids : public game::GLGame {
@@ -56,8 +56,8 @@ class Asteroids : public game::GLGame {
     if (!GLGame::Initialize()) return false;
     ecs::Assign<component::ViewComponent>(
       camera_,
-      math::Vec3f(0.0f, 0.0f, -10.0f),
-      math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, 1.0f)));
+      math::Vec3f(0.0f, 0.0f, 10.0f),
+      math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
     ecs::Assign<InputComponent>(player_);
     ecs::Assign<ShooterComponent>(player_);
     ecs::Assign<PhysicsComponent>(player_);
@@ -133,15 +133,19 @@ class Asteroids : public game::GLGame {
       if (state == GLFW_PRESS) {
         transform.orientation.Rotate(-0.1f);
       }
+
+      /*std::cout << transform.orientation.Up().String() << " " <<
+                   transform.orientation.Forward().String() << std::endl;*/
+
       // Set acceleration to facing direction times speed.
-      auto u = transform.orientation.Up();
+      //auto u = transform.orientation.Forward();
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
       if (state == GLFW_PRESS) {
-        physics.acceleration = u * physics.speed;
+        //physics.acceleration = u * physics.speed;
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
       if (state == GLFW_PRESS) {
-        physics.acceleration = u * physics.speed;
+        //physics.acceleration = u * -physics.speed;
       }
     });
     return true;
@@ -165,6 +169,7 @@ class Asteroids : public game::GLGame {
   bool Render() override {
     if (!GLGame::Render()) return false;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    math::Vec3f camera_up;
     ecs::Enumerate<component::TriangleComponent,
                    component::TransformComponent>(
         [&](ecs::Entity ent,
@@ -175,6 +180,7 @@ class Asteroids : public game::GLGame {
           camera_);
       math::Mat4f view = math::CreateViewMatrix(
           view_component->position, view_component->orientation);
+      //camera_up = view_component->orientation.Up();
       //std::cout << view_component->orientation.Up().String() << std::endl;
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
