@@ -5,11 +5,6 @@
 
 namespace game {
 
-/*inline std::chrono::microseconds Now() {
-  return std::chrono::duration_cast<std::chrono::microseconds>(
-      std::chrono::high_resolution_clock::now().time_since_epoch());
-}*/
-
 inline std::chrono::milliseconds NowMS() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
       std::chrono::high_resolution_clock::now().time_since_epoch());
@@ -31,22 +26,19 @@ bool Game::Run(uint64_t loop_count) {
     if (!paused_) lag += elapsed;
     ProcessInput();
     real_time_ += elapsed;
-    if (!paused_ && lag >= max_ms_per_update_) {
+    while (!paused_ && lag >= ms_per_update_) {
       Update();
-      lag -= max_ms_per_update_;
-      game_time_ += max_ms_per_update_;
+      lag -= ms_per_update_;
+      game_time_ += ms_per_update_;
       ++game_updates_;
     }
-    // TODO: Throttle how often a render occurs to save precious 
-    // battery on my laptop. Should be an optional setting as we don't
-    // care as much on non battery dependent devices.
     if (!Render()) return true; // Returns ??
     end_loop = NowMS();
     previous = current;
     auto ms = end_loop - current;
-    // sleep s.t. we only do 10 ms per frame max
-    if (sleep_on_loop_end_ && ms < max_ms_per_frame_) {
-      auto sleep_time = max_ms_per_frame_ - ms;
+    // sleep s.t. we only do max_ms_per_frame_.
+    if (sleep_on_loop_end_ && ms < min_ms_per_frame_) {
+      auto sleep_time = min_ms_per_frame_ - ms;
       std::this_thread::sleep_for(sleep_time);
     }
     ms_per_frame_ = NowMS() - current;

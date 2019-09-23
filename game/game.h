@@ -30,13 +30,16 @@ class Game {
   std::chrono::milliseconds ms_per_frame() const {
     return ms_per_frame_;
   }
+  std::chrono::milliseconds ms_per_update() const {
+    return ms_per_update_;
+  }
   float fps() const { return (1.f / ms_per_frame_.count()) * 1000.f; }
  private:
   // Roughly 1/60th of a second the game should update.
-  std::chrono::milliseconds max_ms_per_update_ = 
+  std::chrono::milliseconds ms_per_update_ = 
       std::chrono::milliseconds(15);
   // Only run a game loop once per 5 milliseconds.
-  std::chrono::milliseconds max_ms_per_frame_ = 
+  std::chrono::milliseconds min_ms_per_frame_ = 
       std::chrono::milliseconds(15);
   std::chrono::milliseconds game_time_;
   std::chrono::milliseconds real_time_;
