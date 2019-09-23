@@ -11,6 +11,10 @@
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
+static float kRotationSpeed = 1.5f;
+static float kShipAcceleration = 0.00004f;
+static float kSecsToMaxSpeed = 3.f;
+
 constexpr const char* kVertexShader = R"(
   #version 410
   layout (location = 0) in vec3 vertex_position;
@@ -44,9 +48,10 @@ struct ShooterComponent {
 
 struct PhysicsComponent {
   PhysicsComponent() = default;
-  math::Vec3f velocity;
-  math::Vec3f acceleration;
-  float speed = 0.00001f; // LOL
+  float acceleration = 0.f;
+  float velocity = 0.f;
+  float acceleration_speed = kShipAcceleration;
+  float max_velocity = kShipAcceleration * kSecsToMaxSpeed * 60.f;
 };
 
 class Asteroids : public game::GLGame {
@@ -100,10 +105,10 @@ class Asteroids : public game::GLGame {
     std::cout << shader_cache_.GetProgramInfo(kProgramName)
               << std::endl;
     uint32_t vao_reference = renderer::CreateGeometryVAO({
-        0.0f, 0.1f, 0.0f,
-        0.05f, -0.05f, 0.0f,
-        0.00f, -0.025f, 0.0f,
-        -0.05f, -0.05f, 0.0f,
+        0.0f, 0.08f, 0.0f,
+        0.03f, -0.03f, 0.0f,
+        0.00f, -0.005f, 0.0f,
+        -0.03f, -0.03f, 0.0f,
     });
     ecs::Enumerate<component::TriangleComponent>(
         [vao_reference, program_reference]
@@ -127,11 +132,11 @@ class Asteroids : public game::GLGame {
       // Apply rotation. 
       int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(-0.1f);
+        transform.orientation.Rotate(-kRotationSpeed);
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_D);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(0.1f);
+        transform.orientation.Rotate(kRotationSpeed);
       }
 
       /*std::cout
@@ -143,18 +148,16 @@ class Asteroids : public game::GLGame {
           << transform.orientation.Left().String()
           << std::endl;*/
 
-      // Set acceleration to facing direction times speed.
-      //auto u = transform.orientation.Forward();
+      // Set acceleration to facing direction times acceleration_speed.
+      auto u = transform.orientation.Up();
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
       if (state == GLFW_PRESS) {
-        //physics.acceleration = u * physics.speed;
+        physics.acceleration = physics.acceleration_speed;
       }
-
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
       if (state == GLFW_PRESS) {
-        //physics.acceleration = u * -physics.speed;
+        physics.acceleration = -physics.acceleration_speed;
       }
-
     });
     return true;
   }
@@ -166,8 +169,12 @@ class Asteroids : public game::GLGame {
         [this](ecs::Entity ent,
            PhysicsComponent& physics,
            component::TransformComponent& transform) {
-      physics.velocity += physics.acceleration;
-      transform.position += physics.velocity;
+      if (physics.velocity < physics.max_velocity ||
+          (physics.acceleration < 0.f && physics.velocity > 0.f)) {
+        physics.velocity += physics.acceleration;
+      }
+      transform.position += transform.orientation.Up()
+                            * physics.velocity;
     });
 
     return true;
@@ -177,9 +184,6 @@ class Asteroids : public game::GLGame {
   bool Render() override {
     if (!GLGame::Render()) return false;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    math::Vec3f camera_forward;
-    math::Vec3f camera_up;
-    math::Vec3f camera_left;
     ecs::Enumerate<component::TriangleComponent,
                    component::TransformComponent>(
         [&](ecs::Entity ent,
@@ -190,9 +194,6 @@ class Asteroids : public game::GLGame {
           camera_);
       math::Mat4f view = math::CreateViewMatrix(
           view_component->position, view_component->orientation);
-      camera_forward = view_component->orientation.Forward();
-      camera_up  = view_component->orientation.Up();
-      camera_left  = view_component->orientation.Left();
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
@@ -202,6 +203,10 @@ class Asteroids : public game::GLGame {
       glDrawArrays(GL_LINE_LOOP, 0, 4);
     });
     glfw_renderer_.SwapBuffers();
+    auto* view_component = ecs::Get<component::ViewComponent>(camera_);
+    math::Vec3f camera_forward = view_component->orientation.Forward();
+    math::Vec3f camera_up = view_component->orientation.Up();
+    math::Vec3f camera_left = view_component->orientation.Left();
     char title[256];
     sprintf(
         title,
