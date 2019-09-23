@@ -19,7 +19,8 @@ class Game {
   // the user does something like close the window.
   virtual bool Render() = 0;
 
-  // Setting to 0 runs indefinitely.
+  // Setting to 0 runs indefinitely OR Render return false OR 'end_'
+  // is triggered via the End() call.
   bool Run(uint64_t loop_count=0);
   void Pause();
   void Resume();
@@ -35,10 +36,14 @@ class Game {
   }
   float fps() const { return (1.f / ms_per_frame_.count()) * 1000.f; }
  private:
-  // Roughly 1/60th of a second the game should update.
+  // Run each game logic update with a delta_time of ms_per_update_.
   std::chrono::milliseconds ms_per_update_ = 
       std::chrono::milliseconds(15);
-  // Only run a game loop once per 5 milliseconds.
+  // Run a frame every min_ms_per_frame if the time it takes to run
+  // update / render  is under this value the system will sleep until
+  // it reaches min_ms_per_frame_. This is really just to save battery
+  // on my laptop at the moment. I'm not really sure it's worth always
+  // doing.
   std::chrono::milliseconds min_ms_per_frame_ = 
       std::chrono::milliseconds(15);
   std::chrono::milliseconds game_time_;
