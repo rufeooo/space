@@ -127,15 +127,21 @@ class Asteroids : public game::GLGame {
       // Apply rotation. 
       int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(0.1f);
+        transform.orientation.Rotate(-0.1f);
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_D);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(-0.1f);
+        transform.orientation.Rotate(0.1f);
       }
 
-      /*std::cout << transform.orientation.Up().String() << " " <<
-                   transform.orientation.Forward().String() << std::endl;*/
+      /*std::cout
+          << "Up: "
+          << transform.orientation.Up().String() << " "
+          << "Forward: "
+          << transform.orientation.Forward().String() << " "
+          << "Left: "
+          << transform.orientation.Left().String()
+          << std::endl;*/
 
       // Set acceleration to facing direction times speed.
       //auto u = transform.orientation.Forward();
@@ -143,10 +149,12 @@ class Asteroids : public game::GLGame {
       if (state == GLFW_PRESS) {
         //physics.acceleration = u * physics.speed;
       }
+
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
       if (state == GLFW_PRESS) {
         //physics.acceleration = u * -physics.speed;
       }
+
     });
     return true;
   }
@@ -169,7 +177,9 @@ class Asteroids : public game::GLGame {
   bool Render() override {
     if (!GLGame::Render()) return false;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    math::Vec3f camera_forward;
     math::Vec3f camera_up;
+    math::Vec3f camera_left;
     ecs::Enumerate<component::TriangleComponent,
                    component::TransformComponent>(
         [&](ecs::Entity ent,
@@ -180,8 +190,9 @@ class Asteroids : public game::GLGame {
           camera_);
       math::Mat4f view = math::CreateViewMatrix(
           view_component->position, view_component->orientation);
-      //camera_up = view_component->orientation.Up();
-      //std::cout << view_component->orientation.Up().String() << std::endl;
+      camera_forward = view_component->orientation.Forward();
+      camera_up  = view_component->orientation.Up();
+      camera_left  = view_component->orientation.Left();
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
@@ -192,8 +203,15 @@ class Asteroids : public game::GLGame {
     });
     glfw_renderer_.SwapBuffers();
     char title[256];
-    sprintf(title, "Asteroids MS Per Frame: %lld FPS: %.2f",
-            ms_per_frame().count(), fps());
+    sprintf(
+        title,
+        "Asteroids MS Per Frame: %lld FPS: %.2f Forward: %s Up: %s "
+        "Left: %s",
+            ms_per_frame().count(),
+            fps(),
+            camera_forward.String().c_str(),
+            camera_up.String().c_str(),
+            camera_left.String().c_str());
     glfwSetWindowTitle(glfw_renderer_.window(), title);
     return true;
   }

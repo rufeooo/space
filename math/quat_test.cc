@@ -19,6 +19,24 @@ TEST(QuatTest, Initialization) {
       1.0f, 0.0001f);
 }
 
+TEST(QuatTest, Up) {
+  {
+    math::Quat<float> up(0.f, math::Vec3f(0.f, 0.f, 1.f));
+    auto u = up.Up();
+    ASSERT_NEAR(u.x(), 0.f, 0.00001f);
+    ASSERT_NEAR(u.y(), 1.f, 0.00001f);
+    ASSERT_NEAR(u.z(), 0.f, 0.00001f);
+  }
+
+  {
+    math::Quat<float> up(180.f, math::Vec3f(0.f, 0.f, -1.f));
+    auto u = up.Up();
+    ASSERT_NEAR(u.x(), 0.f, 0.00001f);
+    ASSERT_NEAR(u.y(), -1.f, 0.00001f);
+    ASSERT_NEAR(u.z(), 0.f, 0.00001f);
+  }
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

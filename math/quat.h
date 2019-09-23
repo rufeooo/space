@@ -40,28 +40,38 @@ class Quat : public Vec4<T> {
     Set(angle_degrees_ + angle_degrees_delta, axis_);
   }
 
-  /*Vec3<T> Forward() const {
+  Vec3<T> Forward() const {
+    auto w = this->x();
+    auto x = this->y();
+    auto y = this->z();
+    auto z = this->w();
     return Vec3<T>(
-        ,
-        ,
-        );
+        -2.f * x * z + 2.f * w * y,
+        -2.f * y * z - 2.f * w * x,
+        -1.f + 2.f * x * x + 2.f * y * y);
   }
 
   Vec3<T> Up() const {
+    auto w = this->x();
+    auto x = this->y();
+    auto y = this->z();
+    auto z = this->w();
     return Vec3<T>(
-        ,
-        ,
-        );
+        2.f * x * y + 2.f * w * z,
+        1.f - 2.f * x * x - 2.f * z * z,
+        2.f * y * z - 2.f * w * x);
   }
 
   Vec3<T> Left() const {
+    auto w = this->x();
+    auto x = this->y();
+    auto y = this->z();
+    auto z = this->w();
     return Vec3<T>(
-        ,
-        ,
-        );
-  }*/
-
-
+        -2.f * x * z + 2.f * w * y,
+        -2.f * y * z - 2.f * w * x,
+        -1.f + 2.f * x * x + 2.f * y * y);
+  }
 
  private:
   Vec3<T> axis_;

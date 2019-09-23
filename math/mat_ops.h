@@ -61,10 +61,10 @@ Mat<T, 4, 4> CreateViewMatrix(const Vec3<T>& translation,
   Mat<T, 4, 4> view;
   // A quat is really a versor [w,(x,y,z)]. So grab the variables out
   // with those names to make the view more clear.
-  auto w = quat.x();
-  auto x = quat.y();
-  auto y = quat.z();
-  auto z = quat.w();
+  auto w = quat.x(); // x Corresponds to w in the versor
+  auto x = quat.y(); // y Corresponds to y in the versor
+  auto y = quat.z(); // z Etc.
+  auto z = quat.w(); // w Etc.
   view[0]  = 1.f - 2.f * y * y - 2.f * z * z;
   view[1]  = 2.f * x * y - 2.f * w * z;
   view[2]  = 2.f * x * z + 2 * w * y;
