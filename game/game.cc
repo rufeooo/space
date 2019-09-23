@@ -36,7 +36,7 @@ bool Game::Run(uint64_t loop_count) {
     end_loop = NowMS();
     previous = current;
     auto ms = end_loop - current;
-    // sleep s.t. we only do max_ms_per_frame_.
+    // sleep s.t. we only do min_ms_per_frame_.
     if (sleep_on_loop_end_ && ms < min_ms_per_frame_) {
       auto sleep_time = min_ms_per_frame_ - ms;
       std::this_thread::sleep_for(sleep_time);
