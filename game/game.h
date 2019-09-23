@@ -49,7 +49,6 @@ class Game {
   std::chrono::milliseconds game_time_;
   std::chrono::milliseconds real_time_;
   std::chrono::milliseconds ms_per_frame_;
-  int fps_;
   bool paused_ = false;
   bool end_ = false;
   bool sleep_on_loop_end_ = true;
