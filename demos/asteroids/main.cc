@@ -48,8 +48,8 @@ struct ShooterComponent {
 
 struct PhysicsComponent {
   PhysicsComponent() = default;
-  float acceleration = 0.f;
-  float velocity = 0.f;
+  math::Vec3f acceleration;
+  math::Vec3f velocity;
   float acceleration_speed = kShipAcceleration;
   float max_velocity = kShipAcceleration * kSecsToMaxSpeed * 60.f;
 };
@@ -151,12 +151,13 @@ class Asteroids : public game::GLGame {
       // Set acceleration to facing direction times acceleration_speed.
       auto u = transform.orientation.Up();
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
+      physics.acceleration = math::Vec3f(0.f, 0.f, 0.f);
       if (state == GLFW_PRESS) {
-        physics.acceleration = physics.acceleration_speed;
+        physics.acceleration = u * physics.acceleration_speed;
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
       if (state == GLFW_PRESS) {
-        physics.acceleration = -physics.acceleration_speed;
+        physics.acceleration = u * -physics.acceleration_speed;
       }
     });
     return true;
@@ -169,12 +170,11 @@ class Asteroids : public game::GLGame {
         [this](ecs::Entity ent,
            PhysicsComponent& physics,
            component::TransformComponent& transform) {
-      if (physics.velocity < physics.max_velocity ||
-          (physics.acceleration < 0.f && physics.velocity > 0.f)) {
+      if (math::LengthSquared(physics.velocity) < 
+          physics.max_velocity * physics.max_velocity) {
         physics.velocity += physics.acceleration;
       }
-      transform.position += transform.orientation.Up()
-                            * physics.velocity;
+      transform.position += physics.velocity;
     });
 
     return true;
