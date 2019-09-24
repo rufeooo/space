@@ -6,6 +6,8 @@
 
 namespace math {
 
+#define ONE_DEG_IN_RAD (2.0 * M_PI) / 360.0 // 0.017444444
+
 template <class T, size_t N>
 Mat<T, N, N> CreateIdentityMatrix() {
   Mat<T, N, N> m;
@@ -82,6 +84,26 @@ Mat<T, 4, 4> CreateViewMatrix(const Vec3<T>& translation,
   view[14] = T(0);
   view[15] = T(1);
   return view;
+}
+
+template <class T>
+Mat<T, 4, 4> CreatePerspectiveMatrix(int width, int height) {
+  float near = 0.1f; // clipping plane
+  float far = 100.0f; // clipping plane
+  float fov = 67.0f * ONE_DEG_IN_RAD; // convert 67 degrees to radians
+  float aspect = (float)width / (float)height; // aspect ratio
+  // matrix components
+  float range = tan(fov * 0.5f) * near;
+  float Sx = (2.0f * near) / (range * aspect + range * aspect);
+  float Sy = near / range;
+  float Sz = -(far + near) / (far - near);
+  float Pz = -(2.0f * far * near) / (far - near);
+  return Mat<T, 4, 4> {
+      Sx, 0.0f, 0.0f, 0.0f,
+      0.0f, Sy, 0.0f, 0.0f,
+      0.0f, 0.0f, Sz, -1.0f,
+      0.0f, 0.0f, Pz, 0.0f
+  };
 }
 
 }  // math

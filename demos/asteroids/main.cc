@@ -56,7 +56,7 @@ struct PhysicsComponent {
 
 class Asteroids : public game::GLGame {
  public:
-  Asteroids() : game::GLGame(1280, 720) {};
+  Asteroids() : game::GLGame(800, 800) {};
   bool Initialize() override {
     if (!GLGame::Initialize()) return false;
     ecs::Assign<component::ViewComponent>(
@@ -197,7 +197,10 @@ class Asteroids : public game::GLGame {
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
-      math::Mat4f matrix = model * view;
+      math::Mat4f projection =
+          math::CreatePerspectiveMatrix<float>(
+              window_width_, window_height_);
+      math::Mat4f matrix = model * view * projection;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, 4);
