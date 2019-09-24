@@ -50,7 +50,7 @@ T* Get(Entity entity) {
 // Will create an object of type Foo and append it to the component
 // list components_<Foo>.
 template <typename T, typename... Args>
-void Assign(Entity entity, Args&& ...args) {
+T* Assign(Entity entity, Args&& ...args) {
   // Require placeholder at end of component lists because we rely on
   // pointer advancing in vectors and they must have a condition to
   // stop.
@@ -67,9 +67,11 @@ void Assign(Entity entity, Args&& ...args) {
   // insert a new entity in sorted order.
   if ((*found).first == entity) {
     (*found).second = T(std::forward<Args>(args)...);
+    return &(*found).second;
   } else {
-    internal::components_<T>.insert(
+    auto inserted = internal::components_<T>.insert(
         found, {entity, T(std::forward<Args>(args)...)});
+    return &inserted->second;
   }
 }
 

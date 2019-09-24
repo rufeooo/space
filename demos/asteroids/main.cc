@@ -77,6 +77,9 @@ class Asteroids : public game::GLGame {
     ecs::Assign<component::TransformComponent>(player_);
     ecs::Assign<AsteroidComponent>(asteroid_);
     ecs::Assign<component::TransformComponent>(asteroid_);
+    auto* physics = ecs::Assign<PhysicsComponent>(asteroid_);
+    physics->velocity = math::Vec3f(
+        -kShipAcceleration * 50.f, 0.f, 0.0f);
     if (!shader_cache_.CompileShader(
         kVertexShaderName,
         renderer::ShaderType::VERTEX,
@@ -185,11 +188,10 @@ class Asteroids : public game::GLGame {
 
   // Game logic
   bool Update() override {
-    ecs::Enumerate<PhysicsComponent,
-                   component::TransformComponent>(
-        [this](ecs::Entity ent,
-           PhysicsComponent& physics,
-           component::TransformComponent& transform) {
+    // Provide ship control to the entity with Input (the player.)
+    ecs::Enumerate<PhysicsComponent, InputComponent>(
+        [this](ecs::Entity ent, PhysicsComponent& physics,
+               InputComponent& /*input*/) {
       // If the ship is not at max velocity and the ship has
       // acceleration.
       auto velocity_squared = math::LengthSquared(physics.velocity);
@@ -206,6 +208,11 @@ class Asteroids : public game::GLGame {
           physics.velocity = math::Vec3f(0.f, 0.f, 0.f);
         }
       }
+    });
+
+    ecs::Enumerate<PhysicsComponent, component::TransformComponent>(
+        [this](ecs::Entity ent, PhysicsComponent& physics,
+               component::TransformComponent& transform) {
       transform.position += physics.velocity;
       //std::cout << transform.position.String() << std::endl;
       if (transform.position.x() <= -1.0f) { 
@@ -219,6 +226,7 @@ class Asteroids : public game::GLGame {
         transform.position.y() = -0.99f;
       }
     });
+
 
     return true;
   }
