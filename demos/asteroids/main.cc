@@ -125,10 +125,15 @@ class Asteroids : public game::GLGame {
     triangle_component->program_reference = program_reference;
     uint32_t vao_asteroid_reference = renderer::CreateGeometryVAO({
         0.0f, 0.1f, 0.0f,
-        -0.08f, 0.06f, 0.0f,
-        -0.01f, -0.001f, 0.0f,
-        -0.06f, -0.04f, 0.0f,
-        0.01f, -0.1f, 0.0f
+        0.07f, 0.08f, 0.0f,
+        0.06f, -0.01f, 0.0f,
+        0.11f, -0.005f, 0.0f,
+        0.1f, -0.06f, 0.0f,
+        0.05f, -0.08f, 0.0f,
+        0.01f, -0.1f, 0.0f,
+        -0.07f, -0.08f, 0.0f,
+        -0.1f, -0.01f, 0.0f,
+        -0.08f, 0.06f, 0.0f
     });
     auto* asteroid_component = ecs::Get<AsteroidComponent>(asteroid_);
     asteroid_component->vao_reference = vao_asteroid_reference;
@@ -255,7 +260,7 @@ class Asteroids : public game::GLGame {
       math::Mat4f matrix = model * view * projection;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
-      glDrawArrays(GL_LINE_LOOP, 0, 5);
+      glDrawArrays(GL_LINE_LOOP, 0, 10);
     });
 
     glfw_renderer_.SwapBuffers();
