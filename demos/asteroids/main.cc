@@ -11,7 +11,7 @@
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
-static float kRotationSpeed = 1.5f;
+static float kRotationSpeedDegrees = 1.5f;
 static float kShipAcceleration = 0.00004f;
 static float kSecsToMaxSpeed = 3.f;
 static float kDampenVelocity = 0.00001f;
@@ -55,6 +55,12 @@ struct PhysicsComponent {
   float max_velocity = kShipAcceleration * kSecsToMaxSpeed * 60.f;
 };
 
+struct AsteroidComponent {
+  uint32_t vao_reference;
+  uint32_t program_reference;
+};
+
+
 class Asteroids : public game::GLGame {
  public:
   Asteroids() : game::GLGame(800, 800) {};
@@ -69,6 +75,8 @@ class Asteroids : public game::GLGame {
     ecs::Assign<PhysicsComponent>(player_);
     ecs::Assign<component::TriangleComponent>(player_);
     ecs::Assign<component::TransformComponent>(player_);
+    ecs::Assign<AsteroidComponent>(asteroid_);
+    ecs::Assign<component::TransformComponent>(asteroid_);
     if (!shader_cache_.CompileShader(
         kVertexShaderName,
         renderer::ShaderType::VERTEX,
@@ -105,18 +113,26 @@ class Asteroids : public game::GLGame {
     // Print program info
     std::cout << shader_cache_.GetProgramInfo(kProgramName)
               << std::endl;
-    uint32_t vao_reference = renderer::CreateGeometryVAO({
+    uint32_t vao_ship_reference = renderer::CreateGeometryVAO({
         0.0f, 0.08f, 0.0f,
         0.03f, -0.03f, 0.0f,
         0.00f, -0.005f, 0.0f,
         -0.03f, -0.03f, 0.0f,
     });
-    ecs::Enumerate<component::TriangleComponent>(
-        [vao_reference, program_reference]
-            (ecs::Entity ent, component::TriangleComponent& comp) {
-      comp.vao_reference = vao_reference;
-      comp.program_reference = program_reference;
+    auto* triangle_component =
+        ecs::Get<component::TriangleComponent>(player_);
+    triangle_component->vao_reference = vao_ship_reference;
+    triangle_component->program_reference = program_reference;
+    uint32_t vao_asteroid_reference = renderer::CreateGeometryVAO({
+        0.0f, 0.1f, 0.0f,
+        -0.08f, 0.06f, 0.0f,
+        -0.01f, -0.001f, 0.0f,
+        -0.06f, -0.04f, 0.0f,
+        0.01f, -0.1f, 0.0f
     });
+    auto* asteroid_component = ecs::Get<AsteroidComponent>(asteroid_);
+    asteroid_component->vao_reference = vao_asteroid_reference;
+    asteroid_component->program_reference = program_reference;
     return true;
   }
 
@@ -133,13 +149,12 @@ class Asteroids : public game::GLGame {
       // Apply rotation. 
       int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(-kRotationSpeed);
+        transform.orientation.Rotate(-kRotationSpeedDegrees);
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_D);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(kRotationSpeed);
+        transform.orientation.Rotate(kRotationSpeedDegrees);
       }
-
       /*std::cout
           << "Up: "
           << transform.orientation.Up().String() << " "
@@ -148,7 +163,6 @@ class Asteroids : public game::GLGame {
           << "Left: "
           << transform.orientation.Left().String()
           << std::endl;*/
-
       // Set acceleration to facing direction times acceleration_speed.
       auto u = transform.orientation.Up();
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
@@ -208,29 +222,43 @@ class Asteroids : public game::GLGame {
   bool Render() override {
     if (!GLGame::Render()) return false;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    auto* view_component = ecs::Get<component::ViewComponent>(
+          camera_);
+    math::Mat4f view = math::CreateViewMatrix(
+        view_component->position, view_component->orientation);
+    math::Mat4f projection =
+          math::CreatePerspectiveMatrix<float>(
+              window_width_, window_height_);
     ecs::Enumerate<component::TriangleComponent,
                    component::TransformComponent>(
         [&](ecs::Entity ent,
             component::TriangleComponent& comp,
             component::TransformComponent& transform) {
       glUseProgram(comp.program_reference);
-      auto* view_component = ecs::Get<component::ViewComponent>(
-          camera_);
-      math::Mat4f view = math::CreateViewMatrix(
-          view_component->position, view_component->orientation);
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
-      math::Mat4f projection =
-          math::CreatePerspectiveMatrix<float>(
-              window_width_, window_height_);
       math::Mat4f matrix = model * view * projection;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, 4);
     });
+    ecs::Enumerate<AsteroidComponent,
+                   component::TransformComponent>(
+        [&](ecs::Entity ent,
+            AsteroidComponent& comp,
+            component::TransformComponent& transform) {
+      glUseProgram(comp.program_reference);
+      math::Mat4f model =
+          math::CreateTranslationMatrix(transform.position) *
+          math::CreateRotationMatrix(transform.orientation);
+      math::Mat4f matrix = model * view * projection;
+      glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
+      glBindVertexArray(comp.vao_reference);
+      glDrawArrays(GL_LINE_LOOP, 0, 5);
+    });
+
     glfw_renderer_.SwapBuffers();
-    auto* view_component = ecs::Get<component::ViewComponent>(camera_);
     math::Vec3f camera_forward = view_component->orientation.Forward();
     math::Vec3f camera_up = view_component->orientation.Up();
     math::Vec3f camera_left = view_component->orientation.Left();
@@ -252,6 +280,7 @@ class Asteroids : public game::GLGame {
   int matrix_location_;
   ecs::Entity camera_ = 0;
   ecs::Entity player_ = 1;
+  ecs::Entity asteroid_ = 2;
   renderer::GLShaderCache shader_cache_;
 };
 
