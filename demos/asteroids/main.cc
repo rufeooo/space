@@ -14,6 +14,7 @@
 static float kRotationSpeed = 1.5f;
 static float kShipAcceleration = 0.00004f;
 static float kSecsToMaxSpeed = 3.f;
+static float kDampenVelocity = 0.00001f;
 
 constexpr const char* kVertexShader = R"(
   #version 410
@@ -170,11 +171,34 @@ class Asteroids : public game::GLGame {
         [this](ecs::Entity ent,
            PhysicsComponent& physics,
            component::TransformComponent& transform) {
-      if (math::LengthSquared(physics.velocity) < 
-          physics.max_velocity * physics.max_velocity) {
+      // If the ship is not at max velocity and the ship has
+      // acceleration.
+      auto velocity_squared = math::LengthSquared(physics.velocity);
+      if (velocity_squared < 
+          physics.max_velocity * physics.max_velocity &&
+          math::LengthSquared(physics.acceleration) > 0.f) {
         physics.velocity += physics.acceleration;
+      } else if (math::LengthSquared(physics.velocity) > 0.f) {
+        // Dampen velocity.
+        auto vdir = physics.velocity;
+        vdir.Normalize();
+        physics.velocity -= vdir * kDampenVelocity;
+        if (velocity_squared < kShipAcceleration * kShipAcceleration) {
+          physics.velocity = math::Vec3f(0.f, 0.f, 0.f);
+        }
       }
       transform.position += physics.velocity;
+      //std::cout << transform.position.String() << std::endl;
+      if (transform.position.x() <= -1.0f) { 
+        transform.position.x() = 0.99f;
+      } else if (transform.position.x() >= 1.0f) {
+        transform.position.x() = -0.99f;
+      }
+      if (transform.position.y() <= -1.0f) { 
+        transform.position.y() = 0.99f;
+      } else if (transform.position.y() >= 1.0f) {
+        transform.position.y() = -0.99f;
+      }
     });
 
     return true;
