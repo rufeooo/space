@@ -26,6 +26,9 @@ namespace ecs {
 //
 //   return nullptr if the component doesn't exist in the component
 //   for that entity id.
+//   TODO: This function needs to go or return a copy. This is danger
+//   time if the underlying vector changes beneath the user after the
+//   pointer has been returned.
 template <typename T>
 T* Get(Entity entity) {
   auto found = std::lower_bound(
