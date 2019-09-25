@@ -208,10 +208,10 @@ class Asteroids : public game::GLGame {
     asteroid_component->vao_reference = vao_asteroid_reference;
     asteroid_component->program_reference = program_reference;
     projectile_vao_reference_ = renderer::CreateGeometryVAO({
-        0.f, 0.01f, 0.f,
-        0.01f, 0.0f, 0.f,
-        0.f, -0.01f, 0.f,
-        -0.01f, 0.0f, 0.f
+        0.f, 0.005f, 0.f,
+        0.005f, 0.0f, 0.f,
+        0.f, -0.005f, 0.f,
+        -0.005f, 0.0f, 0.f
     });
     projectile_program_reference_ = program_reference;
     return true;
@@ -386,19 +386,10 @@ class Asteroids : public game::GLGame {
       glDrawArrays(GL_LINE_LOOP, 0, 4);
     });
     glfw_renderer_.SwapBuffers();
-    math::Vec3f camera_forward = view_component->orientation.Forward();
-    math::Vec3f camera_up = view_component->orientation.Up();
-    math::Vec3f camera_left = view_component->orientation.Left();
     char title[256];
     sprintf(
-        title,
-        "Asteroids MS Per Frame: %lld FPS: %.2f Forward: %s Up: %s "
-        "Left: %s",
-            ms_per_frame().count(),
-            fps(),
-            camera_forward.String().c_str(),
-            camera_up.String().c_str(),
-            camera_left.String().c_str());
+        title, "Asteroids MS Per Frame: %lld FPS: %.2f",
+        ms_per_frame().count(), fps());
     glfwSetWindowTitle(glfw_renderer_.window(), title);
     return true;
   }
