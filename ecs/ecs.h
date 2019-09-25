@@ -40,6 +40,18 @@ T* Get(Entity entity) {
   return nullptr;
 }
 
+template <typename T>
+void Remove(Entity entity) {
+  auto found = std::lower_bound(
+      internal::components_<T>.begin(),
+      internal::components_<T>.end(),
+      entity, internal::CompareEntity<T>());
+  if (found != internal::components_<T>.end() &&
+      (*found).first == entity) {
+    internal::components_<T>.erase(found);
+  }
+}
+
 // Given a entity id and a constructor list will create a new component
 // and forward args to that components constructor. For example -
 //

@@ -60,6 +60,30 @@ TEST_CASE("Unsorted Assign / Get", "[ecs]") {
   REQUIRE(ecs::Get<PositionComponent>(1)->y_ == 7);
 }
 
+TEST_CASE("Removed", "[ecs]") {
+  ecs::Clear<PositionComponent>(); ecs::Clear<VelocityComponent>();
+  ecs::Assign<PositionComponent>(3, 1, 2);
+  ecs::Assign<VelocityComponent>(3, 1.0f, 3.0f);
+  ecs::Assign<PositionComponent>(1, 5, 7);
+  ecs::Assign<VelocityComponent>(1, 5.0f, 15.0f);
+  ecs::Assign<PositionComponent>(2, 15, 20);
+  ecs::Assign<VelocityComponent>(2, 15.0f, 45.0f);
+  ecs::Assign<PositionComponent>(7, 20, 30);
+  ecs::Assign<VelocityComponent>(7, 5.0f, 0.0f);
+  ecs::Assign<PositionComponent>(4, 3, 4);
+  ecs::Assign<VelocityComponent>(4, 1.0f, 3.0f);
+  REQUIRE(ecs::Get<VelocityComponent>(2) != nullptr);
+  ecs::Remove<VelocityComponent>(2);
+  REQUIRE(ecs::Get<VelocityComponent>(2) == nullptr);
+  int i = 0;
+  ecs::Enumerate<PositionComponent, VelocityComponent>(
+      [&](ecs::Entity ent, PositionComponent&, VelocityComponent&) {
+    REQUIRE(ent != 2);
+    ++i;
+  }); 
+  REQUIRE(i == 4);
+}
+
 TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
   struct Foo {};
   struct Bar {};

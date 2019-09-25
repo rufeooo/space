@@ -281,7 +281,6 @@ class Asteroids : public game::GLGame {
       }
     });
 
-
     return true;
   }
 
@@ -308,7 +307,6 @@ class Asteroids : public game::GLGame {
       math::Mat4f matrix = model * view * projection;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
-      glLineWidth(10.0f);
       glDrawArrays(GL_LINE_LOOP, 0, 4);
     });
     ecs::Enumerate<AsteroidComponent,
