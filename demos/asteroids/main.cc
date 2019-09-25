@@ -11,10 +11,13 @@
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
+namespace {
+
 static float kRotationSpeedDegrees = 1.5f;
 static float kShipAcceleration = 0.00004f;
 static float kSecsToMaxSpeed = 3.f;
 static float kDampenVelocity = 0.00001f;
+static float kProjectileSpeed = 0.005;
 
 constexpr const char* kVertexShader = R"(
   #version 410
@@ -41,14 +44,23 @@ constexpr const char* kProgramName = "prog";
 
 struct InputComponent {
   InputComponent() = default;
-};
-
-struct ShooterComponent {
-  ShooterComponent() = default;
+  // Set to true when the user request a projectile to be shot.
+  bool shoot_projectile = false;
+  // State the space bar was last in.
+  int space_state;
 };
 
 struct PhysicsComponent {
   PhysicsComponent() = default;
+  PhysicsComponent(
+      const math::Vec3f& acceleration,
+      const math::Vec3f& velocity,
+      float acceleration_speed,
+      float max_velocity) :
+    acceleration(acceleration), velocity(velocity),
+    acceleration_speed(acceleration_speed),
+    max_velocity(max_velocity) {}
+      
   math::Vec3f acceleration;
   math::Vec3f velocity;
   float acceleration_speed = kShipAcceleration;
@@ -60,6 +72,35 @@ struct AsteroidComponent {
   uint32_t program_reference;
 };
 
+struct BulletComponent {
+  BulletComponent() = default;
+  BulletComponent(uint32_t vao_reference, uint32_t program_reference) :
+    vao_reference(vao_reference),
+    program_reference(program_reference) {}
+
+  uint32_t vao_reference;
+  uint32_t program_reference;
+};
+
+void SpawnPlayerProjectile(
+    ecs::Entity entity,
+    const component::TransformComponent& transform,
+    uint32_t vao_reference,
+    uint32_t program_reference) {
+  auto orientation = transform.orientation;
+  auto dir = orientation.Up();
+  dir.Normalize();
+  component::TransformComponent projectile_transform(transform);
+  projectile_transform.position += (dir * .08f);
+  ecs::Assign<component::TransformComponent>(entity,
+      projectile_transform);
+  ecs::Assign<PhysicsComponent>(
+      entity, math::Vec3f(), dir * kProjectileSpeed, 0.f, 0.f);
+  ecs::Assign<BulletComponent>(
+      entity, vao_reference, program_reference);
+}
+
+}  // namespace
 
 class Asteroids : public game::GLGame {
  public:
@@ -71,7 +112,6 @@ class Asteroids : public game::GLGame {
       math::Vec3f(0.0f, 0.0f, 10.0f),
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
     ecs::Assign<InputComponent>(player_);
-    ecs::Assign<ShooterComponent>(player_);
     ecs::Assign<PhysicsComponent>(player_);
     ecs::Assign<component::TriangleComponent>(player_);
     ecs::Assign<component::TransformComponent>(player_);
@@ -141,6 +181,13 @@ class Asteroids : public game::GLGame {
     auto* asteroid_component = ecs::Get<AsteroidComponent>(asteroid_);
     asteroid_component->vao_reference = vao_asteroid_reference;
     asteroid_component->program_reference = program_reference;
+    projectile_vao_reference_ = renderer::CreateGeometryVAO({
+        0.f, 0.01f, 0.f,
+        0.01f, 0.0f, 0.f,
+        0.f, -0.01f, 0.f,
+        -0.01f, 0.0f, 0.f
+    });
+    projectile_program_reference_ = program_reference;
     return true;
   }
 
@@ -163,14 +210,6 @@ class Asteroids : public game::GLGame {
       if (state == GLFW_PRESS) {
         transform.orientation.Rotate(kRotationSpeedDegrees);
       }
-      /*std::cout
-          << "Up: "
-          << transform.orientation.Up().String() << " "
-          << "Forward: "
-          << transform.orientation.Forward().String() << " "
-          << "Left: "
-          << transform.orientation.Left().String()
-          << std::endl;*/
       // Set acceleration to facing direction times acceleration_speed.
       auto u = transform.orientation.Up();
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
@@ -182,6 +221,13 @@ class Asteroids : public game::GLGame {
       if (state == GLFW_PRESS) {
         physics.acceleration = u * -physics.acceleration_speed;
       }
+      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_SPACE);
+      // If the current state of space was release and the previous
+      // was pressed then set the ship to fire.
+      if (state == GLFW_RELEASE && input.space_state == GLFW_PRESS) {
+        input.shoot_projectile = true;
+      }
+      input.space_state = state;
     });
     return true;
   }
@@ -189,9 +235,11 @@ class Asteroids : public game::GLGame {
   // Game logic
   bool Update() override {
     // Provide ship control to the entity with Input (the player.)
-    ecs::Enumerate<PhysicsComponent, InputComponent>(
+    ecs::Enumerate<PhysicsComponent, component::TransformComponent,
+                   InputComponent>(
         [this](ecs::Entity ent, PhysicsComponent& physics,
-               InputComponent& /*input*/) {
+               component::TransformComponent& transform,
+               InputComponent& input) {
       // If the ship is not at max velocity and the ship has
       // acceleration.
       auto velocity_squared = math::LengthSquared(physics.velocity);
@@ -207,6 +255,12 @@ class Asteroids : public game::GLGame {
         if (velocity_squared < kShipAcceleration * kShipAcceleration) {
           physics.velocity = math::Vec3f(0.f, 0.f, 0.f);
         }
+      }
+      if (input.shoot_projectile) {
+        SpawnPlayerProjectile(
+            free_entity_++, transform, projectile_vao_reference_,
+            projectile_program_reference_);
+        input.shoot_projectile = false;
       }
     });
 
@@ -254,6 +308,7 @@ class Asteroids : public game::GLGame {
       math::Mat4f matrix = model * view * projection;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
+      glLineWidth(10.0f);
       glDrawArrays(GL_LINE_LOOP, 0, 4);
     });
     ecs::Enumerate<AsteroidComponent,
@@ -270,7 +325,20 @@ class Asteroids : public game::GLGame {
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, 10);
     });
-
+    ecs::Enumerate<BulletComponent,
+                   component::TransformComponent>(
+        [&](ecs::Entity ent,
+            BulletComponent& comp,
+            component::TransformComponent& transform) {
+      glUseProgram(comp.program_reference);
+      math::Mat4f model =
+          math::CreateTranslationMatrix(transform.position) *
+          math::CreateRotationMatrix(transform.orientation);
+      math::Mat4f matrix = model * view * projection;
+      glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
+      glBindVertexArray(comp.vao_reference);
+      glDrawArrays(GL_LINE_LOOP, 0, 4);
+    });
     glfw_renderer_.SwapBuffers();
     math::Vec3f camera_forward = view_component->orientation.Forward();
     math::Vec3f camera_up = view_component->orientation.Up();
@@ -294,7 +362,10 @@ class Asteroids : public game::GLGame {
   ecs::Entity camera_ = 0;
   ecs::Entity player_ = 1;
   ecs::Entity asteroid_ = 2;
+  ecs::Entity free_entity_ = 3;
   renderer::GLShaderCache shader_cache_;
+  uint32_t projectile_vao_reference_;
+  uint32_t projectile_program_reference_;
 };
 
 int main() {

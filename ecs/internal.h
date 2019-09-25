@@ -8,6 +8,7 @@ namespace internal {
 
 template <typename T>
 std::pair<Entity, T>* GetComponentPointer() {
+  if (components_<T>.empty()) return nullptr;
   return &components_<T>[0];
 }
 
@@ -48,6 +49,7 @@ bool AnyMax(Tup&& tup) {
   bool any_zero = false;
   // TODO: Implmement templated FirstOf. 
   util::StaticFor(tup, [&](auto i, auto*& p) {
+    if (!p) { any_zero = true; return; }
     if (p->first == ENTITY_LIST_END) any_zero = true;
   });
   return any_zero;
