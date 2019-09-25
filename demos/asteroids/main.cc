@@ -13,16 +13,30 @@
 
 namespace {
 
-static float kRotationSpeedDegrees = 1.5f;
-static float kShipAcceleration = 0.00004f;
+//////// Ship Constants //////// 
+// Seconds until the ship reaches max speed.
 static float kSecsToMaxSpeed = 3.f;
+// TODO: Convert this to seconds until velocity dampens to 0.
 static float kDampenVelocity = 0.00001f;
-static float kProjectileSpeed = 0.005;
+// How fast the ship accelerates.
+static float kShipAcceleration = 0.00004f;
+// Calculation for seconds for the ship to fully rotate.
+//     15 ms an update (see game.h)
+//     ms till full speed = kSecsToFullRotation * 1000.f
+//     rotation degrees a game loop = ms till full speed / 360.f
+static float kSecsToFullRotation = 1.5f;
+static float kRotationSpeed =
+    (1000.f * kSecsToFullRotation) / 360.f;
+
+//////// Projectile Constants //////// 
 // Calcuation for a projectile to live n seconds.
 //     15 ms an update (see game.h)
 //     (n * 1000) / 15
 //     (4 * 1000) / 15 = 266.6 = to int -> 266
+// TODO: Convert this to seconds for projectile to live.
 static int kProjectileUpdatesToLive = 266;
+// Initial / max speed of projectile.
+static float kProjectileSpeed = 0.005;
 
 constexpr const char* kVertexShader = R"(
   #version 410
@@ -53,6 +67,10 @@ struct InputComponent {
   bool shoot_projectile = false;
   // State the space bar was last in.
   int space_state;
+  // If a was pressed in the past process input calls.
+  bool a_pressed = false; 
+  // If b was pressed in the past process input calls.
+  bool d_pressed = false; 
 };
 
 struct PhysicsComponent {
@@ -65,7 +83,6 @@ struct PhysicsComponent {
     acceleration(acceleration), velocity(velocity),
     acceleration_speed(acceleration_speed),
     max_velocity(max_velocity) {}
-      
   math::Vec3f acceleration;
   math::Vec3f velocity;
   float acceleration_speed = kShipAcceleration;
@@ -82,7 +99,6 @@ struct BulletComponent {
   BulletComponent(uint32_t vao_reference, uint32_t program_reference) :
     vao_reference(vao_reference),
     program_reference(program_reference) {}
-
   uint32_t vao_reference;
   uint32_t program_reference;
 };
@@ -101,8 +117,8 @@ void SpawnPlayerProjectile(
   dir.Normalize();
   component::TransformComponent projectile_transform(transform);
   projectile_transform.position += (dir * .08f);
-  ecs::Assign<component::TransformComponent>(entity,
-      projectile_transform);
+  ecs::Assign<component::TransformComponent>(
+      entity, projectile_transform);
   ecs::Assign<PhysicsComponent>(
       entity, math::Vec3f(), dir * kProjectileSpeed, 0.f, 0.f);
   ecs::Assign<BulletComponent>(
@@ -214,11 +230,11 @@ class Asteroids : public game::GLGame {
       // Apply rotation. 
       int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(-kRotationSpeedDegrees);
+        input.a_pressed = true;
       }
       state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_D);
       if (state == GLFW_PRESS) {
-        transform.orientation.Rotate(kRotationSpeedDegrees);
+        input.d_pressed = true;
       }
       // Set acceleration to facing direction times acceleration_speed.
       auto u = transform.orientation.Up();
@@ -271,6 +287,14 @@ class Asteroids : public game::GLGame {
             free_entity_++, transform, projectile_vao_reference_,
             projectile_program_reference_);
         input.shoot_projectile = false;
+      }
+      if (input.a_pressed) {
+        transform.orientation.Rotate(-kRotationSpeed);
+        input.a_pressed = false;
+      }
+      if (input.d_pressed) {
+        transform.orientation.Rotate(kRotationSpeed);
+        input.d_pressed = false;
       }
     });
 
