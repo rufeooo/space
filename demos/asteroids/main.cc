@@ -18,6 +18,11 @@ static float kShipAcceleration = 0.00004f;
 static float kSecsToMaxSpeed = 3.f;
 static float kDampenVelocity = 0.00001f;
 static float kProjectileSpeed = 0.005;
+// Calcuation for a projectile to live n seconds.
+//     15 ms an update (see game.h)
+//     (n * 1000) / 15
+//     (4 * 1000) / 15 = 266.6 = to int -> 266
+static int kProjectileUpdatesToLive = 266;
 
 constexpr const char* kVertexShader = R"(
   #version 410
@@ -82,6 +87,10 @@ struct BulletComponent {
   uint32_t program_reference;
 };
 
+struct TTLComponent {
+  uint32_t updates_to_live = kProjectileUpdatesToLive;
+};
+
 void SpawnPlayerProjectile(
     ecs::Entity entity,
     const component::TransformComponent& transform,
@@ -98,6 +107,7 @@ void SpawnPlayerProjectile(
       entity, math::Vec3f(), dir * kProjectileSpeed, 0.f, 0.f);
   ecs::Assign<BulletComponent>(
       entity, vao_reference, program_reference);
+  ecs::Assign<TTLComponent>(entity);
 }
 
 }  // namespace
@@ -280,6 +290,20 @@ class Asteroids : public game::GLGame {
         transform.position.y() = -0.99f;
       }
     });
+
+    std::vector<ecs::Entity> ents_to_kill;
+    ecs::Enumerate<TTLComponent>([&ents_to_kill](
+        ecs::Entity ent, TTLComponent& ttl) {
+      --ttl.updates_to_live;
+      if (!ttl.updates_to_live) ents_to_kill.push_back(ent);
+    });
+
+    for (const auto& e : ents_to_kill) {
+      ecs::Remove<component::TransformComponent>(e);
+      ecs::Remove<PhysicsComponent>(e);
+      ecs::Remove<BulletComponent>(e);
+      ecs::Remove<TTLComponent>(e);
+    }
 
     return true;
   }
