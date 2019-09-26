@@ -1,6 +1,43 @@
 #include "gl_utils.h"
 
+#include <iostream>
+
 namespace renderer {
+
+GLFWwindow* InitGLAndCreateWindow(
+    int window_width, int window_height, const char* title) {
+  if (!glfwInit()) {
+    std::cout << "Cound not start GLFW3" << std::endl;
+    return nullptr;
+  }
+  // Only for mac I need this?
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
+  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
+  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+  GLFWwindow* window = glfwCreateWindow(
+      window_width, window_height, title, NULL, NULL);
+  if (!window) {
+    std::cout << "Failed to open window with GLFW3" << std::endl;
+    return nullptr;
+  }
+  glfwMakeContextCurrent(window);
+  if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+    std::cout << "Failed to initialize OpenGL context" << std::endl;
+    return nullptr;
+  }
+  const GLubyte* renderer = glGetString(GL_RENDERER);
+  const GLubyte* version = glGetString(GL_VERSION);
+  std::cout << renderer << std::endl;
+  std::cout << version << std::endl;
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+  // Should these be enabled?
+  //glEnable(GL_CULL_FACE);
+  //glCullFace(GL_BACK);
+  //glFrontFace(GL_CW);
+  return window;
+}
 
 std::string GLTypeToString(GLenum type) {
   switch (type) {

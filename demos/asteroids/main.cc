@@ -4,7 +4,7 @@
 #include "components/rendering/rendering_component.h"
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
-#include "game/gl_game.h"
+#include "game/game.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
 #include "renderer/gl_shader_cache.h"
@@ -118,11 +118,17 @@ void SpawnPlayerProjectile(
 
 }  // namespace
 
-class Asteroids : public game::GLGame {
+class Asteroids : public game::Game {
  public:
-  Asteroids() : game::GLGame(800, 800) {};
+  Asteroids() : game::Game() {};
   bool Initialize() override {
-    if (!GLGame::Initialize()) return false;
+    glfw_window_ = renderer::InitGLAndCreateWindow(
+        800, 800, "Asteroids");
+    if (!glfw_window_) {
+      std::cout << "Unable to start GL and create window."
+                << std::endl;
+      return false;
+    }
     ecs::Assign<component::ViewComponent>(
       camera_,
       math::Vec3f(0.0f, 0.0f, 10.0f),
@@ -213,26 +219,26 @@ class Asteroids : public game::GLGame {
            PhysicsComponent& physics,
            component::TransformComponent& transform) {
       // Apply rotation. 
-      int state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_A);
+      int state = glfwGetKey(glfw_window_, GLFW_KEY_A);
       if (state == GLFW_PRESS) {
         input.a_pressed = true;
       }
-      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_D);
+      state = glfwGetKey(glfw_window_, GLFW_KEY_D);
       if (state == GLFW_PRESS) {
         input.d_pressed = true;
       }
       // Set acceleration to facing direction times acceleration_speed.
       auto u = transform.orientation.Up();
-      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_W);
+      state = glfwGetKey(glfw_window_, GLFW_KEY_W);
       physics.acceleration = math::Vec3f(0.f, 0.f, 0.f);
       if (state == GLFW_PRESS) {
         physics.acceleration = u * physics.acceleration_speed;
       }
-      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_S);
+      state = glfwGetKey(glfw_window_, GLFW_KEY_S);
       if (state == GLFW_PRESS) {
         physics.acceleration = u * -physics.acceleration_speed;
       }
-      state = glfwGetKey(glfw_renderer_.window(), GLFW_KEY_SPACE);
+      state = glfwGetKey(glfw_window_, GLFW_KEY_SPACE);
       // If the current state of space was release and the previous
       // was pressed then set the ship to fire.
       if (state == GLFW_RELEASE && input.space_state == GLFW_PRESS) {
@@ -319,15 +325,13 @@ class Asteroids : public game::GLGame {
 
   // Render logic
   bool Render() override {
-    if (!GLGame::Render()) return false;
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     auto* view_component = ecs::Get<component::ViewComponent>(
           camera_);
     math::Mat4f view = math::CreateViewMatrix(
         view_component->position, view_component->orientation);
     math::Mat4f projection =
-          math::CreatePerspectiveMatrix<float>(
-              window_width_, window_height_);
+          math::CreatePerspectiveMatrix<float>(800, 800);
     ecs::Enumerate<component::RenderingComponent,
                    component::TransformComponent>(
         [&](ecs::Entity ent,
@@ -342,13 +346,13 @@ class Asteroids : public game::GLGame {
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, comp.vertex_count);
     });
-    glfw_renderer_.SwapBuffers();
+    glfwSwapBuffers(glfw_window_);
     char title[256];
     sprintf(
         title, "Asteroids MS Per Frame: %lld FPS: %.2f",
         ms_per_frame().count(), fps());
-    glfwSetWindowTitle(glfw_renderer_.window(), title);
-    return true;
+    glfwSetWindowTitle(glfw_window_, title);
+    return !glfwWindowShouldClose(glfw_window_);
   }
 
  private:
@@ -357,6 +361,7 @@ class Asteroids : public game::GLGame {
   ecs::Entity player_ = 1;
   ecs::Entity asteroid_ = 2;
   ecs::Entity free_entity_ = 3;
+  GLFWwindow* glfw_window_;
   renderer::GLShaderCache shader_cache_;
   uint32_t projectile_vao_reference_;
   uint32_t projectile_program_reference_;

@@ -1,5 +1,8 @@
 #include "gl_shader_cache.h"
-#include "glfw_renderer.h"
+#include "gl_utils.h"
+
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
@@ -41,11 +44,10 @@ constexpr const char* kValidProgramName
 class GLShaderCacheTest : public ::testing::Test {
  protected:
   GLShaderCacheTest() {
-    // Required to initialize OpenGL context and glad.
-    renderer_.Start(10, 10, "fake");
+    glfw_window_ = renderer::InitGLAndCreateWindow(10, 10, "");
   }
 
-  GLFWRenderer renderer_;
+  GLFWwindow* glfw_window_;
 };
 
 TEST_F(GLShaderCacheTest, HappyPathShaderCompilation) {

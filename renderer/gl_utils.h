@@ -3,8 +3,12 @@
 #include <string>
 #include <vector>
 #include <glad/glad.h>
+#include <GLFW/glfw3.h>
 
 namespace renderer {
+
+GLFWwindow* InitGLAndCreateWindow(
+    int window_width, int window_height, const char* title);
 
 // Given a GLenum returns a stringified version of it. For example -
 // GLTypeToString(GL_BOOL) = "bool"
