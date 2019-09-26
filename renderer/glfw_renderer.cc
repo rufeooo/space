@@ -55,12 +55,4 @@ bool GLFWRenderer::SwapBuffers() {
   return true;
 }
 
-void GLFWRenderer::Draw(const component::LineComponent& component) {
-  std::cout << "Draw Line." << std::endl;
-}
-
-void GLFWRenderer::Draw(const component::TriangleComponent& component) {
-  std::cout << "Draw Triangle." << std::endl;
-}
-
 }  // renderer

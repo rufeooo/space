@@ -1,8 +1,7 @@
 #include <iostream>
 
 #include "components/common/transform_component.h"
-#include "components/rendering/line_component.h"
-#include "components/rendering/triangle_component.h"
+#include "components/rendering/rendering_component.h"
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
 #include "game/gl_game.h"
@@ -94,15 +93,6 @@ struct AsteroidComponent {
   uint32_t program_reference;
 };
 
-struct BulletComponent {
-  BulletComponent() = default;
-  BulletComponent(uint32_t vao_reference, uint32_t program_reference) :
-    vao_reference(vao_reference),
-    program_reference(program_reference) {}
-  uint32_t vao_reference;
-  uint32_t program_reference;
-};
-
 struct TTLComponent {
   uint32_t updates_to_live = kProjectileUpdatesToLive;
 };
@@ -121,8 +111,8 @@ void SpawnPlayerProjectile(
       entity, projectile_transform);
   ecs::Assign<PhysicsComponent>(
       entity, math::Vec3f(), dir * kProjectileSpeed, 0.f, 0.f);
-  ecs::Assign<BulletComponent>(
-      entity, vao_reference, program_reference);
+  ecs::Assign<component::RenderingComponent>(
+      entity, vao_reference, program_reference, 4);
   ecs::Assign<TTLComponent>(entity);
 }
 
@@ -139,9 +129,7 @@ class Asteroids : public game::GLGame {
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
     ecs::Assign<InputComponent>(player_);
     ecs::Assign<PhysicsComponent>(player_);
-    ecs::Assign<component::TriangleComponent>(player_);
     ecs::Assign<component::TransformComponent>(player_);
-    ecs::Assign<AsteroidComponent>(asteroid_);
     ecs::Assign<component::TransformComponent>(asteroid_);
     auto* physics = ecs::Assign<PhysicsComponent>(asteroid_);
     physics->velocity = math::Vec3f(
@@ -188,10 +176,8 @@ class Asteroids : public game::GLGame {
         0.00f, -0.005f, 0.0f,
         -0.03f, -0.03f, 0.0f,
     });
-    auto* triangle_component =
-        ecs::Get<component::TriangleComponent>(player_);
-    triangle_component->vao_reference = vao_ship_reference;
-    triangle_component->program_reference = program_reference;
+    ecs::Assign<component::RenderingComponent>(
+        player_, vao_ship_reference, program_reference, 4);
     uint32_t vao_asteroid_reference = renderer::CreateGeometryVAO({
         0.0f, 0.1f, 0.0f,
         0.07f, 0.08f, 0.0f,
@@ -204,9 +190,8 @@ class Asteroids : public game::GLGame {
         -0.1f, -0.01f, 0.0f,
         -0.08f, 0.06f, 0.0f
     });
-    auto* asteroid_component = ecs::Get<AsteroidComponent>(asteroid_);
-    asteroid_component->vao_reference = vao_asteroid_reference;
-    asteroid_component->program_reference = program_reference;
+    ecs::Assign<component::RenderingComponent>(
+        asteroid_, vao_asteroid_reference, program_reference, 10);
     projectile_vao_reference_ = renderer::CreateGeometryVAO({
         0.f, 0.005f, 0.f,
         0.005f, 0.0f, 0.f,
@@ -325,7 +310,7 @@ class Asteroids : public game::GLGame {
     for (const auto& e : ents_to_kill) {
       ecs::Remove<component::TransformComponent>(e);
       ecs::Remove<PhysicsComponent>(e);
-      ecs::Remove<BulletComponent>(e);
+      ecs::Remove<component::RenderingComponent>(e);
       ecs::Remove<TTLComponent>(e);
     }
 
@@ -343,10 +328,10 @@ class Asteroids : public game::GLGame {
     math::Mat4f projection =
           math::CreatePerspectiveMatrix<float>(
               window_width_, window_height_);
-    ecs::Enumerate<component::TriangleComponent,
+    ecs::Enumerate<component::RenderingComponent,
                    component::TransformComponent>(
         [&](ecs::Entity ent,
-            component::TriangleComponent& comp,
+            component::RenderingComponent& comp,
             component::TransformComponent& transform) {
       glUseProgram(comp.program_reference);
       math::Mat4f model =
@@ -355,35 +340,7 @@ class Asteroids : public game::GLGame {
       math::Mat4f matrix = model * view * projection;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
-      glDrawArrays(GL_LINE_LOOP, 0, 4);
-    });
-    ecs::Enumerate<AsteroidComponent,
-                   component::TransformComponent>(
-        [&](ecs::Entity ent,
-            AsteroidComponent& comp,
-            component::TransformComponent& transform) {
-      glUseProgram(comp.program_reference);
-      math::Mat4f model =
-          math::CreateTranslationMatrix(transform.position) *
-          math::CreateRotationMatrix(transform.orientation);
-      math::Mat4f matrix = model * view * projection;
-      glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
-      glBindVertexArray(comp.vao_reference);
-      glDrawArrays(GL_LINE_LOOP, 0, 10);
-    });
-    ecs::Enumerate<BulletComponent,
-                   component::TransformComponent>(
-        [&](ecs::Entity ent,
-            BulletComponent& comp,
-            component::TransformComponent& transform) {
-      glUseProgram(comp.program_reference);
-      math::Mat4f model =
-          math::CreateTranslationMatrix(transform.position) *
-          math::CreateRotationMatrix(transform.orientation);
-      math::Mat4f matrix = model * view * projection;
-      glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
-      glBindVertexArray(comp.vao_reference);
-      glDrawArrays(GL_LINE_LOOP, 0, 4);
+      glDrawArrays(GL_LINE_LOOP, 0, comp.vertex_count);
     });
     glfw_renderer_.SwapBuffers();
     char title[256];

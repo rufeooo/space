@@ -2,9 +2,6 @@
 
 #include <string>
 
-#include "components/rendering/line_component.h"
-#include "components/rendering/triangle_component.h"
-
 namespace renderer {
 
 class Renderer {
@@ -16,8 +13,6 @@ class Renderer {
     const std::string& window_title) = 0;
   virtual bool SwapBuffers() = 0;
   virtual bool HasStopped() const = 0;
-  virtual void Draw(const component::LineComponent& component) = 0;
-  virtual void Draw(const component::TriangleComponent& component) = 0;
 };
 
 }  // renderer
