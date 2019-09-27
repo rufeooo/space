@@ -4,5 +4,5 @@ set(asteroids_srcs
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(asteroids ${asteroids_srcs})
-target_link_libraries(asteroids game_lib glfw_renderer)
+target_link_libraries(asteroids game_lib glfw_renderer math_lib)
 set_target_properties(asteroids PROPERTIES FOLDER Demos)

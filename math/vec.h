@@ -153,25 +153,25 @@ class Vec2 : public Vec<T, 2> {
   // without these overloads thereby ruining the point of these
   // convenience classes.
 
-  Vec2<T> operator+(const Vec2<T>& rhs) {
+  Vec2<T> operator+(const Vec2<T>& rhs) const {
     Vec2<T> t = *this;
     t += rhs;
     return t;
   }
 
-  Vec2<T> operator-(const Vec2<T>& rhs) {
+  Vec2<T> operator-(const Vec2<T>& rhs) const {
     Vec2<T> t = *this;
     t -= rhs;
     return t;
   }
 
-  Vec2<T> operator*(const T& rhs) {
+  Vec2<T> operator*(const T& rhs) const {
     Vec2<T> t = *this;
     t *= rhs;
     return t;
   }
 
-  Vec2<T> operator/(const T& rhs) {
+  Vec2<T> operator/(const T& rhs) const {
     Vec2<T> t = *this;
     t /= rhs;
     return t;
@@ -179,7 +179,15 @@ class Vec2 : public Vec<T, 2> {
 
   T& x() { return this->data_[0]; };
   T& y() { return this->data_[1]; };
+
+  T x() const { return this->data_[0]; };
+  T y() const { return this->data_[1]; };
 };
+
+template <class T>
+T Cross(const Vec2<T>& lhs, const Vec2<T>& rhs) {
+  return lhs.x() * rhs.y() - lhs.y() * rhs.x();
+}
 
 template <typename T>
 class Vec3 : public Vec<T, 3> {
@@ -213,25 +221,25 @@ class Vec3 : public Vec<T, 3> {
   // without these overloads thereby ruining the point of these
   // convenience classes.
 
-  Vec3<T> operator+(const Vec3<T>& rhs) {
+  Vec3<T> operator+(const Vec3<T>& rhs) const {
     Vec3<T> t = *this;
     t += rhs;
     return t;
   }
 
-  Vec3<T> operator-(const Vec3<T>& rhs) {
+  Vec3<T> operator-(const Vec3<T>& rhs) const {
     Vec3<T> t = *this;
     t -= rhs;
     return t;
   }
 
-  Vec3<T> operator*(const T& rhs) {
+  Vec3<T> operator*(const T& rhs) const {
     Vec3<T> t = *this;
     t *= rhs;
     return t;
   }
 
-  Vec3<T> operator/(const T& rhs) {
+  Vec3<T> operator/(const T& rhs) const {
     Vec3<T> t = *this;
     t /= rhs;
     return t;
@@ -280,25 +288,25 @@ class Vec4 : public Vec<T, 4> {
   // without these overloads thereby ruining the point of these
   // convenience classes.
 
-  Vec4<T> operator+(const Vec4<T>& rhs) {
+  Vec4<T> operator+(const Vec4<T>& rhs) const {
     Vec4<T> t = *this;
     t += rhs;
     return t;
   }
 
-  Vec4<T> operator-(const Vec4<T>& rhs) {
+  Vec4<T> operator-(const Vec4<T>& rhs) const {
     Vec4<T> t = *this;
     t -= rhs;
     return t;
   }
 
-  Vec4<T> operator*(const T& rhs) {
+  Vec4<T> operator*(const T& rhs) const {
     Vec4<T> t = *this;
     t *= rhs;
     return t;
   }
 
-  Vec4<T> operator/(const T& rhs) {
+  Vec4<T> operator/(const T& rhs) const {
     Vec4<T> t = *this;
     t /= rhs;
     return t;

@@ -22,7 +22,7 @@ GLFWwindow* InitGLAndCreateWindow(
     return nullptr;
   }
   glfwMakeContextCurrent(window);
-  if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cout << "Failed to initialize OpenGL context" << std::endl;
     return nullptr;
   }
@@ -94,7 +94,6 @@ uint32_t CreateGeometryVAO(const std::vector<GLfloat>& verts) {
   glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
   return vao;
-
 }
 
 }

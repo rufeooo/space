@@ -26,6 +26,9 @@ make quat_test
 make mat_ops_test
 ./math/mat_ops_test
 
+make intersection_test
+./math/intersection_test
+
 make game_test
 ./game/game_test
 
