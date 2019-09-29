@@ -103,7 +103,7 @@ struct TTLComponent {
 };
 
 struct GameStateComponent {
-  float time_since_last_asteroid_spawn = 0.f;
+  float seconds_since_last_asteroid_spawn = 0.f;
 };
 
 struct PolygonShape {
@@ -286,6 +286,10 @@ class Asteroids : public game::Game {
     uint32_t vao_ship_reference =
         renderer::CreateGeometryVAO(ship_geometry);
 
+    // Create game state component.
+    
+    ecs::Assign<GameStateComponent>(free_entity_++);
+
     // Create player.
 
     SpawnPlayer(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
@@ -402,6 +406,17 @@ class Asteroids : public game::Game {
         transform.position.y() = 0.99f;
       } else if (transform.position.y() >= 1.0f) {
         transform.position.y() = -0.99f;
+      }
+    });
+
+    ecs::Enumerate<GameStateComponent>(
+        [&](ecs::Entity ent, GameStateComponent& game_state) {
+      game_state.seconds_since_last_asteroid_spawn +=
+          ms_per_update() / 1000.0f;
+      if (game_state.seconds_since_last_asteroid_spawn >=
+          kSecsToSpawnAsteroid) {
+        std::cout << "Spawn Asteroid." << std::endl;
+        game_state.seconds_since_last_asteroid_spawn = 0.f;
       }
     });
 

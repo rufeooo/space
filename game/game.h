@@ -31,8 +31,8 @@ class Game {
   std::chrono::milliseconds ms_per_frame() const {
     return ms_per_frame_;
   }
-  std::chrono::milliseconds ms_per_update() const {
-    return ms_per_update_;
+  int ms_per_update() const {
+    return ms_per_update_.count();
   }
   float fps() const { return (1.f / ms_per_frame_.count()) * 1000.f; }
  private:
