@@ -102,12 +102,29 @@ struct TTLComponent {
   uint32_t updates_to_live = kProjectileUpdatesToLive;
 };
 
+struct GameStateComponent {
+  float time_since_last_asteroid_spawn = 0.f;
+};
+
 struct PolygonShape {
   PolygonShape() = default;
   PolygonShape(const std::vector<math::Vec2f>& points)
       : points(points) {}
   std::vector<math::Vec2f> points;
 };
+
+void SpawnPlayer(
+    ecs::Entity entity, const math::Vec3f& position,
+    uint32_t vao_reference, uint32_t program_reference,
+    const std::vector<math::Vec2f>& ship_geometry) {
+  ecs::Assign<InputComponent>(entity);
+  ecs::Assign<PhysicsComponent>(entity);
+  ecs::Assign<PolygonShape>(entity, ship_geometry);
+  ecs::Assign<component::TransformComponent>(entity);
+  ecs::Assign<component::RenderingComponent>(
+      entity, vao_reference, program_reference,
+      ship_geometry.size());
+}
 
 void SpawnPlayerProjectile(
     ecs::Entity entity, const component::TransformComponent& transform,
@@ -196,7 +213,6 @@ bool ProjectileCollidesWithAsteroid(
     math::Vec2f point_start(asteroid_points[i].x(),
                             asteroid_points[i].y());
     int end_idx = (i + 1) % asteroid_points.size();
-    //std::cout << i << " " << i + 1 << std::endl;
     math::Vec2f point_end(
         asteroid_points[end_idx].x(), asteroid_points[end_idx].y());
     if (math::LineSegmentsIntersect2D(
@@ -225,9 +241,6 @@ class Asteroids : public game::Game {
       camera_,
       math::Vec3f(0.0f, 0.0f, 10.0f),
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
-    ecs::Assign<InputComponent>(player_);
-    ecs::Assign<PhysicsComponent>(player_);
-    ecs::Assign<component::TransformComponent>(player_);
     if (!shader_cache_.CompileShader(
         kVertexShaderName,
         renderer::ShaderType::VERTEX,
@@ -270,12 +283,13 @@ class Asteroids : public game::Game {
         {0.0f, 0.08f}, {0.03f, -0.03f}, {0.00f, -0.005f},
         {-0.03f, -0.03f}
     };
-    ecs::Assign<PolygonShape>(player_, ship_geometry);
     uint32_t vao_ship_reference =
         renderer::CreateGeometryVAO(ship_geometry);
-    ecs::Assign<component::RenderingComponent>(
-        player_, vao_ship_reference, program_reference,
-        ship_geometry.size());
+
+    // Create player.
+
+    SpawnPlayer(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
+                vao_ship_reference, program_reference, ship_geometry);
 
     // Create asteroid geometry and save its vao / program ref.
 
@@ -302,6 +316,7 @@ class Asteroids : public game::Game {
     projectile_vao_reference_
         = renderer::CreateGeometryVAO(projectile_geometry);
     projectile_program_reference_ = program_reference;
+
     return true;
   }
 
@@ -355,6 +370,7 @@ class Asteroids : public game::Game {
                component::TransformComponent& transform,
                InputComponent& input) {
       UpdatePhysics(physics);
+
       if (input.shoot_projectile) {
         projectile_entities_.insert(free_entity_);
         SpawnPlayerProjectile(
@@ -461,8 +477,7 @@ class Asteroids : public game::Game {
  private:
   int matrix_location_;
   ecs::Entity camera_ = 0;
-  ecs::Entity player_ = 1;
-  ecs::Entity free_entity_ = 2;
+  ecs::Entity free_entity_ = 1;
   GLFWwindow* glfw_window_;
   renderer::GLShaderCache shader_cache_;
   uint32_t projectile_vao_reference_;
