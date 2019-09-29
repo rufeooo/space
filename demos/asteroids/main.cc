@@ -39,6 +39,9 @@ static int kProjectileUpdatesToLive = 266;
 // Initial / max speed of projectile.
 static float kProjectileSpeed = 0.005;
 
+//////// Game Constants //////// 
+static float kSecsToSpawnAsteroid = 3.f;
+
 constexpr const char* kVertexShader = R"(
   #version 410
   layout (location = 0) in vec3 vertex_position;
@@ -107,10 +110,8 @@ struct PolygonShape {
 };
 
 void SpawnPlayerProjectile(
-    ecs::Entity entity,
-    const component::TransformComponent& transform,
-    uint32_t vao_reference,
-    uint32_t program_reference) {
+    ecs::Entity entity, const component::TransformComponent& transform,
+    uint32_t vao_reference, uint32_t program_reference) {
   auto orientation = transform.orientation;
   auto dir = orientation.Up();
   dir.Normalize();
@@ -123,6 +124,22 @@ void SpawnPlayerProjectile(
   ecs::Assign<component::RenderingComponent>(
       entity, vao_reference, program_reference, 4);
   ecs::Assign<TTLComponent>(entity);
+}
+
+void SpawnAsteroid(
+    ecs::Entity entity, const math::Vec3f& position,
+    math::Vec3f dir, uint32_t vao_reference,
+    uint32_t program_reference,
+    const std::vector<math::Vec2f>& asteroid_geometry) {
+  dir.Normalize();
+  ecs::Assign<component::TransformComponent>(entity);
+  ecs::Assign<PhysicsComponent>(entity);
+  auto* physics = ecs::Get<PhysicsComponent>(entity);
+  physics->velocity = dir * kShipAcceleration * 50.f;
+  ecs::Assign<PolygonShape>(entity, asteroid_geometry);
+  ecs::Assign<component::RenderingComponent>(
+      entity, vao_reference, program_reference,
+      asteroid_geometry.size());
 }
 
 void UpdatePhysics(PhysicsComponent& physics_component) {
@@ -211,10 +228,6 @@ class Asteroids : public game::Game {
     ecs::Assign<InputComponent>(player_);
     ecs::Assign<PhysicsComponent>(player_);
     ecs::Assign<component::TransformComponent>(player_);
-    ecs::Assign<component::TransformComponent>(asteroid_);
-    auto* physics = ecs::Assign<PhysicsComponent>(asteroid_);
-    physics->velocity = math::Vec3f(
-        -kShipAcceleration * 50.f, 0.f, 0.0f);
     if (!shader_cache_.CompileShader(
         kVertexShaderName,
         renderer::ShaderType::VERTEX,
@@ -250,6 +263,9 @@ class Asteroids : public game::Game {
         program_reference, "matrix");
     std::cout << shader_cache_.GetProgramInfo(kProgramName)
               << std::endl;
+
+    // Create ship geometry.
+
     std::vector<math::Vec2f> ship_geometry = {
         {0.0f, 0.08f}, {0.03f, -0.03f}, {0.00f, -0.005f},
         {-0.03f, -0.03f}
@@ -260,18 +276,26 @@ class Asteroids : public game::Game {
     ecs::Assign<component::RenderingComponent>(
         player_, vao_ship_reference, program_reference,
         ship_geometry.size());
-    std::vector<math::Vec2f> asteroids_geometry = {
+
+    // Create asteroid geometry and save its vao / program ref.
+
+    asteroid_geometry_ = {
       {0.0f, 0.1f}, {0.07f, 0.08f}, {0.06f, -0.01f}, {0.11f, -0.005f},
       {0.1f, -0.06f}, {0.05f, -0.08f}, {0.01f, -0.1f},
       {-0.07f, -0.08f}, {-0.1f, -0.01f}, {-0.08f, 0.06f},
     };
-    ecs::Assign<PolygonShape>(asteroid_, asteroids_geometry);
-    asteroid_entities_.insert(asteroid_);
-    uint32_t vao_asteroid_reference =
-        renderer::CreateGeometryVAO(asteroids_geometry);
-    ecs::Assign<component::RenderingComponent>(
-        asteroid_, vao_asteroid_reference, program_reference,
-        asteroids_geometry.size());
+    asteroid_vao_reference_
+        = renderer::CreateGeometryVAO(asteroid_geometry_);
+    asteroid_program_reference_ = program_reference;
+    asteroid_entities_.insert(free_entity_);
+    SpawnAsteroid(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
+                  math::Vec3f(-1.f, 0.0f, 0.f),
+                  asteroid_vao_reference_,
+                  asteroid_program_reference_,
+                  asteroid_geometry_);
+
+    // Create projectile geometry and save its vao / program ref.
+    
     std::vector<math::Vec2f> projectile_geometry = {
       {0.f, 0.005f}, {0.005f, 0.0f}, {0.f, -0.005f}, {-0.005f, 0.0}
     };
@@ -365,14 +389,25 @@ class Asteroids : public game::Game {
       }
     });
 
-    std::vector<ecs::Entity> ents_to_kill;
-    ecs::Enumerate<TTLComponent>([&ents_to_kill](
+    std::set<ecs::Entity> projectiles_to_kill;
+    ecs::Enumerate<TTLComponent>([&projectiles_to_kill](
         ecs::Entity ent, TTLComponent& ttl) {
       --ttl.updates_to_live;
-      if (!ttl.updates_to_live) ents_to_kill.push_back(ent);
+      if (!ttl.updates_to_live) projectiles_to_kill.insert(ent);
     });
 
-    for (const auto& e : ents_to_kill) {
+    std::set<ecs::Entity> asteroids_to_kill;
+    static int i = 0;
+    for (const auto& projectile : projectile_entities_) {
+      for (const auto& asteroid : asteroid_entities_) {
+        if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
+          asteroids_to_kill.insert(asteroid);
+          projectiles_to_kill.insert(projectile);
+        }
+      }
+    }
+
+    for (const auto& e : projectiles_to_kill) {
       ecs::Remove<component::TransformComponent>(e);
       ecs::Remove<PhysicsComponent>(e);
       ecs::Remove<component::RenderingComponent>(e);
@@ -380,13 +415,12 @@ class Asteroids : public game::Game {
       projectile_entities_.erase(e);
     }
 
-    static int i = 0;
-    for (const auto& projectile : projectile_entities_) {
-      for (const auto& asteroid : asteroid_entities_) {
-        if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
-          std::cout << i++ << ": " << "COLLISION" << std::endl;
-        }
-      }
+    for (const auto& e : asteroids_to_kill) {
+      ecs::Remove<component::TransformComponent>(e);
+      ecs::Remove<PhysicsComponent>(e);
+      ecs::Remove<PolygonShape>(e);
+      ecs::Remove<component::RenderingComponent>(e);
+      asteroid_entities_.erase(e);
     }
 
     return true;
@@ -428,12 +462,14 @@ class Asteroids : public game::Game {
   int matrix_location_;
   ecs::Entity camera_ = 0;
   ecs::Entity player_ = 1;
-  ecs::Entity asteroid_ = 2;
-  ecs::Entity free_entity_ = 3;
+  ecs::Entity free_entity_ = 2;
   GLFWwindow* glfw_window_;
   renderer::GLShaderCache shader_cache_;
   uint32_t projectile_vao_reference_;
   uint32_t projectile_program_reference_;
+  uint32_t asteroid_vao_reference_;
+  uint32_t asteroid_program_reference_;
+  std::vector<math::Vec2f> asteroid_geometry_;
   // ordered_set for determinism when calculating collision.
   std::set<ecs::Entity> projectile_entities_;
   std::set<ecs::Entity> asteroid_entities_;
