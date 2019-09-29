@@ -5,6 +5,8 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
+#include "math/vec.h"
+
 namespace renderer {
 
 GLFWwindow* InitGLAndCreateWindow(
@@ -23,5 +25,8 @@ uint32_t CreateTriangleVAO();
 
 // Creates a vbo for a vert list and binds / returns a vao.
 uint32_t CreateGeometryVAO(const std::vector<GLfloat>& verts);
+
+// Creates a vbo for a vert list of 2d vectors.
+uint32_t CreateGeometryVAO(const std::vector<math::Vec2f>& verts);
 
 }

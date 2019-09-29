@@ -10,7 +10,7 @@ include_directories(${CMAKE_SOURCE_DIR}/third_party/glad)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/glfw/include)
 
 add_library(glfw_renderer ${glfw_renderer_srcs})
-target_link_libraries(glfw_renderer glfw glad)
+target_link_libraries(glfw_renderer glfw glad math_lib)
 set_target_properties(glfw_renderer PROPERTIES FOLDER renderer)
 
 set(gl_shader_cache_test_srcs
