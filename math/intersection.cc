@@ -36,7 +36,7 @@ bool LineSegmentsIntersect2D(
       math::Vec2f(a_start.x(), a_start.y()),
       math::Vec2f(a_end.x(), a_end.y()),
       math::Vec2f(b_start.x(), b_start.y()),
-      math::Vec2f(b_end.x(), a_end.y()));
+      math::Vec2f(b_end.x(), b_end.y()));
 }
 
 }  // namespace math
