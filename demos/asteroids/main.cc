@@ -1,5 +1,6 @@
 #include <iostream>
 #include <set>
+#include <random>
 
 #include "components/common/transform_component.h"
 #include "components/rendering/rendering_component.h"
@@ -145,11 +146,14 @@ void SpawnPlayerProjectile(
 
 void SpawnAsteroid(
     ecs::Entity entity, const math::Vec3f& position,
-    math::Vec3f dir, uint32_t vao_reference,
+    math::Vec3f dir, float angle, uint32_t vao_reference,
     uint32_t program_reference,
     const std::vector<math::Vec2f>& asteroid_geometry) {
   dir.Normalize();
   ecs::Assign<component::TransformComponent>(entity);
+  auto* transform = ecs::Get<component::TransformComponent>(entity);
+  //transform->position = position; 
+  transform->orientation.Set(angle, math::Vec3f(0.f, 0.f, 1.f));
   ecs::Assign<PhysicsComponent>(entity);
   auto* physics = ecs::Get<PhysicsComponent>(entity);
   physics->velocity = dir * kShipAcceleration * 50.f;
@@ -305,12 +309,6 @@ class Asteroids : public game::Game {
     asteroid_vao_reference_
         = renderer::CreateGeometryVAO(asteroid_geometry_);
     asteroid_program_reference_ = program_reference;
-    asteroid_entities_.insert(free_entity_);
-    SpawnAsteroid(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
-                  math::Vec3f(-1.f, 0.0f, 0.f),
-                  asteroid_vao_reference_,
-                  asteroid_program_reference_,
-                  asteroid_geometry_);
 
     // Create projectile geometry and save its vao / program ref.
     
@@ -416,6 +414,15 @@ class Asteroids : public game::Game {
       if (game_state.seconds_since_last_asteroid_spawn >=
           kSecsToSpawnAsteroid) {
         std::cout << "Spawn Asteroid." << std::endl;
+        std::random_device rd;
+        std::mt19937 gen(rd());
+        std::uniform_real_distribution<> dis(-10000.0, 10000.0);
+        asteroid_entities_.insert(free_entity_);
+        SpawnAsteroid(
+            free_entity_++, math::Vec3f(dis(gen), dis(gen), dis(gen)),
+            math::Vec3f(dis(gen), dis(gen), dis(gen)), dis(gen),
+            asteroid_vao_reference_, asteroid_program_reference_,
+            asteroid_geometry_);
         game_state.seconds_since_last_asteroid_spawn = 0.f;
       }
     });
