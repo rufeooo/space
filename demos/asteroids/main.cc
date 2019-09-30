@@ -193,7 +193,6 @@ bool ProjectileCollidesWithAsteroid(
   auto* projectile_physics = ecs::Get<PhysicsComponent>(projectile);
   auto* asteroid_transform
       = ecs::Get<component::TransformComponent>(asteroid);
-  auto* asteroid_physics = ecs::Get<PhysicsComponent>(asteroid);
   auto* asteroid_shape = ecs::Get<PolygonShape>(asteroid);
   // Generate asteroid line list in world coordinates.
   std::vector<math::Vec2f> asteroid_points = asteroid_shape->points;
@@ -201,14 +200,10 @@ bool ProjectileCollidesWithAsteroid(
   // in the next physics update.
   for (auto& point : asteroid_points) {
     point += math::Vec2(asteroid_transform->position.x(),
-                        asteroid_transform->position.y()) +
-             math::Vec2(asteroid_physics->velocity.x(),
-                        asteroid_physics->velocity.y());
+                        asteroid_transform->position.y());
   }
-  math::Vec2f projectile_start(projectile_transform.position.x(),
-                               projectile_transform.position.y());
-  // Extrapolate the projectiles next position.
-  projectile_transform.position += projectile_physics->velocity;
+  math::Vec2f projectile_start(projectile_transform.prev_position.x(),
+                               projectile_transform.prev_position.y());
   math::Vec2f projectile_end(projectile_transform.position.x(),
                              projectile_transform.position.y());
   // Check if the line created by the moving projectile intersects
@@ -393,6 +388,7 @@ class Asteroids : public game::Game {
     ecs::Enumerate<PhysicsComponent, component::TransformComponent>(
         [this](ecs::Entity ent, PhysicsComponent& physics,
                component::TransformComponent& transform) {
+      transform.prev_position = transform.position;
       transform.position += physics.velocity;
       //std::cout << physics.velocity.String() << std::endl;
       if (transform.position.x() <= -1.0f) { 
