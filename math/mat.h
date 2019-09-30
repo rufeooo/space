@@ -2,6 +2,7 @@
 
 #include <array>
 #include <cassert>
+#include <string>
 #include <initializer_list>
 
 namespace math {
@@ -43,6 +44,18 @@ class Mat {
 
   bool operator!=(const Mat& rhs) const {
     return !(data_ == rhs.data_);
+  }
+
+  std::string String() const {
+    std::string m = "";
+    for (size_t i = 0; i < M; ++i) {
+      for (size_t j = 0; j < N; ++j) {
+        m += std::to_string((*this)(i, j));
+        if (j != M - 1) m += ",";
+      }
+      m += "\n";
+    }
+    return m;
   }
 
   Mat<T, N, M> Transpose() const {

@@ -41,7 +41,8 @@ static int kProjectileUpdatesToLive = 266;
 static float kProjectileSpeed = 0.005;
 
 //////// Game Constants //////// 
-static float kSecsToSpawnAsteroid = 3.f;
+static float kSecsToSpawnAsteroid = 2.3f;
+static uint64_t kMaxAsteroidCount = 0xffffffff;
 
 constexpr const char* kVertexShader = R"(
   #version 410
@@ -105,6 +106,7 @@ struct TTLComponent {
 
 struct GameStateComponent {
   float seconds_since_last_asteroid_spawn = 0.f;
+  uint64_t asteroid_count = 0;
 };
 
 struct PolygonShape {
@@ -394,7 +396,7 @@ class Asteroids : public game::Game {
         [this](ecs::Entity ent, PhysicsComponent& physics,
                component::TransformComponent& transform) {
       transform.position += physics.velocity;
-      //std::cout << transform.position.String() << std::endl;
+      //std::cout << physics.velocity.String() << std::endl;
       if (transform.position.x() <= -1.0f) { 
         transform.position.x() = 0.99f;
       } else if (transform.position.x() >= 1.0f) {
@@ -412,18 +414,20 @@ class Asteroids : public game::Game {
       game_state.seconds_since_last_asteroid_spawn +=
           ms_per_update() / 1000.0f;
       if (game_state.seconds_since_last_asteroid_spawn >=
-          kSecsToSpawnAsteroid) {
-        std::cout << "Spawn Asteroid." << std::endl;
+          kSecsToSpawnAsteroid &&
+          game_state.asteroid_count < kMaxAsteroidCount) {
+        //std::cout << "Spawn Asteroid." << std::endl;
         std::random_device rd;
         std::mt19937 gen(rd());
         std::uniform_real_distribution<> dis(-10000.0, 10000.0);
         asteroid_entities_.insert(free_entity_);
         SpawnAsteroid(
-            free_entity_++, math::Vec3f(dis(gen), dis(gen), dis(gen)),
-            math::Vec3f(dis(gen), dis(gen), dis(gen)), dis(gen),
+            free_entity_++, math::Vec3f(dis(gen), dis(gen), 0.f),
+            math::Vec3f(dis(gen), dis(gen), 0.f), dis(gen),
             asteroid_vao_reference_, asteroid_program_reference_,
             asteroid_geometry_);
         game_state.seconds_since_last_asteroid_spawn = 0.f;
+        game_state.asteroid_count++;
       }
     });
 
@@ -441,6 +445,7 @@ class Asteroids : public game::Game {
         if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
           asteroids_to_kill.insert(asteroid);
           projectiles_to_kill.insert(projectile);
+          break;
         }
       }
     }
@@ -479,6 +484,7 @@ class Asteroids : public game::Game {
             component::RenderingComponent& comp,
             component::TransformComponent& transform) {
       glUseProgram(comp.program_reference);
+      //std::cout << transform.position.String() << std::endl;
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);

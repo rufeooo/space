@@ -5,6 +5,7 @@
 
 #include <algorithm>
 #include <tuple>
+#include <iostream>
 
 #include "components.h"
 #include "entity.h"
