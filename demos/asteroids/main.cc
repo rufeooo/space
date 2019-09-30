@@ -190,27 +190,25 @@ bool ProjectileCollidesWithAsteroid(
     ecs::Entity projectile, ecs::Entity asteroid) {
   auto projectile_transform
       = *ecs::Get<component::TransformComponent>(projectile);
-  auto projectile_physics = *ecs::Get<PhysicsComponent>(projectile);
+  auto* projectile_physics = ecs::Get<PhysicsComponent>(projectile);
   auto* asteroid_transform
       = ecs::Get<component::TransformComponent>(asteroid);
-  auto asteroid_physics = *ecs::Get<PhysicsComponent>(asteroid);
+  auto* asteroid_physics = ecs::Get<PhysicsComponent>(asteroid);
   auto* asteroid_shape = ecs::Get<PolygonShape>(asteroid);
   // Generate asteroid line list in world coordinates.
   std::vector<math::Vec2f> asteroid_points = asteroid_shape->points;
-  UpdatePhysics(asteroid_physics);
   // Offset all the asteroid points to the world position it will be
   // in the next physics update.
   for (auto& point : asteroid_points) {
     point += math::Vec2(asteroid_transform->position.x(),
                         asteroid_transform->position.y()) +
-             math::Vec2(asteroid_physics.velocity.x(),
-                        asteroid_physics.velocity.y());
+             math::Vec2(asteroid_physics->velocity.x(),
+                        asteroid_physics->velocity.y());
   }
   math::Vec2f projectile_start(projectile_transform.position.x(),
                                projectile_transform.position.y());
   // Extrapolate the projectiles next position.
-  UpdatePhysics(projectile_physics);
-  projectile_transform.position += projectile_physics.velocity;
+  projectile_transform.position += projectile_physics->velocity;
   math::Vec2f projectile_end(projectile_transform.position.x(),
                              projectile_transform.position.y());
   // Check if the line created by the moving projectile intersects
