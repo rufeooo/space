@@ -154,7 +154,7 @@ void SpawnAsteroid(
   dir.Normalize();
   ecs::Assign<component::TransformComponent>(entity);
   auto* transform = ecs::Get<component::TransformComponent>(entity);
-  //transform->position = position; 
+  transform->position = position;
   transform->orientation.Set(angle, math::Vec3f(0.f, 0.f, 1.f));
   ecs::Assign<PhysicsComponent>(entity);
   auto* physics = ecs::Get<PhysicsComponent>(entity);
