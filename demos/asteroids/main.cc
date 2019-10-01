@@ -188,60 +188,21 @@ void UpdatePhysics(PhysicsComponent& physics_component) {
 
 bool ProjectileCollidesWithAsteroid(
     ecs::Entity projectile, ecs::Entity asteroid) {
-  auto projectile_transform
-      = *ecs::Get<component::TransformComponent>(projectile);
-  auto* projectile_physics = ecs::Get<PhysicsComponent>(projectile);
+  auto* projectile_transform
+      = ecs::Get<component::TransformComponent>(projectile);
   auto* asteroid_transform
       = ecs::Get<component::TransformComponent>(asteroid);
   auto* asteroid_shape = ecs::Get<PolygonShape>(asteroid);
-  // Generate asteroid line list in world coordinates.
-  std::vector<math::Vec2f> asteroid_points = asteroid_shape->points;
-  // Offset all the asteroid points to the world position it will be
-  // in the next physics update.
-  for (auto& point : asteroid_points) {
-    point += math::Vec2(asteroid_transform->position.x(),
-                        asteroid_transform->position.y());
+  std::vector<math::Vec2f> world_asteroid_points
+      = asteroid_shape->points;
+  for (auto& p : world_asteroid_points) {
+    p += math::Vec2f(asteroid_transform->position.x(),
+                     asteroid_transform->position.y());
   }
-  math::Vec2f projectile_start(projectile_transform.prev_position.x(),
-                               projectile_transform.prev_position.y());
-  math::Vec2f projectile_end(projectile_transform.position.x(),
-                             projectile_transform.position.y());
-  // Check if the line created by the moving projectile intersects
-  // any line created by the points of the asteroid.
-  for (int i = 0; i < asteroid_points.size(); ++i) {
-    math::Vec2f point_start(asteroid_points[i].x(),
-                            asteroid_points[i].y());
-    int end_idx = (i + 1) % asteroid_points.size();
-    math::Vec2f point_end(
-        asteroid_points[end_idx].x(), asteroid_points[end_idx].y());
-    if (math::LineSegmentsIntersect2D(
-            projectile_start, projectile_end,
-            point_start, point_end)) {
-      return true;
-    }
-  }
-  std::vector<math::Vec2f> asteroid_points_prev
-    = asteroid_shape->points;
-  for (auto& point : asteroid_points_prev) {
-    point += math::Vec2(asteroid_transform->prev_position.x(),
-                        asteroid_transform->prev_position.y());
-  }
-  // Check if the line created by the moving projectile intersects
-  // any line created by the points of the asteroid.
-  for (int i = 0; i < asteroid_points_prev.size(); ++i) {
-    math::Vec2f point_start(asteroid_points_prev[i].x(),
-                            asteroid_points_prev[i].y());
-    int end_idx = (i + 1) % asteroid_points_prev.size();
-    math::Vec2f point_end(
-        asteroid_points_prev[end_idx].x(),
-        asteroid_points_prev[end_idx].y());
-    if (math::LineSegmentsIntersect2D(
-            projectile_start, projectile_end,
-            point_start, point_end)) {
-      return true;
-    }
-  }
-  return false;
+  return math::PointInPolygon(
+      math::Vec2f(projectile_transform->position.x(),
+                  projectile_transform->position.y()),
+      world_asteroid_points);
 }
 
 }  // namespace
