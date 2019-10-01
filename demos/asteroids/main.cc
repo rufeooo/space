@@ -220,6 +220,27 @@ bool ProjectileCollidesWithAsteroid(
       return true;
     }
   }
+  std::vector<math::Vec2f> asteroid_points_prev
+    = asteroid_shape->points;
+  for (auto& point : asteroid_points_prev) {
+    point += math::Vec2(asteroid_transform->prev_position.x(),
+                        asteroid_transform->prev_position.y());
+  }
+  // Check if the line created by the moving projectile intersects
+  // any line created by the points of the asteroid.
+  for (int i = 0; i < asteroid_points_prev.size(); ++i) {
+    math::Vec2f point_start(asteroid_points_prev[i].x(),
+                            asteroid_points_prev[i].y());
+    int end_idx = (i + 1) % asteroid_points_prev.size();
+    math::Vec2f point_end(
+        asteroid_points_prev[end_idx].x(),
+        asteroid_points_prev[end_idx].y());
+    if (math::LineSegmentsIntersect2D(
+            projectile_start, projectile_end,
+            point_start, point_end)) {
+      return true;
+    }
+  }
   return false;
 }
 
@@ -296,13 +317,20 @@ class Asteroids : public game::Game {
 
     // Create asteroid geometry and save its vao / program ref.
 
-    asteroid_geometry_ = {
+    CreateAsteroidGeometry({
       {0.0f, 0.1f}, {0.07f, 0.08f}, {0.06f, -0.01f}, {0.11f, -0.005f},
       {0.1f, -0.06f}, {0.05f, -0.08f}, {0.01f, -0.1f},
       {-0.07f, -0.08f}, {-0.1f, -0.01f}, {-0.08f, 0.06f},
-    };
-    asteroid_vao_reference_
-        = renderer::CreateGeometryVAO(asteroid_geometry_);
+    }, 1.0f);
+
+    CreateAsteroidGeometry({
+      {0.f, 2.f}, {0.5f, 2.1f}, {0.9f, 1.9f}, {1.9f, 1.85f},
+      {2.6f, 1.65f}, {3.f, 1.f}, {2.93f, 0.1f}, {2.f, -1.f},
+      {1.5f, -1.4f}, {0.5f, -1.2f}, {0.f, -1.f}, {-1.1f, -0.95f},
+      {-1.7f, -0.7f}, {-2.f, 0.f}, {-1.f, 1.f}, {-1.f, 1.5f},
+      {-0.5f, 1.6f}
+    }, 20.f);
+
     asteroid_program_reference_ = program_reference;
 
     // Create projectile geometry and save its vao / program ref.
@@ -390,7 +418,7 @@ class Asteroids : public game::Game {
                component::TransformComponent& transform) {
       transform.prev_position = transform.position;
       transform.position += physics.velocity;
-      //std::cout << physics.velocity.String() << std::endl;
+      //std::cout << transform.position.String() << std::endl;
       if (transform.position.x() <= -1.0f) { 
         transform.position.x() = 0.99f;
       } else if (transform.position.x() >= 1.0f) {
@@ -410,16 +438,20 @@ class Asteroids : public game::Game {
       if (game_state.seconds_since_last_asteroid_spawn >=
           kSecsToSpawnAsteroid &&
           game_state.asteroid_count < kMaxAsteroidCount) {
-        //std::cout << "Spawn Asteroid." << std::endl;
-        std::random_device rd;
-        std::mt19937 gen(rd());
-        std::uniform_real_distribution<> dis(-10000.0, 10000.0);
+        // TODO: Better random number generation.
+        static std::random_device rd;
+        static std::mt19937 gen(rd());
+        static std::uniform_real_distribution<>
+            disr(-10000.0, 10000.0);
+        static std::uniform_int_distribution<>
+            disi(0, asteroid_vao_reference_.size() - 1);
         asteroid_entities_.insert(free_entity_);
+        int idx = disi(gen);
         SpawnAsteroid(
-            free_entity_++, math::Vec3f(dis(gen), dis(gen), 0.f),
-            math::Vec3f(dis(gen), dis(gen), 0.f), dis(gen),
-            asteroid_vao_reference_, asteroid_program_reference_,
-            asteroid_geometry_);
+            free_entity_++, math::Vec3f(disr(gen), disr(gen), 0.f),
+            math::Vec3f(disr(gen), disr(gen), 0.f), disr(gen),
+            asteroid_vao_reference_[idx], asteroid_program_reference_,
+            asteroid_geometry_[idx]);
         game_state.seconds_since_last_asteroid_spawn = 0.f;
         game_state.asteroid_count++;
       }
@@ -497,6 +529,17 @@ class Asteroids : public game::Game {
   }
 
  private:
+  void CreateAsteroidGeometry(
+      const std::vector<math::Vec2f>& geometry, float scale) {
+    std::vector<math::Vec2f> scaled_geometry;
+    for (const auto& g : geometry) {
+      scaled_geometry.push_back(g / scale);
+    }
+    asteroid_geometry_.push_back(scaled_geometry);
+    asteroid_vao_reference_.push_back(
+        renderer::CreateGeometryVAO(scaled_geometry));
+  }
+
   int matrix_location_;
   ecs::Entity camera_ = 0;
   ecs::Entity free_entity_ = 1;
@@ -504,9 +547,9 @@ class Asteroids : public game::Game {
   renderer::GLShaderCache shader_cache_;
   uint32_t projectile_vao_reference_;
   uint32_t projectile_program_reference_;
-  uint32_t asteroid_vao_reference_;
+  std::vector<uint32_t> asteroid_vao_reference_;
   uint32_t asteroid_program_reference_;
-  std::vector<math::Vec2f> asteroid_geometry_;
+  std::vector<std::vector<math::Vec2f>> asteroid_geometry_;
   // ordered_set for determinism when calculating collision.
   std::set<ecs::Entity> projectile_entities_;
   std::set<ecs::Entity> asteroid_entities_;
