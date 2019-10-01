@@ -45,6 +45,54 @@ TEST(Intersection, LineSegmentsIntersectNegative_Three) {
       a_start, a_end, b_start, b_end));
 }
 
+TEST(Intersection, PointInPolygon_One) {
+  std::vector<math::Vec2f> polygon = {
+    {0.0f, 0.0f}, {10.0f, 0.0f}, {10.0f, 10.0f}, {0.0f, 10.0f}
+  }; 
+  math::Vec2f p(20.0f, 20.0f);
+  ASSERT_FALSE(math::PointInPolygon(p, polygon));
+}
+
+TEST(Intersection, PointInPolygon_Two) {
+  std::vector<math::Vec2f> polygon = {
+    {0.0f, 0.0f}, {10.0f, 0.0f}, {10.0f, 10.0f}, {0.0f, 10.0f}
+  }; 
+  math::Vec2f p(5.f, 5.f);
+  ASSERT_TRUE(math::PointInPolygon(p, polygon));
+}
+
+TEST(Intersection, PointInPolygon_Three) {
+  std::vector<math::Vec2f> polygon = {
+    {0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}
+  }; 
+  math::Vec2f p(3.f, 3.f);
+  ASSERT_TRUE(math::PointInPolygon(p, polygon));
+}
+
+TEST(Intersection, PointInPolygon_Four) {
+  std::vector<math::Vec2f> polygon = {
+    {0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}
+  }; 
+  math::Vec2f p(5.f, 1.f);
+  ASSERT_TRUE(math::PointInPolygon(p, polygon));
+}
+
+TEST(Intersection, PointInPolygon_Five) {
+  std::vector<math::Vec2f> polygon = {
+    {0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}
+  }; 
+  math::Vec2f p(8.f, 1.f);
+  ASSERT_FALSE(math::PointInPolygon(p, polygon));
+}
+
+TEST(Intersection, PointInPolygon_Six) {
+  std::vector<math::Vec2f> polygon = {
+    {0.f, 0.f}, {10.f, 0.f}, {10.f, 10.f}, {0.f, 10.f}
+  }; 
+  math::Vec2f p(-1.f, 10.f);
+  ASSERT_FALSE(math::PointInPolygon(p, polygon));
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();

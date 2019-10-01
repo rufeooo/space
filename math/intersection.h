@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include "vec.h"
 
 namespace math {
@@ -14,5 +16,7 @@ bool LineSegmentsIntersect2D(
     const math::Vec3f& a_start, const math::Vec3f& a_end,
     const math::Vec3f& b_start, const math::Vec3f& b_end);
 
+bool PointInPolygon(const math::Vec2f& point,
+                    const std::vector<math::Vec2f>& polygon);
 
 }  // namespace math
