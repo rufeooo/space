@@ -196,12 +196,12 @@ bool ProjectileCollidesWithAsteroid(
   std::vector<math::Vec2f> world_asteroid_points
       = asteroid_shape->points;
   for (auto& p : world_asteroid_points) {
-    p += math::Vec2f(asteroid_transform->position.x(),
-                     asteroid_transform->position.y());
+    p += math::Vec2f(asteroid_transform->prev_position.x(),
+                     asteroid_transform->prev_position.y());
   }
   return math::PointInPolygon(
-      math::Vec2f(projectile_transform->position.x(),
-                  projectile_transform->position.y()),
+      math::Vec2f(projectile_transform->prev_position.x(),
+                  projectile_transform->prev_position.y()),
       world_asteroid_points);
 }
 
