@@ -3,6 +3,7 @@
 namespace network {
 
 bool SocketInit() {
+  WSADATA d;
   if (WSAStartup(MAKEWORD(2, 2), &d)) {
     return false;
   }
