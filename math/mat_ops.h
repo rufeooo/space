@@ -6,7 +6,7 @@
 
 namespace math {
 
-#define ONE_DEG_IN_RAD (2.0 * M_PI) / 360.0 // 0.017444444
+#define ONE_DEG_IN_RAD (2.0 * PI) / 360.0 // 0.017444444
 
 template <class T, size_t N>
 Mat<T, N, N> CreateIdentityMatrix() {

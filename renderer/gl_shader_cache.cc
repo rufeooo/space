@@ -22,7 +22,7 @@ GLenum ToGLEnum(ShaderType shader_type) {
 }
 
 std::string GetShaderInfoLog(uint32_t shader_reference) {
-  int log_length = 4096;
+  constexpr int log_length = 4096;
   int actual_length = 0;
   char log[log_length];
   glGetShaderInfoLog(
@@ -33,7 +33,7 @@ std::string GetShaderInfoLog(uint32_t shader_reference) {
 }
 
 std::string GetProgramInfoLog(uint32_t program_reference) {
-  int log_length = 4096;
+  constexpr int log_length = 4096;
   int actual_length = 0;
   char log[log_length];
   glGetProgramInfoLog(
