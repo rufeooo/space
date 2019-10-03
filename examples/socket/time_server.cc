@@ -105,6 +105,8 @@ int main() {
               address_buffer, sizeof(address_buffer), 0, 0,
               NI_NUMERICHOST);
 
+  printf("Client %s connected...\n\n", address_buffer);
+
   printf("Reading request...\n\n");
 
   char request[1024];
