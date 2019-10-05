@@ -5,6 +5,8 @@
 #include <string>
 #include <initializer_list>
 
+#include "vec.h"
+
 namespace math {
 
 // column major matrix
@@ -131,5 +133,56 @@ using Mat4i = Mat<int, 4, 4>;
 using Mat4u = Mat<uint32_t, 4, 4>;
 using Mat4f = Mat<float, 4, 4>;
 using Mat4d = Mat<double, 4, 4>;
+
+// Ths matrix vector multiplication is written as if the vector was
+// augmented with a 1 (x, y, z, 1). And mutiplied against a matrix
+// from the right as a column vector.
+//
+// This is useful when multiplying transformation matrices, consider
+// the following example.
+//
+// For translation
+//
+// m = [ 1 0 0 Tx
+//       0 1 0 Ty
+//       0 0 1 Tz
+//       0 0 0 1 ]
+//
+// v = [ x, y, z ]
+//
+// m * v = [ x + Tx, y + Ty, z + Tz ]
+//
+// For scale
+//
+// m = [ Sx 0  0  0
+//       0  Sy 0  0
+//       0  0  Sz 0
+//       0  0  0  1 ]
+//
+// v = [ x, y, z ]
+//
+// m * v = [ x * Sx, y * Sy, z * Sz ]
+//
+// For some rotation along x by theta
+//
+// m = [ 1           0           0 0
+//       0  cos(theta) -sin(theta) 0
+//       0  sin(theta)  cos(theta) 0
+//       0           0           0 1 ]
+//
+// v = [ x, y, z]
+//
+// m * v = [ x, ycos(theta) - zsin(theta), ysin(theta) + zcos(theta) ]
+template <class T>
+Vec3f operator*(const Mat<T, 4, 4>& lhs, const Vec3f& rhs) {
+  return Vec3f(
+    lhs(0, 0) * rhs.x() + lhs(0, 1) * rhs.y() +
+    lhs(0, 2) * rhs.z() + lhs(0, 3),
+    lhs(1, 0) * rhs.x() + lhs(1, 1) * rhs.y() +
+    lhs(1, 2) * rhs.z() + lhs(1, 3),
+    lhs(2, 0) * rhs.x() + lhs(2, 1) * rhs.y() +
+    lhs(2, 2) * rhs.z() + lhs(2, 3)
+  );
+}
 
 }  // math

@@ -32,6 +32,15 @@ Mat<T, 4, 4> CreateTranslationMatrix(const Vec3<T>& translation) {
 }
 
 template <class T>
+Mat<T, 4, 4> CreateScaleMatrix(const Vec3<T>& scale) {
+  Mat<T, 4, 4> m = CreateIdentityMatrix<T, 4>();
+  m(0, 0) = scale.x();
+  m(1, 1) = scale.y();
+  m(2, 2) = scale.z();
+  return m;
+}
+
+template <class T>
 Mat<T, 4, 4> CreateRotationMatrix(const Quat<T>& quat) {
   Mat<T, 4, 4> rotation;
   auto w = quat.x();

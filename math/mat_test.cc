@@ -2,6 +2,8 @@
 
 #include "mat.h"
 
+#include <iostream>
+
 TEST(MatrixTest, MatrixInitialization) {
   math::Mat4f mat4x4{
     1.0f, 0.0f, 2.0f, 0.0f,
@@ -76,6 +78,30 @@ TEST(MatrixTest, MatrixSubtraction) {
   math::Mat<int, 2, 2> mat2x2  { 1, 2, 3, 4 };
   math::Mat<int, 2, 2> desired { -1, 0, 1, 2 };
   ASSERT_EQ(mat2x2 - 2, desired);
+}
+
+TEST(MatrixTest, MatrixVectorMultiplyTranslate) {
+  math::Mat4f translate {
+    1.f, 0.f, 0.f, 0.f,
+    0.f, 1.f, 0.f, 0.f,
+    0.f, 0.f, 1.f, 0.f,
+    1.f, 2.f, 3.f, 1.f,
+  };
+  math::Vec3f point(0.f, 0.f, 0.f);
+  math::Vec3f result = translate * point;
+  ASSERT_EQ(result, math::Vec3f(1.f, 2.f, 3.f));
+}
+
+TEST(MatrixTest, MatrixVectorMultiplyScale) {
+  math::Mat4f scale {
+    1.f, 0.f, 0.f, 0.f,
+    0.f, 2.f, 0.f, 0.f,
+    0.f, 0.f, 3.f, 0.f,
+    0.f, 0.f, 0.f, 1.f,
+  };
+  math::Vec3f point(1.f, 1.f, 1.f);
+  math::Vec3f result = scale * point;
+  ASSERT_EQ(result, math::Vec3f(1.f, 2.f, 3.f));
 }
 
 int main(int argc, char** argv) {
