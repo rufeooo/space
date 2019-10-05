@@ -12,6 +12,9 @@ set(time_server_srcs
 set(tcp_client_srcs
     "tcp_client.cc")
 
+set(tcp_server_srcs
+    "tcp_server.cc")
+
 include_directories(${CMAKE_SOURCE_DIR}/third_party/gflags/src)
 include_directories(${CMAKE_SOURCE_DIR})
 
@@ -20,3 +23,6 @@ target_link_libraries(time_server network)
 
 add_executable(tcp_client ${tcp_client_srcs})
 target_link_libraries(tcp_client network gflags)
+
+add_executable(tcp_server ${tcp_server_srcs})
+target_link_libraries(tcp_server network gflags)
