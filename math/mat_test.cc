@@ -2,8 +2,6 @@
 
 #include "mat.h"
 
-#include <iostream>
-
 TEST(MatrixTest, MatrixInitialization) {
   math::Mat4f mat4x4{
     1.0f, 0.0f, 2.0f, 0.0f,

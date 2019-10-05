@@ -21,7 +21,9 @@ class Quat : public Vec4<T> {
     Set(angle_degrees, axis);
   }
 
-  Quat() : Quat(0.0f, math::Vec3<T>(T(0), T(0), T(1))) {}
+  Quat() : Quat(0.0f, math::Vec3<T>(T(0), T(0), T(1))) {
+    Set(angle_degrees_, axis_);
+  }
 
   void Set(float angle_degrees, const math::Vec3<T>& axis) {
     angle_degrees_ = angle_degrees;

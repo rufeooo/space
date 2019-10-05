@@ -42,7 +42,7 @@ static float kProjectileSpeed = 0.005;
 
 //////// Game Constants //////// 
 static float kSecsToSpawnAsteroid = 2.3f;
-static uint64_t kMaxAsteroidCount = 0xffffffff;
+static uint64_t kMaxAsteroidCount = 0xFFFFFFFF;
 
 constexpr const char* kVertexShader = R"(
   #version 410
@@ -187,22 +187,71 @@ void UpdatePhysics(PhysicsComponent& physics_component) {
 }
 
 bool ProjectileCollidesWithAsteroid(
+    const math::Vec2f& projectile_start,
+    const math::Vec2f& projectile_end,
+    const std::vector<math::Vec2f> asteroid_shape_points,
+    const math::Vec3f& asteroid_position,
+    const math::Quatf& asteroid_orientation) {
+  // Generate asteroid line list in world coordinates.
+  std::vector<math::Vec2f> asteroid_points = asteroid_shape_points;
+  auto asteroid_transform =
+      math::CreateTranslationMatrix(asteroid_position) *
+      math::CreateRotationMatrix(asteroid_orientation);
+  // Offset the points relative to the asteroids transform.
+  for (auto& point : asteroid_points) {
+    math::Vec3f p_3d_transformed =
+        asteroid_transform * math::Vec3f(point.x(), point.y(), 0.f);
+    point = math::Vec2(p_3d_transformed.x(), p_3d_transformed.y());
+  }
+  // Check if the line created by the moving projectile intersects
+  // any line created by the points of the asteroid.
+  for (int i = 0; i < asteroid_points.size(); ++i) {
+    math::Vec2f point_start(asteroid_points[i].x(),
+                            asteroid_points[i].y());
+    int end_idx = (i + 1) % asteroid_points.size();
+    math::Vec2f point_end(
+        asteroid_points[end_idx].x(), asteroid_points[end_idx].y());
+    if (math::LineSegmentsIntersect(projectile_start, projectile_end,
+                                    point_start, point_end,
+                                    nullptr, nullptr)) {
+      return true;
+    }
+  }
+  return false;
+}
+
+bool ProjectileCollidesWithAsteroid(
     ecs::Entity projectile, ecs::Entity asteroid) {
   auto* projectile_transform
       = ecs::Get<component::TransformComponent>(projectile);
+  auto* projectile_physics = ecs::Get<PhysicsComponent>(projectile);
   auto* asteroid_transform
       = ecs::Get<component::TransformComponent>(asteroid);
   auto* asteroid_shape = ecs::Get<PolygonShape>(asteroid);
-  std::vector<math::Vec2f> world_asteroid_points
-      = asteroid_shape->points;
-  for (auto& p : world_asteroid_points) {
-    p += math::Vec2f(asteroid_transform->prev_position.x(),
-                     asteroid_transform->prev_position.y());
+  math::Vec2f projectile_start(projectile_transform->prev_position.x(),
+                               projectile_transform->prev_position.y());
+  math::Vec2f projectile_end(projectile_transform->position.x(),
+                             projectile_transform->position.y());
+  // Check if the line made by the projectile will intersect the
+  // asteroid at its current position.
+  if (ProjectileCollidesWithAsteroid(
+      projectile_start, projectile_end, asteroid_shape->points,
+      asteroid_transform->position, asteroid_transform->orientation)) {
+    return true;
   }
-  return math::PointInPolygon(
-      math::Vec2f(projectile_transform->prev_position.x(),
-                  projectile_transform->prev_position.y()),
-      world_asteroid_points);
+
+  // Also check the previous game updates asteroid location. This
+  // will solve the case where the asteroid and projectile are going
+  // in opposite directions and a line test will never actually
+  // intersect.
+  if (ProjectileCollidesWithAsteroid(
+      projectile_start, projectile_end, asteroid_shape->points,
+      asteroid_transform->prev_position,
+      asteroid_transform->orientation)) {
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace
@@ -220,7 +269,7 @@ class Asteroids : public game::Game {
     }
     ecs::Assign<component::ViewComponent>(
       camera_,
-      math::Vec3f(0.0f, 0.0f, 10.0f),
+      math::Vec3f(0.0f, 0.0f, 1.5f),
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
     if (!shader_cache_.CompileShader(
         kVertexShaderName,
@@ -361,6 +410,45 @@ class Asteroids : public game::Game {
 
   // Game logic
   bool Update() override {
+    std::set<ecs::Entity> asteroids_to_kill;
+    std::set<ecs::Entity> projectiles_to_kill;
+    // Do collision at the top of the loop so the player has seen the
+    // most recent positions collision detection is calculating
+    // against. Otherwise it seems like collision is happening a frame
+    // in the future.
+    for (const auto& projectile : projectile_entities_) {
+      for (const auto& asteroid : asteroid_entities_) {
+        if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
+          asteroids_to_kill.insert(asteroid);
+          projectiles_to_kill.insert(projectile);
+          break;
+        }
+      }
+    }
+
+    ecs::Enumerate<TTLComponent>([&projectiles_to_kill](
+        ecs::Entity ent, TTLComponent& ttl) {
+      --ttl.updates_to_live;
+      if (!ttl.updates_to_live) projectiles_to_kill.insert(ent);
+    });
+
+    for (const auto& e : projectiles_to_kill) {
+      ecs::Remove<component::TransformComponent>(e);
+      ecs::Remove<PhysicsComponent>(e);
+      ecs::Remove<PolygonShape>(e);
+      ecs::Remove<component::RenderingComponent>(e);
+      ecs::Remove<TTLComponent>(e);
+      projectile_entities_.erase(e);
+    }
+
+    for (const auto& e : asteroids_to_kill) {
+      ecs::Remove<component::TransformComponent>(e);
+      ecs::Remove<PhysicsComponent>(e);
+      ecs::Remove<PolygonShape>(e);
+      ecs::Remove<component::RenderingComponent>(e);
+      asteroid_entities_.erase(e);
+    }
+
     // Provide ship control to the entity with Input (the player.)
     ecs::Enumerate<PhysicsComponent, component::TransformComponent,
                    InputComponent>(
@@ -430,41 +518,6 @@ class Asteroids : public game::Game {
       }
     });
 
-    std::set<ecs::Entity> projectiles_to_kill;
-    ecs::Enumerate<TTLComponent>([&projectiles_to_kill](
-        ecs::Entity ent, TTLComponent& ttl) {
-      --ttl.updates_to_live;
-      if (!ttl.updates_to_live) projectiles_to_kill.insert(ent);
-    });
-
-    std::set<ecs::Entity> asteroids_to_kill;
-    static int i = 0;
-    for (const auto& projectile : projectile_entities_) {
-      for (const auto& asteroid : asteroid_entities_) {
-        if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
-          asteroids_to_kill.insert(asteroid);
-          projectiles_to_kill.insert(projectile);
-          break;
-        }
-      }
-    }
-
-    for (const auto& e : projectiles_to_kill) {
-      ecs::Remove<component::TransformComponent>(e);
-      ecs::Remove<PhysicsComponent>(e);
-      ecs::Remove<component::RenderingComponent>(e);
-      ecs::Remove<TTLComponent>(e);
-      projectile_entities_.erase(e);
-    }
-
-    for (const auto& e : asteroids_to_kill) {
-      ecs::Remove<component::TransformComponent>(e);
-      ecs::Remove<PhysicsComponent>(e);
-      ecs::Remove<PolygonShape>(e);
-      ecs::Remove<component::RenderingComponent>(e);
-      asteroid_entities_.erase(e);
-    }
-
     return true;
   }
 
@@ -477,17 +530,17 @@ class Asteroids : public game::Game {
         view_component->position, view_component->orientation);
     math::Mat4f projection =
           math::CreatePerspectiveMatrix<float>(800, 800);
+    auto projection_view = projection * view;
     ecs::Enumerate<component::RenderingComponent,
                    component::TransformComponent>(
         [&](ecs::Entity ent,
             component::RenderingComponent& comp,
             component::TransformComponent& transform) {
       glUseProgram(comp.program_reference);
-      //std::cout << transform.position.String() << std::endl;
       math::Mat4f model =
           math::CreateTranslationMatrix(transform.position) *
           math::CreateRotationMatrix(transform.orientation);
-      math::Mat4f matrix = model * view * projection;
+      math::Mat4f matrix = projection_view * model;
       glUniformMatrix4fv(matrix_location_, 1, GL_FALSE, &matrix[0]);
       glBindVertexArray(comp.vao_reference);
       glDrawArrays(GL_LINE_LOOP, 0, comp.vertex_count);

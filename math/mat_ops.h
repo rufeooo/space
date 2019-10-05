@@ -79,18 +79,18 @@ Mat<T, 4, 4> CreateViewMatrix(const Vec3<T>& translation,
   view[0]  = 1.f - 2.f * y * y - 2.f * z * z;
   view[1]  = 2.f * x * y - 2.f * w * z;
   view[2]  = 2.f * x * z + 2 * w * y;
-  view[3]  = -translation.x();
+  view[3]  = T(0);
   view[4]  = 2.f * x * y + 2.f * w * z;
   view[5]  = 1.f - 2.f * x * x - 2.f * z * z;
   view[6]  = 2.f * y * z - 2.f * w * x;
-  view[7]  = -translation.y();
+  view[7]  = T(0);
   view[8]  = 2.f * x * z - 2.f * w * y;
   view[9]  = 2.f * y * z + 2.f * w * x;
   view[10] = 1.f - 2.f * x * x - 2.f * y * y;
-  view[11] = -translation.z();
-  view[12] = T(0);
-  view[13] = T(0);
-  view[14] = T(0);
+  view[11] = T(0);
+  view[12] = -translation.x();
+  view[13] = -translation.y();
+  view[14] = -translation.z();
   view[15] = T(1);
   return view;
 }

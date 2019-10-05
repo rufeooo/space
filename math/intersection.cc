@@ -69,27 +69,21 @@ bool DoIntersect(const math::Vec2f& p1, const math::Vec2f& q1,
 }  // namespace
 
 // pg 152. Real-Time Collision Detection by Christer Ericson
-bool LineSegmentsIntersect2D(
+bool LineSegmentsIntersect(
     const math::Vec2f& a_start, const math::Vec2f& a_end,
-    const math::Vec2f& b_start, const math::Vec2f& b_end) {
+    const math::Vec2f& b_start, const math::Vec2f& b_end,
+    float* time, math::Vec2f* position) {
   float a1 = Signed2DTriArea(a_start, a_end, b_end);
   float a2 = Signed2DTriArea(a_start, a_end, b_start);
   if (a1 * a2 >= 0.f) return false;
   float a3 = Signed2DTriArea(b_start, b_end, a_start);
   float a4 = a3 + a2 - a1;
   if (a3 * a4 >= 0.f) return false;
+  if (time && position) {
+    *time = a3 / (a3 - a4);
+    *position = a_start + (a_end - a_start) * *time;
+  }
   return true;
-}
-
-// Calls LineSegmentsIntersect2D (x,y) values from the 3d vectors.
-bool LineSegmentsIntersect2D(
-    const math::Vec3f& a_start, const math::Vec3f& a_end,
-    const math::Vec3f& b_start, const math::Vec3f& b_end) {
-  return LineSegmentsIntersect2D(
-      math::Vec2f(a_start.x(), a_start.y()),
-      math::Vec2f(a_end.x(), a_end.y()),
-      math::Vec2f(b_start.x(), b_start.y()),
-      math::Vec2f(b_end.x(), b_end.y()));
 }
 
 // https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
