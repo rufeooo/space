@@ -116,7 +116,4 @@ bool PointInPolygon(const math::Vec2f& point,
   return count & 1;  // Same as (count%2 == 1) 
 }
 
-
 }  // namespace math
-
-
