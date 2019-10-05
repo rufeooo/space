@@ -1,7 +1,3 @@
-#if defined(_WIN32)
-#include <conio.h>
-#endif
-
 #include <gflags/gflags.h>
 
 #include "network/network.h"
