@@ -189,7 +189,7 @@ void UpdatePhysics(PhysicsComponent& physics_component) {
 bool ProjectileCollidesWithAsteroid(
     const math::Vec2f& projectile_start,
     const math::Vec2f& projectile_end,
-    const std::vector<math::Vec2f> asteroid_shape_points,
+    const std::vector<math::Vec2f>& asteroid_shape_points,
     const math::Vec3f& asteroid_position,
     const math::Quatf& asteroid_orientation) {
   // Generate asteroid line list in world coordinates.
