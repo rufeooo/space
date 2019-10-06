@@ -14,6 +14,7 @@
   #include <unistd.h>
   #include <errno.h>
   #define SOCKET int
+  #define INVALID_SOCKET (-1)
 #endif
 
 #include <stdio.h>
