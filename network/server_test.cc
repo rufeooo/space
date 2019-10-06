@@ -7,7 +7,7 @@
 
 SOCKET CreateSimpleClient(
     const std::string& hostname, const std::string& port,
-    const std::string& msg, struct addrinfo** remote_addrinfo) {
+    const std::string& msg) {
   if (!network::SocketInit()) {
     printf("Failed to initialize...\n\n");
     return INVALID_SOCKET;
@@ -39,7 +39,6 @@ SOCKET CreateSimpleClient(
   int bytes_sent = sendto(socket_peer, msg.c_str(), msg.size(), 0,
                           peer_address->ai_addr,
                           peer_address->ai_addrlen);
-  *remote_addrinfo = peer_address;
   return socket_peer;
 }
 
@@ -49,10 +48,8 @@ TEST(Server, ServerHappyPath) {
       = network::server::Create("7890", &message_queue);
   // Create a client connection which the server will respond to when
   // new events enter its message queue.
-  struct addrinfo* remote_addrinfo;
   SOCKET client_socket
-      = CreateSimpleClient("127.0.0.1", "7890", "Connect",
-                           &remote_addrinfo);
+      = CreateSimpleClient("127.0.0.1", "7890", "Connect");
   ASSERT_TRUE(network::SocketIsValid(client_socket));
   // Enqueue a 5 byte message of 'hello' non-null terminated to be
   // send to the simple client.
