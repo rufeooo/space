@@ -21,7 +21,7 @@ int main(int argc, char** argv) {
 
   SOCKET socket_listen = socket(
       bind_address->ai_family, bind_address->ai_socktype,
-      bind_address->ai_protocl);
+      bind_address->ai_protocol);
 
   if (!network::SocketIsValid(socket_listen)) {
     fprintf(stderr, "socket() failed. (%d)\n", network::SocketErrno());
@@ -41,6 +41,7 @@ int main(int argc, char** argv) {
   socklen_t client_len = sizeof(client_address);
   char read[1024];
 
+  printf("Waiting for data...\n\n");
   int bytes_received = recvfrom(
       socket_listen, read, 1024, 0, (struct sockaddr*)&client_address,
       &client_len);
@@ -61,7 +62,7 @@ int main(int argc, char** argv) {
   network::SocketClose(socket_listen);
 
 
-  preintf("Finished...\n");
+  printf("Finished...\n");
 
   return 0;
 }
