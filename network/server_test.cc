@@ -43,28 +43,40 @@ SOCKET CreateSimpleClient(
 }
 
 TEST(Server, ServerHappyPath) {
-  network::MessageQueue message_queue;
+  network::MessageQueue outgoing_message_queue;
+  network::MessageQueue incoming_message_queue;
   std::thread server_thread
-      = network::server::Create("7890", &message_queue);
+      = network::server::Create("7890", &outgoing_message_queue,
+                                &incoming_message_queue);
   // Create a client connection which the server will respond to when
   // new events enter its message queue.
   SOCKET client_socket
       = CreateSimpleClient("127.0.0.1", "7890", "Connect");
   ASSERT_TRUE(network::SocketIsValid(client_socket));
+  // The server should now contain a "Connect" message from the
+  // connecting client.
+  network::Message msg;
+  // Constantly dequeue the incoming message queue until the message
+  // is received.
+  do {
+    msg = incoming_message_queue.Dequeue();
+  } while (msg.size == 0);
+  ASSERT_EQ(msg.size, 7);
+  ASSERT_EQ(strncmp(msg.data, "Connect", msg.size), 0);
   // Enqueue a 5 byte message of 'hello' non-null terminated to be
   // send to the simple client.
   network::Message msg_one;
   msg_one.data = (char*)malloc(5);
   msg_one.data[0] = 'h'; msg_one.data[1] = 'e'; msg_one.data[2] = 'l';
   msg_one.data[3] = 'l'; msg_one.data[4] = 'o'; msg_one.size = 5;
-  message_queue.Enqueue(msg_one);
+  outgoing_message_queue.Enqueue(msg_one);
 
 
   network::Message msg_two;
   msg_two.data = (char*)malloc(3);
   msg_two.data[0] = '1'; msg_two.data[1] = '2'; msg_two.data[2] = '3';
   msg_two.size = 3;
-  message_queue.Enqueue(msg_two);
+  outgoing_message_queue.Enqueue(msg_two);
 
   // Receive messages.
   char read[network::kMaxMessageSize];
@@ -76,16 +88,16 @@ TEST(Server, ServerHappyPath) {
         client_socket, read, network::kMaxMessageSize, 0,
         (struct sockaddr*)&client_address, &client_len);
   ASSERT_EQ(bytes_received, 5);
-  ASSERT_EQ(strcmp(read, "hello"), 0);
+  ASSERT_EQ(strncmp(read, "hello", 5), 0);
 
   memset(&read, 0, network::kMaxMessageSize);
   bytes_received = recvfrom(
         client_socket, read, network::kMaxMessageSize, 0,
         (struct sockaddr*)&client_address, &client_len);
   ASSERT_EQ(bytes_received, 3);
-  ASSERT_EQ(strcmp(read, "123"), 0);
+  ASSERT_EQ(strncmp(read, "123", 3), 0);
 
-  message_queue.Stop();
+  outgoing_message_queue.Stop();
   server_thread.join();
 }
 

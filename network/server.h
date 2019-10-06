@@ -9,7 +9,9 @@ namespace network {
 
 namespace server {
 
-std::thread Create(const char* port, MessageQueue* message_queue);
+std::thread Create(const char* port,
+                   MessageQueue* outgoing_message_queue,
+                   MessageQueue* incoming_message_queue);
 
 }  // server
 

@@ -1,7 +1,6 @@
 #include "server.h"
 
 #include <thread>
-#include <iostream>
 
 #include "network.h"
 
@@ -42,7 +41,9 @@ void SendToAllClients(SOCKET socket_listen, Message msg) {
   }
 }
 
-void StartServer(const char* port, MessageQueue* message_queue) {
+void StartServer(const char* port,
+                 MessageQueue* outgoing_message_queue,
+                 MessageQueue* incoming_message_queue) {
   if (!SocketInit()) {
     printf("Failed to initialize...\n\n");
     return;
@@ -101,7 +102,7 @@ void StartServer(const char* port, MessageQueue* message_queue) {
     }
 
     bool fd_isset = FD_ISSET(socket_listen, &reads);
-    bool queue_has_items = !message_queue->Empty();
+    bool queue_has_items = !outgoing_message_queue->Empty();
 
     // If there is data to read from the socket, read it and cache
     // off the client address.    
@@ -121,8 +122,13 @@ void StartServer(const char* port, MessageQueue* message_queue) {
       getnameinfo((struct sockaddr*)&client_address, client_len,
                   address_buffer, kAddressSize, 0, 0,
                   NI_NUMERICHOST);
-      printf("Message from %s\n\n", address_buffer);
-      // TODO: Do what with this message???
+      //printf("Message from %s data: %.*s bytes: %i\n\n",
+      //       address_buffer, bytes_received, read, bytes_received);
+      Message msg;
+      msg.data = (char*)malloc(bytes_received);
+      memcpy(msg.data, &read[0], bytes_received);
+      msg.size = bytes_received;
+      incoming_message_queue->Enqueue(msg);
       if (!ClientExists(address_buffer)) {
         // Save off client connections? When do we remove from this list?
         ClientConnection connection;
@@ -138,16 +144,16 @@ void StartServer(const char* port, MessageQueue* message_queue) {
     // If there is a message in the queue send it to all connected
     // clients. 
     if (queue_has_items) {
-      Message msg = message_queue->Dequeue();
+      Message msg = outgoing_message_queue->Dequeue();
       do {
         printf(" Message on queue: %.*s\n\n", msg.size, msg.data);
         SendToAllClients(socket_listen, msg);
-        msg = message_queue->Dequeue();
+        msg = outgoing_message_queue->Dequeue();
       } while(msg.size != 0);
     }
 
     // If the server is supposed to stop, stop it.
-    if (message_queue->IsStopped()) {
+    if (outgoing_message_queue->IsStopped()) {
       return;
     }
   }
@@ -155,8 +161,11 @@ void StartServer(const char* port, MessageQueue* message_queue) {
 
 }  // anonymous
 
-std::thread Create(const char* port, MessageQueue* message_queue) {
-  return std::thread(StartServer, port, message_queue);
+std::thread Create(const char* port,
+                   MessageQueue* outgoing_message_queue,
+                   MessageQueue* incoming_message_queue) {
+  return std::thread(StartServer, port, outgoing_message_queue,
+                    incoming_message_queue);
 }
 
 }  // server
