@@ -15,6 +15,9 @@ set(tcp_client_srcs
 set(tcp_server_srcs
     "tcp_server.cc")
 
+set(udp_server_srcs
+    "tcp_server.cc")
+
 include_directories(${CMAKE_SOURCE_DIR}/third_party/gflags/src)
 include_directories(${CMAKE_SOURCE_DIR})
 
@@ -26,3 +29,6 @@ target_link_libraries(tcp_client network gflags)
 
 add_executable(tcp_server ${tcp_server_srcs})
 target_link_libraries(tcp_server network gflags)
+
+add_executable(udp_server ${udp_server_srcs})
+target_link_libraries(udp_server network gflags)
