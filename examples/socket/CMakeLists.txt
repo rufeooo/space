@@ -21,6 +21,8 @@ set(udp_server_srcs
 set(udp_client_srcs
     "udp_client.cc")
 
+set(udp_server_toupper_srcs
+    "udp_server_toupper.cc")
 
 include_directories(${CMAKE_SOURCE_DIR}/third_party/gflags/src)
 include_directories(${CMAKE_SOURCE_DIR})
@@ -39,3 +41,6 @@ target_link_libraries(udp_server network gflags)
 
 add_executable(udp_client ${udp_client_srcs})
 target_link_libraries(udp_client network gflags)
+
+add_executable(udp_server_toupper ${udp_server_toupper_srcs})
+target_link_libraries(udp_server_toupper network gflags)
