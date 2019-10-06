@@ -17,15 +17,6 @@ static Message kEmptyMessage;
 
 class MessageQueue {
  public:
-  // Just exists to test.
-  void Enqueue(const std::string& str) {
-    Message msg;
-    msg.data = (char*)malloc(str.size());
-    strncpy(msg.data, str.c_str(), str.size());
-    msg.size = str.size();
-    Enqueue(str);
-  }
-
   void Enqueue(Message message) {
     assert(message.size <= kMaxMessageSize);
     std::lock_guard<std::mutex> lock(mutex_);

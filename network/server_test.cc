@@ -70,23 +70,21 @@ TEST(Server, ServerHappyPath) {
   message_queue.Enqueue(msg_two);
 
   // Receive messages.
-  char read[1024];
+  char read[network::kMaxMessageSize];
   struct sockaddr_storage client_address;
   socklen_t client_len = sizeof(client_address);
 
-  memset(&read, 0, 1024);
+  memset(&read, 0, network::kMaxMessageSize);
   int bytes_received = recvfrom(
-        client_socket, read, 1024, 0,
+        client_socket, read, network::kMaxMessageSize, 0,
         (struct sockaddr*)&client_address, &client_len);
-  std::cout << "recvfrom() done" << std::endl; 
   ASSERT_EQ(bytes_received, 5);
   ASSERT_EQ(strcmp(read, "hello"), 0);
 
-  memset(&read, 0, 1024);
+  memset(&read, 0, network::kMaxMessageSize);
   bytes_received = recvfrom(
-        client_socket, read, 1024, 0,
+        client_socket, read, network::kMaxMessageSize, 0,
         (struct sockaddr*)&client_address, &client_len);
-  std::cout << "recvfrom() done" << std::endl; 
   ASSERT_EQ(bytes_received, 3);
   ASSERT_EQ(strcmp(read, "123"), 0);
 
