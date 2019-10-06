@@ -56,6 +56,7 @@ int main(int argc, char** argv) {
     struct sockaddr_storage client_address;
     socklen_t client_len = sizeof(client_address);
     char read[1024];
+    memset(&read[0], 0, sizeof(read));
     int bytes_received = recvfrom(
         socket_listen, read, 1024, 0,
         (struct sockaddr*)&client_address, &client_len);
