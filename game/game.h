@@ -18,6 +18,8 @@ class Game {
   // this gives the render engine a chance to terminate the game if
   // the user does something like close the window.
   virtual bool Render() = 0;
+  // Gives the user a chance to run any necessary 'game end' code.
+  virtual void OnGameEnd() {}
 
   // Setting to 0 runs indefinitely OR Render return false OR 'end_'
   // is triggered via the End() call.

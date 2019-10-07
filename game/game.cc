@@ -20,7 +20,10 @@ bool Game::Run(uint64_t loop_count) {
   game_time_ = std::chrono::milliseconds(0);
   std::chrono::milliseconds current, elapsed, end_loop;
   while (loop_count == 0 || game_updates_ < loop_count) {
-    if (end_) return true;
+    if (end_) {
+      OnGameEnd();
+      return true;
+    }
     current = NowMS();
     elapsed = current - previous;
     if (!paused_) lag += elapsed;
@@ -32,7 +35,10 @@ bool Game::Run(uint64_t loop_count) {
       game_time_ += ms_per_update_;
       ++game_updates_;
     }
-    if (!Render()) return true; // Returns ??
+    if (!Render()) {
+      OnGameEnd();
+      return true; // Returns ??
+    }
     end_loop = NowMS();
     previous = current;
     auto ms = end_loop - current;
@@ -43,6 +49,7 @@ bool Game::Run(uint64_t loop_count) {
     }
     ms_per_frame_ = NowMS() - current;
   }
+  OnGameEnd();
   return true;
 }
 

@@ -1,6 +1,9 @@
 #include <iostream>
 #include <set>
 #include <random>
+#include <thread>
+
+#include <gflags/gflags.h>
 
 #include "components/common/transform_component.h"
 #include "components/rendering/rendering_component.h"
@@ -10,8 +13,16 @@
 #include "math/intersection.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
+#include "network/client.h"
+#include "network/message_queue.h"
+#include "network/server.h"
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
+
+DEFINE_bool(server, false, "Set to true to run as server.");
+DEFINE_string(hostname, "",
+              "If provided will connect to a game server.");
+DEFINE_string(port, "1843", "Port for this application.");
 
 namespace {
 
@@ -260,6 +271,15 @@ class Asteroids : public game::Game {
  public:
   Asteroids() : game::Game() {};
   bool Initialize() override {
+    if (FLAGS_server) {
+      network_thread_ = network::server::Create(
+          FLAGS_port.c_str(), &outgoing_message_queue_,
+          &incoming_message_queue_);
+    } else if (!FLAGS_hostname.empty()) {
+      network_thread_ = network::client::Create(
+          FLAGS_hostname.c_str(), FLAGS_port.c_str(),
+          &outgoing_message_queue_, &incoming_message_queue_);
+    }
     glfw_window_ = renderer::InitGLAndCreateWindow(
         800, 800, "Asteroids");
     if (!glfw_window_) {
@@ -554,6 +574,11 @@ class Asteroids : public game::Game {
     return !glfwWindowShouldClose(glfw_window_);
   }
 
+  void OnGameEnd() override {
+    outgoing_message_queue_.Stop();
+    network_thread_.join();
+  }
+
  private:
   void CreateAsteroidGeometry(
       const std::vector<math::Vec2f>& geometry, float scale) {
@@ -579,9 +604,14 @@ class Asteroids : public game::Game {
   // ordered_set for determinism when calculating collision.
   std::set<ecs::Entity> projectile_entities_;
   std::set<ecs::Entity> asteroid_entities_;
+  // queues to send / recv messages.
+  network::MessageQueue outgoing_message_queue_;
+  network::MessageQueue incoming_message_queue_;
+  std::thread network_thread_;
 };
 
-int main() {
+int main(int argc, char** argv) {
+  gflags::ParseCommandLineFlags(&argc, &argv, true);
   Asteroids asteroids;
   asteroids.Run();
   return 0;
