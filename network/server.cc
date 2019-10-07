@@ -37,7 +37,7 @@ void SendToAllClients(SOCKET socket_listen, Message msg) {
     sendto(socket_listen, msg.data, msg.size, 0,
            (struct sockaddr*) &kClients[i].client_address,
            kClients[i].client_len);
-    free(msg.data);
+    free(msg.data);  // We own this, so free it.
   }
 }
 
@@ -122,7 +122,7 @@ void StartServer(const char* port,
       getnameinfo((struct sockaddr*)&client_address, client_len,
                   address_buffer, kAddressSize, 0, 0,
                   NI_NUMERICHOST);
-      //printf("Message from %s data: %.*s bytes: %i\n\n",
+      //printf("Server Message from %s data: %.*s bytes: %i\n\n",
       //       address_buffer, bytes_received, read, bytes_received);
       Message msg;
       msg.data = (char*)malloc(bytes_received);
@@ -143,6 +143,9 @@ void StartServer(const char* port,
 
     // If there is a message in the queue send it to all connected
     // clients. 
+    // TODO: I think for managing interested clients we do a simple
+    // timeout algorithm. Respond to all clients who have sent us a
+    // msg within the last N milliseconds.
     if (queue_has_items) {
       Message msg = outgoing_message_queue->Dequeue();
       do {

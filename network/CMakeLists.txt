@@ -31,3 +31,16 @@ set(server_test_srcs
 
 add_executable(server_test ${server_test_srcs})
 target_link_libraries(server_test server gtest)
+
+set(client_srcs
+    "client.h"
+    "client.cc")
+
+add_library(client ${client_srcs})
+target_link_libraries(client message_queue network)
+
+set(client_test_srcs
+    "client_test.cc")
+
+add_executable(client_test ${client_test_srcs})
+target_link_libraries(client_test server client gtest)

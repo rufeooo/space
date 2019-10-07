@@ -9,11 +9,10 @@ namespace network {
 constexpr int kMaxMessageSize = 1024;
 
 struct Message {
-  char* data;
-  int size;
+  // This memory needs to be deleted when you're one with it, please.
+  char* data = nullptr;
+  int size = 0;
 };
-
-static Message kEmptyMessage;
 
 class MessageQueue {
  public:
@@ -25,8 +24,9 @@ class MessageQueue {
 
   Message Dequeue() {
     std::lock_guard<std::mutex> lock(mutex_);
-    if (queue_.empty()) return kEmptyMessage;
+    if (queue_.empty()) return Message();  // Empty message
     auto data = queue_.front();
+    assert(data.size <= kMaxMessageSize);
     queue_.pop();
     return data;
   }
