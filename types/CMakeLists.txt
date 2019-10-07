@@ -1,9 +1,6 @@
 set(types_sources
     "main.cc")
 
-# Generate flatbuffers libs.
-include(${CMAKE_SOURCE_DIR}/third_party/flatbuffers/CMake/BuildFlatBuffers.cmake)
-
 set(types_common_sources
     "common/vec3.fbs")
 

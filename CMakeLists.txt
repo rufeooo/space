@@ -46,6 +46,8 @@ set_target_properties(glad-generate-files PROPERTIES FOLDER ThirdParty/glad)
 #set_target_properties(check-template PROPERTIES FOLDER CMakePredefinedTargets)
 #set_target_properties(test PROPERTIES FOLDER ThirdParty/cppfs)
 
+include(${CMAKE_SOURCE_DIR}/third_party/flatbuffers/CMake/BuildFlatBuffers.cmake)
+
 # Our stuff.
 add_subdirectory(types)
 add_subdirectory(math)

@@ -1,0 +1,5 @@
+namespace send_fbs;
+
+table Packet {
+  data:string;
+}
