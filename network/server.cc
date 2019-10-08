@@ -38,7 +38,7 @@ void SendToAllClients(SOCKET socket_listen, Message msg) {
            (struct sockaddr*) &kClients[i].client_address,
            kClients[i].client_len);
   }
-  free(msg.data);  // We own this, so free it.
+  //free(msg.data);  // We own this, so free it.
 }
 
 void StartServer(const char* port,

@@ -9,7 +9,6 @@ namespace network {
 constexpr int kMaxMessageSize = 1024;
 
 struct Message {
-  // This memory needs to be deleted when you're one with it, please.
   char* data = nullptr;
   int size = 0;
 };

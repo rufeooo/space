@@ -97,7 +97,7 @@ void StartClient(const char* hostname, const char* port,
         printf(" Message on queue: %.*s\n\n", msg.size, msg.data);
         sendto(socket_host, msg.data, msg.size, 0,
                host_address->ai_addr, host_address->ai_addrlen);
-        free(msg.data);
+        //free(msg.data);
         msg = outgoing_message_queue->Dequeue();
       } while(msg.size != 0);
     }

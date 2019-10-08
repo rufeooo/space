@@ -3,3 +3,5 @@ namespace send_fbs;
 table Packet {
   data:string;
 }
+
+root_type Packet;
