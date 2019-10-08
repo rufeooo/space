@@ -12,6 +12,7 @@ inline std::chrono::milliseconds NowMS() {
 
 bool Game::Run(uint64_t loop_count) {
   if (!Initialize()) {
+    OnGameEnd();
     return false;
   }
   auto previous = NowMS();
