@@ -29,6 +29,9 @@ make mat_ops_test
 make server_test
 ./network/server_test
 
+make client_test
+./network/client_test
+
 make intersection_test
 ./math/intersection_test
 
