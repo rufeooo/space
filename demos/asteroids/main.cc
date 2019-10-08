@@ -575,8 +575,10 @@ class Asteroids : public game::Game {
   }
 
   void OnGameEnd() override {
-    outgoing_message_queue_.Stop();
-    network_thread_.join();
+    if (network_thread_.joinable()) {
+      outgoing_message_queue_.Stop();
+      network_thread_.join();
+    }
   }
 
  private:
@@ -605,8 +607,8 @@ class Asteroids : public game::Game {
   std::set<ecs::Entity> projectile_entities_;
   std::set<ecs::Entity> asteroid_entities_;
   // queues to send / recv messages.
-  network::MessageQueue outgoing_message_queue_;
-  network::MessageQueue incoming_message_queue_;
+  network::OutgoingMessageQueue outgoing_message_queue_;
+  network::IncomingMessageQueue incoming_message_queue_;
   std::thread network_thread_;
 };
 
