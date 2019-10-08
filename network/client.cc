@@ -11,8 +11,8 @@ namespace client {
 namespace {
 
 void StartClient(const char* hostname, const char* port,
-                 MessageQueue* outgoing_message_queue,
-                 MessageQueue* incoming_message_queue) {
+                 OutgoingMessageQueue* outgoing_message_queue,
+                 IncomingMessageQueue* incoming_message_queue) {
   if (!SocketInit()) {
     printf("Failed to initialize...\n\n");
     return;
@@ -81,8 +81,8 @@ void StartClient(const char* hostname, const char* port,
                 network::SocketErrno());
         continue;
       }
-      printf("Message from host data: %.*s bytes: %i\n\n",
-             bytes_received, read, bytes_received);
+      //printf("Message from host data: %.*s bytes: %i\n\n",
+      //       bytes_received, read, bytes_received);
       Message msg;
       msg.data = (char*)malloc(bytes_received);
       memcpy(msg.data, &read[0], bytes_received);
@@ -91,15 +91,15 @@ void StartClient(const char* hostname, const char* port,
     }
 
     if (queue_has_items) {
-      Message msg = outgoing_message_queue->Dequeue();
+      flatbuffers::DetachedBuffer msg
+          = outgoing_message_queue->Dequeue();
       do {
         // Send outgoing messages to server.
-        printf(" Message on queue: %.*s\n\n", msg.size, msg.data);
-        sendto(socket_host, msg.data, msg.size, 0,
+        sendto(socket_host, msg.data(), msg.size(), 0,
                host_address->ai_addr, host_address->ai_addrlen);
         //free(msg.data);
         msg = outgoing_message_queue->Dequeue();
-      } while(msg.size != 0);
+      } while(msg.size() != 0);
     }
 
     // If the client is supposed to stop, stop it.
@@ -113,8 +113,8 @@ void StartClient(const char* hostname, const char* port,
 }  // anonymous
 
 std::thread Create(const char* hostname, const char* port,
-                   MessageQueue* outgoing_message_queue,
-                   MessageQueue* incoming_message_queue) {
+                   OutgoingMessageQueue* outgoing_message_queue,
+                   IncomingMessageQueue* incoming_message_queue) {
   return std::thread(StartClient, hostname, port,
                      outgoing_message_queue, incoming_message_queue);
 }

@@ -30,13 +30,13 @@ set(server_srcs
 
 add_library(server ${server_srcs})
 target_link_libraries(server message_queue network)
-add_dependencies(server testdata_packet_fbs)
 
 set(server_test_srcs
     "server_test.cc")
 
 add_executable(server_test ${server_test_srcs})
 target_link_libraries(server_test server gtest)
+add_dependencies(server_test testdata_packet_fbs)
 
 set(client_srcs
     "client.h"
@@ -50,3 +50,4 @@ set(client_test_srcs
 
 add_executable(client_test ${client_test_srcs})
 target_link_libraries(client_test server client gtest)
+add_dependencies(client_test testdata_packet_fbs)

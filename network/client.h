@@ -10,8 +10,8 @@ namespace network {
 namespace client {
 
 std::thread Create(const char* hostname, const char* port,
-                   MessageQueue* outgoing_message_queue,
-                   MessageQueue* incoming_message_queue);
+                   OutgoingMessageQueue* outgoing_message_queue,
+                   IncomingMessageQueue* incoming_message_queue);
 
 }  // client
 

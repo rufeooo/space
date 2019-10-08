@@ -55,7 +55,7 @@ class IncomingMessageQueue {
 class OutgoingMessageQueue {
  public:
   void Enqueue(flatbuffers::DetachedBuffer&& message) {
-    //assert(message.size <= kMaxMessageSize);
+    assert(message.size() <= kMaxMessageSize);
     std::lock_guard<std::mutex> lock(mutex_);
     queue_.push(std::move(message));
   }
@@ -64,7 +64,7 @@ class OutgoingMessageQueue {
     std::lock_guard<std::mutex> lock(mutex_);
     if (queue_.empty()) return flatbuffers::DetachedBuffer();
     auto data = std::move(queue_.front());
-    //assert(data.size <= kMaxMessageSize);
+    assert(data.size() <= kMaxMessageSize);
     queue_.pop();
     return data;
   }
