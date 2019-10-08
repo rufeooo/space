@@ -2,8 +2,11 @@
 
 #include <iostream>
 
+#include <flatbuffers/flatbuffers.h>
+
 #include "server.h"
 #include "message_queue.h"
+#include "testdata/packet_generated.h"
 
 SOCKET CreateSimpleClient(
     const std::string& hostname, const std::string& port,
@@ -42,9 +45,22 @@ SOCKET CreateSimpleClient(
   return socket_peer;
 }
 
+char* ReadSocketData(SOCKET client_socket) {
+  char read[network::kMaxMessageSize];
+  memset(&read, 0, network::kMaxMessageSize);
+  int bytes_received = recvfrom(
+      client_socket, read, network::kMaxMessageSize, 0, nullptr,
+      nullptr);
+  std::cout << "Received " << bytes_received << " bytes of data."
+            << std::endl;
+  char* data = (char*)malloc(bytes_received);
+  memcpy(data, &read[0], bytes_received);
+  return data;
+}
+
 TEST(Server, ServerHappyPath) {
-  network::MessageQueue outgoing_message_queue;
-  network::MessageQueue incoming_message_queue;
+  network::OutgoingMessageQueue outgoing_message_queue;
+  network::IncomingMessageQueue incoming_message_queue;
   std::thread server_thread
       = network::server::Create("7890", &outgoing_message_queue,
                                 &incoming_message_queue);
@@ -63,40 +79,39 @@ TEST(Server, ServerHappyPath) {
   } while (msg.size == 0);
   ASSERT_EQ(msg.size, 7);
   ASSERT_EQ(strncmp(msg.data, "Connect", msg.size), 0);
-  // Enqueue a 5 byte message of 'hello' non-null terminated to be
-  // send to the simple client.
-  network::Message msg_one;
-  msg_one.data = (char*)malloc(5);
-  msg_one.data[0] = 'h'; msg_one.data[1] = 'e'; msg_one.data[2] = 'l';
-  msg_one.data[3] = 'l'; msg_one.data[4] = 'o'; msg_one.size = 5;
-  outgoing_message_queue.Enqueue(msg_one);
+  {
+    // Enqueue a flatbuffer with message 'hello'
+    flatbuffers::FlatBufferBuilder fbb;
+    auto data = fbb.CreateString("Hello!");
+    auto packet = testdata::CreatePacket(fbb, data);
+    fbb.Finish(packet);
+    outgoing_message_queue.Enqueue(fbb.Release());
+    char* socket_data = ReadSocketData(client_socket);
+    auto* received_packet = testdata::GetPacket(
+        (const void*)socket_data);
+    std::cout << received_packet->data()->c_str() << std::endl;
+    ASSERT_EQ(std::string(received_packet->data()->c_str()),
+              std::string("Hello!"));
+    free(socket_data);
+  }
 
-
-  network::Message msg_two;
-  msg_two.data = (char*)malloc(3);
-  msg_two.data[0] = '1'; msg_two.data[1] = '2'; msg_two.data[2] = '3';
-  msg_two.size = 3;
-  outgoing_message_queue.Enqueue(msg_two);
-
-  // Receive messages.
-  char read[network::kMaxMessageSize];
-  struct sockaddr_storage client_address;
-  socklen_t client_len = sizeof(client_address);
-
-  memset(&read, 0, network::kMaxMessageSize);
-  int bytes_received = recvfrom(
-        client_socket, read, network::kMaxMessageSize, 0,
-        (struct sockaddr*)&client_address, &client_len);
-  ASSERT_EQ(bytes_received, 5);
-  ASSERT_EQ(strncmp(read, "hello", 5), 0);
-
-  memset(&read, 0, network::kMaxMessageSize);
-  bytes_received = recvfrom(
-        client_socket, read, network::kMaxMessageSize, 0,
-        (struct sockaddr*)&client_address, &client_len);
-  ASSERT_EQ(bytes_received, 3);
-  ASSERT_EQ(strncmp(read, "123", 3), 0);
-
+  {
+    // Enqueue a flatbuffer with message 'hello'
+    flatbuffers::FlatBufferBuilder fbb;
+    auto data = fbb.CreateString(
+        "The quick brown fox jumps over the lazy dog.");
+    auto packet = testdata::CreatePacket(fbb, data);
+    fbb.Finish(packet);
+    outgoing_message_queue.Enqueue(fbb.Release());
+    char* socket_data = ReadSocketData(client_socket);
+    auto* received_packet = testdata::GetPacket(
+        (const void*)socket_data);
+    std::cout << received_packet->data()->c_str() << std::endl;
+    ASSERT_EQ(std::string(received_packet->data()->c_str()),
+              std::string("The quick brown fox jumps over the lazy "
+                          "dog."));
+    free(socket_data);
+  }
   outgoing_message_queue.Stop();
   server_thread.join();
 }

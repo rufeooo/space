@@ -2,6 +2,8 @@
 
 #include <thread>
 
+#include <flatbuffers/flatbuffers.h>
+
 #include "network.h"
 
 namespace network {
@@ -30,20 +32,20 @@ bool ClientExists(char* address) {
   return false;
 }
 
-void SendToAllClients(SOCKET socket_listen, Message msg) {
+void SendToAllClients(SOCKET socket_listen,
+                      flatbuffers::DetachedBuffer& msg) {
   for (int i = 0; i < kClientCount; ++i) {
-    printf("Sending msg to %s data: %.*s\n\n",
-           kClients[i].address_buffer, msg.size, msg.data);
-    sendto(socket_listen, msg.data, msg.size, 0,
+    //printf("Sending msg to %s data: %.*s\n\n",
+    //       kClients[i].address_buffer, msg.size(), msg.data());
+    sendto(socket_listen, (char*)msg.data(), msg.size(), 0,
            (struct sockaddr*) &kClients[i].client_address,
            kClients[i].client_len);
   }
-  //free(msg.data);  // We own this, so free it.
 }
 
 void StartServer(const char* port,
-                 MessageQueue* outgoing_message_queue,
-                 MessageQueue* incoming_message_queue) {
+                 OutgoingMessageQueue* outgoing_message_queue,
+                 IncomingMessageQueue* incoming_message_queue) {
   if (!SocketInit()) {
     printf("Failed to initialize...\n\n");
     return;
@@ -128,9 +130,10 @@ void StartServer(const char* port,
       msg.data = (char*)malloc(bytes_received);
       memcpy(msg.data, &read[0], bytes_received);
       msg.size = bytes_received;
-      incoming_message_queue->Enqueue(msg);
+      incoming_message_queue->Enqueue(msg); 
       if (!ClientExists(address_buffer)) {
-        // Save off client connections? When do we remove from this list?
+        // Save off client connections? When do we remove from this
+        // list?
         ClientConnection connection;
         connection.client_address = client_address;
         connection.client_len = client_len;
@@ -147,12 +150,12 @@ void StartServer(const char* port,
     // timeout algorithm. Respond to all clients who have sent us a
     // msg within the last N milliseconds.
     if (queue_has_items) {
-      Message msg = outgoing_message_queue->Dequeue();
+      flatbuffers::DetachedBuffer msg
+          = outgoing_message_queue->Dequeue();
       do {
-        printf(" Message on queue: %.*s\n\n", msg.size, msg.data);
         SendToAllClients(socket_listen, msg);
         msg = outgoing_message_queue->Dequeue();
-      } while(msg.size != 0);
+      } while(msg.size() != 0);
     }
 
     // If the server is supposed to stop, stop it.
@@ -165,8 +168,8 @@ void StartServer(const char* port,
 }  // anonymous
 
 std::thread Create(const char* port,
-                   MessageQueue* outgoing_message_queue,
-                   MessageQueue* incoming_message_queue) {
+                   OutgoingMessageQueue* outgoing_message_queue,
+                   IncomingMessageQueue* incoming_message_queue) {
   return std::thread(StartServer, port, outgoing_message_queue,
                     incoming_message_queue);
 }

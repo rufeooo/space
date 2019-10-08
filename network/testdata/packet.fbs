@@ -1,0 +1,7 @@
+namespace testdata;
+
+table Packet {
+  data:string;
+}
+
+root_type Packet;
