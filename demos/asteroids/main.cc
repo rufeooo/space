@@ -1,3 +1,4 @@
+#include <cassert>
 #include <iostream>
 #include <set>
 #include <random>
@@ -16,6 +17,7 @@
 #include "network/client.h"
 #include "network/message_queue.h"
 #include "network/server.h"
+#include "protocol/asteroids_packet_generated.h"
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
@@ -132,6 +134,18 @@ struct PolygonShape {
 
 bool IsHeadless() {
   return FLAGS_server && FLAGS_headless;
+}
+
+bool IsNetworked() {
+  return FLAGS_server || !FLAGS_hostname.empty();
+}
+
+bool IsServer() {
+  return FLAGS_server == true;
+}
+
+bool IsClient() {
+  return !FLAGS_hostname.empty();
 }
 
 void SpawnPlayer(
@@ -286,15 +300,16 @@ class Asteroids : public game::Game {
  public:
   Asteroids() : game::Game() {};
   bool Initialize() override {
-    if (FLAGS_server) {
+    if (IsServer()) {
       network_thread_ = network::server::Create(
           FLAGS_port.c_str(), &outgoing_message_queue_,
           &incoming_message_queue_);
-    } else if (!FLAGS_hostname.empty()) {
+      //outgoing_message_queue
+    } else if (IsClient()) {
       network_thread_ = network::client::Create(
           FLAGS_hostname.c_str(), FLAGS_port.c_str(),
           &outgoing_message_queue_, &incoming_message_queue_);
-    }
+    } else { assert(!IsNetworked()); }
     
     if (!InitGraphics()) return false;
 
@@ -576,10 +591,9 @@ class Asteroids : public game::Game {
     ecs::Enumerate<InputComponent,
                    PhysicsComponent,
                    component::TransformComponent>(
-        [this](ecs::Entity ent,
-           InputComponent& input,
-           PhysicsComponent& physics,
-           component::TransformComponent& transform) {
+        [this](ecs::Entity ent, InputComponent& input,
+               PhysicsComponent& physics,
+               component::TransformComponent& transform) {
       // Apply rotation. 
       int state = glfwGetKey(glfw_window_, GLFW_KEY_A);
       if (state == GLFW_PRESS) {
@@ -607,6 +621,32 @@ class Asteroids : public game::Game {
         input.shoot_projectile = true;
       }
       input.space_state = state;
+      // Send out packet update to server.
+      if (IsNetworked() && IsClient()) {
+        flatbuffers::FlatBufferBuilder fbb;
+        auto position = asteroids::Vec3(
+            transform.position.x(), transform.position.y(),
+            transform.position.z());
+        auto orientation = asteroids::Vec4(
+            transform.orientation.x(), transform.orientation.y(),
+            transform.orientation.z(), transform.orientation.w());
+        auto player_transform = asteroids::Transform(
+            position, orientation);
+        auto fb_acceleration = asteroids::Vec3(
+            physics.acceleration.x(), physics.acceleration.y(),
+            physics.acceleration.z());
+        auto fb_velocity = asteroids::Vec3(
+            physics.velocity.x(), physics.velocity.y(),
+            physics.velocity.z());
+        auto player_physics = asteroids::Physics(
+            fb_acceleration, fb_velocity); 
+        auto player_state = asteroids::PlayerState(
+            ent, player_transform, player_physics);
+        auto packet = asteroids::CreatePacket(
+            fbb, &player_state, game_updates());
+        fbb.Finish(packet);
+        outgoing_message_queue_.Enqueue(fbb.Release());
+      }
     });
   }
 

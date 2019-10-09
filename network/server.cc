@@ -95,6 +95,7 @@ void StartServer(const char* port,
     struct timeval timeout;
     // TODO: This timeout doesn't seem to consistently work? Benchmark
     // and consider using a cross platform poll() instead.
+    timeout.tv_sec = 0; 
     timeout.tv_usec = 5000;
     //printf("select()\n\n");
     if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
@@ -102,6 +103,8 @@ void StartServer(const char* port,
               network::SocketErrno());
       return;
     }
+
+    //printf("select()\n\n");
 
     bool fd_isset = FD_ISSET(socket_listen, &reads);
     bool queue_has_items = !outgoing_message_queue->Empty();
@@ -124,12 +127,11 @@ void StartServer(const char* port,
       getnameinfo((struct sockaddr*)&client_address, client_len,
                   address_buffer, kAddressSize, 0, 0,
                   NI_NUMERICHOST);
-      //printf("Server Message from %s data: %.*s bytes: %i\n\n",
-      //       address_buffer, bytes_received, read, bytes_received);
       Message msg;
       msg.data = (char*)malloc(bytes_received);
       memcpy(msg.data, &read[0], bytes_received);
       msg.size = bytes_received;
+      //printf("gots bytes: %d\n\n", bytes_received);
       incoming_message_queue->Enqueue(msg); 
       if (!ClientExists(address_buffer)) {
         // Save off client connections? When do we remove from this

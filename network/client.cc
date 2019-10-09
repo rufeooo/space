@@ -48,25 +48,25 @@ void StartClient(const char* hostname, const char* port,
     return;
   }
 
-  fd_set master;
-  FD_ZERO(&master);
-  FD_SET(socket_host, &master);
-  SOCKET max_socket = socket_host;
 
   char read[kMaxMessageSize];
   while (1) {
     fd_set reads;
-    reads = master;
+    FD_ZERO(&reads);
+    FD_SET(socket_host, &reads);
     struct timeval timeout;
     // TODO: This timeout doesn't seem to consistently work? Benchmark
     // and consider using a cross platform poll() instead.
+    timeout.tv_sec = 0; 
     timeout.tv_usec = 5000;
     //printf("select()\n\n");
-    if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
+    if (select(socket_host + 1, &reads, 0, 0, &timeout) < 0) {
       fprintf(stderr, "select() failed (%d)\n\n",
               network::SocketErrno());
       return;
     }
+
+    //printf("select()\n\n");
 
     bool fd_isset = FD_ISSET(socket_host, &reads);
     bool queue_has_items = !outgoing_message_queue->Empty();
@@ -119,6 +119,6 @@ std::thread Create(const char* hostname, const char* port,
                      outgoing_message_queue, incoming_message_queue);
 }
 
-}  // server
+}  // client
 
 }  // network
