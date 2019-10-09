@@ -25,11 +25,13 @@ struct ClientConnection {
 static struct ClientConnection kClients[10]; 
 static int kClientCount = 0;
 
-bool ClientExists(char* address) {
+int ClientId(char* address) {
   for (int i = 0; i < kClientCount; ++i) {
-    if (strcmp(kClients[i].address_buffer, address) == 0) return true;
+    if (strcmp(kClients[i].address_buffer, address) == 0) {
+      return i;
+    }
   }
-  return false;
+  return -1;
 }
 
 void SendToAllClients(SOCKET socket_listen,
@@ -127,13 +129,8 @@ void StartServer(const char* port,
       getnameinfo((struct sockaddr*)&client_address, client_len,
                   address_buffer, kAddressSize, 0, 0,
                   NI_NUMERICHOST);
-      Message msg;
-      msg.data = (char*)malloc(bytes_received);
-      memcpy(msg.data, &read[0], bytes_received);
-      msg.size = bytes_received;
-      //printf("gots bytes: %d\n\n", bytes_received);
-      incoming_message_queue->Enqueue(msg); 
-      if (!ClientExists(address_buffer)) {
+      int id = ClientId(address_buffer);
+      if (id == -1) {
         // Save off client connections? When do we remove from this
         // list?
         ClientConnection connection;
@@ -141,9 +138,17 @@ void StartServer(const char* port,
         connection.client_len = client_len;
         strncpy(connection.address_buffer, address_buffer,
                 kAddressSize);
+        id = kClientCount;
         kClients[kClientCount++] = connection;
         printf("Caching address %s\n\n", address_buffer);
       }
+      Message msg;
+      msg.data = (char*)malloc(bytes_received);
+      memcpy(msg.data, &read[0], bytes_received);
+      msg.size = bytes_received;
+      msg.client_id = id;
+      //printf("gots bytes: %d\n\n", bytes_received);
+      incoming_message_queue->Enqueue(msg); 
     }
 
     // If there is a message in the queue send it to all connected

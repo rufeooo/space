@@ -1,5 +1,6 @@
 #include <cassert>
 #include <iostream>
+#include <unordered_map>
 #include <set>
 #include <random>
 #include <thread>
@@ -58,7 +59,7 @@ static float kProjectileSpeed = 0.005;
 
 //////// Game Constants //////// 
 static float kSecsToSpawnAsteroid = 2.3f;
-static uint64_t kMaxAsteroidCount = 0xFFFFFFFF;
+static uint64_t kMaxAsteroidCount = 0;
 
 constexpr const char* kVertexShader = R"(
   #version 410
@@ -152,7 +153,9 @@ void SpawnPlayer(
     ecs::Entity entity, const math::Vec3f& position,
     uint32_t vao_reference, uint32_t program_reference,
     const std::vector<math::Vec2f>& ship_geometry) {
-  ecs::Assign<InputComponent>(entity);
+  if (!IsNetworked() || IsClient()) {
+    ecs::Assign<InputComponent>(entity);
+  }
   ecs::Assign<PhysicsComponent>(entity);
   ecs::Assign<PolygonShape>(entity, ship_geometry);
   ecs::Assign<component::TransformComponent>(entity);
@@ -314,12 +317,12 @@ class Asteroids : public game::Game {
     if (!InitGraphics()) return false;
 
     // Create ship geometry.
-    std::vector<math::Vec2f> ship_geometry = {
+    ship_geometry_ = {
         {0.0f, 0.08f}, {0.03f, -0.03f}, {0.00f, -0.005f},
         {-0.03f, -0.03f}
     };
-    uint32_t vao_ship_reference =
-        IsHeadless() ? 0 : renderer::CreateGeometryVAO(ship_geometry);
+    vao_ship_reference_ =
+        IsHeadless() ? 0 : renderer::CreateGeometryVAO(ship_geometry_);
 
     // Create game state component.
     
@@ -327,8 +330,11 @@ class Asteroids : public game::Game {
 
     // Create player.
 
-    SpawnPlayer(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
-                vao_ship_reference, program_reference_, ship_geometry);
+    if (!IsNetworked() || IsClient()) {
+      SpawnPlayer(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
+                  vao_ship_reference_, program_reference_,
+                  ship_geometry_);
+    }
 
     // Create asteroid geometry and save its vao / program ref.
 
@@ -376,6 +382,7 @@ class Asteroids : public game::Game {
   // Input logic
   bool ProcessInput() override {
     if (!IsHeadless()) ProcessClientInput();
+    if (IsServer()) ProcessServerInput();
     return true;
   }
 
@@ -621,33 +628,65 @@ class Asteroids : public game::Game {
         input.shoot_projectile = true;
       }
       input.space_state = state;
-      // Send out packet update to server.
+      // Send out player state to the server.
       if (IsNetworked() && IsClient()) {
-        flatbuffers::FlatBufferBuilder fbb;
-        auto position = asteroids::Vec3(
-            transform.position.x(), transform.position.y(),
-            transform.position.z());
-        auto orientation = asteroids::Vec4(
-            transform.orientation.x(), transform.orientation.y(),
-            transform.orientation.z(), transform.orientation.w());
-        auto player_transform = asteroids::Transform(
-            position, orientation);
-        auto fb_acceleration = asteroids::Vec3(
-            physics.acceleration.x(), physics.acceleration.y(),
-            physics.acceleration.z());
-        auto fb_velocity = asteroids::Vec3(
-            physics.velocity.x(), physics.velocity.y(),
-            physics.velocity.z());
-        auto player_physics = asteroids::Physics(
-            fb_acceleration, fb_velocity); 
-        auto player_state = asteroids::PlayerState(
-            ent, player_transform, player_physics);
-        auto packet = asteroids::CreatePacket(
-            fbb, &player_state, game_updates());
-        fbb.Finish(packet);
-        outgoing_message_queue_.Enqueue(fbb.Release());
+        SendPlayerState(ent, transform, physics);
       }
     });
+  }
+
+  void ProcessServerInput() {
+    network::Message msg = incoming_message_queue_.Dequeue();
+    while (msg.size != 0) {
+      // Deserialize the message into a flatbuffer.
+      auto* asteroids_packet = asteroids::GetPacket(
+          (const void*)msg.data);
+      // Get the entity mapping.
+      auto& entity_mapping = client_entity_mappings_[msg.client_id];
+      //std::cout << msg.client_id << std::endl;
+      auto* player_state = asteroids_packet->player_state();
+      uint64_t client_entity = player_state->entity_id();
+      auto server_entity_itr = entity_mapping.find(client_entity);
+      ecs::Entity server_entity;
+      // Check if the server knows about this client entity.
+      if (server_entity_itr == entity_mapping.end()) {
+        // The server doesn't know  about this entity so make it.
+        server_entity = free_entity_;
+        entity_mapping[client_entity] = server_entity;
+        SpawnPlayer(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
+                    vao_ship_reference_, program_reference_,
+                    ship_geometry_);
+        std::cout << "Server made player entity: "
+                  << server_entity << std::endl;
+      } else { server_entity = server_entity_itr->second; }
+      // Deserialize data into local entity.
+      auto fb_physics = player_state->physics();
+      PhysicsComponent* player_physics =
+          ecs::Get<PhysicsComponent>(server_entity);
+      player_physics->acceleration = math::Vec3f(
+          fb_physics.acceleration().x(),
+          fb_physics.acceleration().y(),
+          fb_physics.acceleration().z());
+      player_physics->velocity = math::Vec3f(
+          fb_physics.velocity().x(),
+          fb_physics.velocity().y(),
+          fb_physics.velocity().z());
+      auto fb_transform = player_state->transform();
+      component::TransformComponent* player_transform =
+          ecs::Get<component::TransformComponent>(server_entity);
+      player_transform->position = math::Vec3f(
+          fb_transform.position().x(),
+          fb_transform.position().y(),
+          fb_transform.position().z());
+      //std::cout << "Set: " << server_entity << " position "
+      //          << player_transform->position.String() << std::endl;
+      player_transform->orientation = math::Quatf(
+          fb_transform.orientation().x(),
+          fb_transform.orientation().y(),
+          fb_transform.orientation().z(),
+          fb_transform.orientation().w());
+      msg = incoming_message_queue_.Dequeue();
+    }
   }
 
   void CreateAsteroidGeometry(
@@ -662,6 +701,35 @@ class Asteroids : public game::Game {
             0 : renderer::CreateGeometryVAO(scaled_geometry));
   }
 
+  void SendPlayerState(
+      ecs::Entity ent,
+      const component::TransformComponent& transform,
+      const PhysicsComponent& physics) {
+    flatbuffers::FlatBufferBuilder fbb;
+    auto position = asteroids::Vec3(
+        transform.position.x(), transform.position.y(),
+        transform.position.z());
+    auto orientation = asteroids::Vec4(
+        transform.orientation.x(), transform.orientation.y(),
+        transform.orientation.z(), transform.orientation.w());
+    auto player_transform = asteroids::Transform(
+        position, orientation);
+    auto fb_acceleration = asteroids::Vec3(
+        physics.acceleration.x(), physics.acceleration.y(),
+        physics.acceleration.z());
+    auto fb_velocity = asteroids::Vec3(
+        physics.velocity.x(), physics.velocity.y(),
+        physics.velocity.z());
+    auto player_physics = asteroids::Physics(
+        fb_acceleration, fb_velocity); 
+    auto player_state = asteroids::PlayerState(
+        ent, player_transform, player_physics);
+    auto packet = asteroids::CreatePacket(
+        fbb, &player_state, game_updates());
+    fbb.Finish(packet);
+    outgoing_message_queue_.Enqueue(fbb.Release());
+  }
+
   int matrix_location_;
   ecs::Entity camera_ = 0;
   ecs::Entity free_entity_ = 1;
@@ -672,6 +740,8 @@ class Asteroids : public game::Game {
   uint32_t projectile_program_reference_;
   std::vector<uint32_t> asteroid_vao_reference_;
   uint32_t asteroid_program_reference_;
+  uint32_t vao_ship_reference_;
+  std::vector<math::Vec2f> ship_geometry_;
   std::vector<std::vector<math::Vec2f>> asteroid_geometry_;
   // ordered_set for determinism when calculating collision.
   std::set<ecs::Entity> projectile_entities_;
@@ -680,6 +750,10 @@ class Asteroids : public game::Game {
   network::OutgoingMessageQueue outgoing_message_queue_;
   network::IncomingMessageQueue incoming_message_queue_;
   std::thread network_thread_;
+  // client entity mappings.
+  std::unordered_map<
+      int, std::unordered_map<ecs::Entity, ecs::Entity>>
+          client_entity_mappings_;
 };
 
 int main(int argc, char** argv) {

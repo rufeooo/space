@@ -16,6 +16,9 @@ class Quat : public Vec4<T> {
   // be a unit vector. Maybe do it before converting to rotation
   // matrix so it's only done when it needs to be.
   
+  Quat(const T& x, const T& y, const T& z, const T& w) :
+      Vec4<T>(x, y, z, w) {
+  }
 
   Quat(float angle_degrees, const math::Vec3<T>& axis) {
     Set(angle_degrees, axis);

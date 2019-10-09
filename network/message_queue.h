@@ -13,6 +13,7 @@ constexpr int kMaxMessageSize = 1024;
 struct Message {
   char* data = nullptr;
   int size = 0;
+  int client_id = -1;
 };
 
 class IncomingMessageQueue {
