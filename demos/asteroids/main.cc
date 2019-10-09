@@ -20,6 +20,9 @@
 #include "renderer/gl_utils.h"
 
 DEFINE_bool(server, false, "Set to true to run as server.");
+DEFINE_bool(headless, true,
+            "If server set to true whether the server runs headless.");
+                             
 DEFINE_string(hostname, "",
               "If provided will connect to a game server.");
 DEFINE_string(port, "1843", "Port for this application.");
@@ -127,6 +130,10 @@ struct PolygonShape {
   std::vector<math::Vec2f> points;
 };
 
+bool IsHeadless() {
+  return FLAGS_server && FLAGS_headless;
+}
+
 void SpawnPlayer(
     ecs::Entity entity, const math::Vec3f& position,
     uint32_t vao_reference, uint32_t program_reference,
@@ -135,9 +142,11 @@ void SpawnPlayer(
   ecs::Assign<PhysicsComponent>(entity);
   ecs::Assign<PolygonShape>(entity, ship_geometry);
   ecs::Assign<component::TransformComponent>(entity);
-  ecs::Assign<component::RenderingComponent>(
+  if (!IsHeadless()) {
+    ecs::Assign<component::RenderingComponent>(
       entity, vao_reference, program_reference,
       ship_geometry.size());
+  }
 }
 
 void SpawnPlayerProjectile(
@@ -152,8 +161,10 @@ void SpawnPlayerProjectile(
       entity, projectile_transform);
   ecs::Assign<PhysicsComponent>(
       entity, math::Vec3f(), dir * kProjectileSpeed, 0.f, 0.f);
-  ecs::Assign<component::RenderingComponent>(
-      entity, vao_reference, program_reference, 4);
+  if (!IsHeadless()) {
+    ecs::Assign<component::RenderingComponent>(
+        entity, vao_reference, program_reference, 4);
+  }
   ecs::Assign<TTLComponent>(entity);
 }
 
@@ -171,9 +182,11 @@ void SpawnAsteroid(
   auto* physics = ecs::Get<PhysicsComponent>(entity);
   physics->velocity = dir * kShipAcceleration * 50.f;
   ecs::Assign<PolygonShape>(entity, asteroid_geometry);
-  ecs::Assign<component::RenderingComponent>(
-      entity, vao_reference, program_reference,
-      asteroid_geometry.size());
+  if (!IsHeadless()) {
+    ecs::Assign<component::RenderingComponent>(
+        entity, vao_reference, program_reference,
+        asteroid_geometry.size());
+  }
 }
 
 void UpdatePhysics(PhysicsComponent& physics_component) {
@@ -265,6 +278,8 @@ bool ProjectileCollidesWithAsteroid(
   return false;
 }
 
+
+
 }  // namespace
 
 class Asteroids : public game::Game {
@@ -280,61 +295,16 @@ class Asteroids : public game::Game {
           FLAGS_hostname.c_str(), FLAGS_port.c_str(),
           &outgoing_message_queue_, &incoming_message_queue_);
     }
-    glfw_window_ = renderer::InitGLAndCreateWindow(
-        800, 800, "Asteroids");
-    if (!glfw_window_) {
-      std::cout << "Unable to start GL and create window."
-                << std::endl;
-      return false;
-    }
-    ecs::Assign<component::ViewComponent>(
-      camera_,
-      math::Vec3f(0.0f, 0.0f, 1.5f),
-      math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
-    if (!shader_cache_.CompileShader(
-        kVertexShaderName,
-        renderer::ShaderType::VERTEX,
-        kVertexShader)) {
-      std::cout << "Unable to compile "
-                << kVertexShaderName << std::endl;
-      return false;
-    }
-    if (!shader_cache_.CompileShader(
-        kFragmentShaderName,
-        renderer::ShaderType::FRAGMENT,
-        kFragmentShader)) {
-      std::cout << "Unable to compile "
-                << kFragmentShaderName << std::endl;
-      return false;
-    }
-    if (!shader_cache_.LinkProgram(
-        kProgramName,
-        {kVertexShaderName, kFragmentShaderName})) {
-      std::cout << "Unable to link: "
-                << kProgramName
-                << " info: "
-                << shader_cache_.GetProgramInfo(kProgramName)
-                << std::endl;
-      return false;
-    }
-    uint32_t program_reference;
-    if (!shader_cache_.GetProgramReference(
-        kProgramName, &program_reference)) {
-      return false;
-    }
-    matrix_location_ = glGetUniformLocation(
-        program_reference, "matrix");
-    std::cout << shader_cache_.GetProgramInfo(kProgramName)
-              << std::endl;
+    
+    if (!InitGraphics()) return false;
 
     // Create ship geometry.
-
     std::vector<math::Vec2f> ship_geometry = {
         {0.0f, 0.08f}, {0.03f, -0.03f}, {0.00f, -0.005f},
         {-0.03f, -0.03f}
     };
     uint32_t vao_ship_reference =
-        renderer::CreateGeometryVAO(ship_geometry);
+        IsHeadless() ? 0 : renderer::CreateGeometryVAO(ship_geometry);
 
     // Create game state component.
     
@@ -343,7 +313,7 @@ class Asteroids : public game::Game {
     // Create player.
 
     SpawnPlayer(free_entity_++, math::Vec3f(0.f, 0.f, 0.f),
-                vao_ship_reference, program_reference, ship_geometry);
+                vao_ship_reference, program_reference_, ship_geometry);
 
     // Create asteroid geometry and save its vao / program ref.
 
@@ -373,58 +343,24 @@ class Asteroids : public game::Game {
     }, 20.f);
 
 
-    asteroid_program_reference_ = program_reference;
+    asteroid_program_reference_ = program_reference_;
 
     // Create projectile geometry and save its vao / program ref.
     
     std::vector<math::Vec2f> projectile_geometry = {
       {0.f, 0.005f}, {0.005f, 0.0f}, {0.f, -0.005f}, {-0.005f, 0.0}
     };
-    projectile_vao_reference_
-        = renderer::CreateGeometryVAO(projectile_geometry);
-    projectile_program_reference_ = program_reference;
+    projectile_vao_reference_ = 
+      IsHeadless() ? 0 :
+      renderer::CreateGeometryVAO(projectile_geometry);
+    projectile_program_reference_ = program_reference_;
 
     return true;
   }
 
   // Input logic
   bool ProcessInput() override {
-    glfwPollEvents();
-    ecs::Enumerate<InputComponent,
-                   PhysicsComponent,
-                   component::TransformComponent>(
-        [this](ecs::Entity ent,
-           InputComponent& input,
-           PhysicsComponent& physics,
-           component::TransformComponent& transform) {
-      // Apply rotation. 
-      int state = glfwGetKey(glfw_window_, GLFW_KEY_A);
-      if (state == GLFW_PRESS) {
-        input.a_pressed = true;
-      }
-      state = glfwGetKey(glfw_window_, GLFW_KEY_D);
-      if (state == GLFW_PRESS) {
-        input.d_pressed = true;
-      }
-      // Set acceleration to facing direction times acceleration_speed.
-      auto u = transform.orientation.Up();
-      state = glfwGetKey(glfw_window_, GLFW_KEY_W);
-      physics.acceleration = math::Vec3f(0.f, 0.f, 0.f);
-      if (state == GLFW_PRESS) {
-        physics.acceleration = u * physics.acceleration_speed;
-      }
-      state = glfwGetKey(glfw_window_, GLFW_KEY_S);
-      if (state == GLFW_PRESS) {
-        physics.acceleration = u * -physics.acceleration_speed;
-      }
-      state = glfwGetKey(glfw_window_, GLFW_KEY_SPACE);
-      // If the current state of space was release and the previous
-      // was pressed then set the ship to fire.
-      if (state == GLFW_RELEASE && input.space_state == GLFW_PRESS) {
-        input.shoot_projectile = true;
-      }
-      input.space_state = state;
-    });
+    if (!IsHeadless()) ProcessClientInput();
     return true;
   }
 
@@ -456,7 +392,7 @@ class Asteroids : public game::Game {
       ecs::Remove<component::TransformComponent>(e);
       ecs::Remove<PhysicsComponent>(e);
       ecs::Remove<PolygonShape>(e);
-      ecs::Remove<component::RenderingComponent>(e);
+      if (!IsHeadless()) ecs::Remove<component::RenderingComponent>(e);
       ecs::Remove<TTLComponent>(e);
       projectile_entities_.erase(e);
     }
@@ -465,7 +401,7 @@ class Asteroids : public game::Game {
       ecs::Remove<component::TransformComponent>(e);
       ecs::Remove<PhysicsComponent>(e);
       ecs::Remove<PolygonShape>(e);
-      ecs::Remove<component::RenderingComponent>(e);
+      if (!IsHeadless()) ecs::Remove<component::RenderingComponent>(e);
       asteroid_entities_.erase(e);
     }
 
@@ -543,6 +479,9 @@ class Asteroids : public game::Game {
 
   // Render logic
   bool Render() override {
+    if (IsHeadless()) {
+      return true;
+    }
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     auto* view_component = ecs::Get<component::ViewComponent>(
           camera_);
@@ -582,6 +521,95 @@ class Asteroids : public game::Game {
   }
 
  private:
+  bool InitGraphics() {
+    if (IsHeadless()) return true;
+    glfw_window_ = renderer::InitGLAndCreateWindow(
+        800, 800, "Asteroids");
+    if (!glfw_window_) {
+      std::cout << "Unable to start GL and create window."
+                << std::endl;
+      return false;
+    }
+    ecs::Assign<component::ViewComponent>(
+      camera_,
+      math::Vec3f(0.0f, 0.0f, 1.5f),
+      math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
+    if (!shader_cache_.CompileShader(
+        kVertexShaderName,
+        renderer::ShaderType::VERTEX,
+        kVertexShader)) {
+      std::cout << "Unable to compile "
+                << kVertexShaderName << std::endl;
+      return false;
+    }
+    if (!shader_cache_.CompileShader(
+        kFragmentShaderName,
+        renderer::ShaderType::FRAGMENT,
+        kFragmentShader)) {
+      std::cout << "Unable to compile "
+                << kFragmentShaderName << std::endl;
+      return false;
+    }
+    if (!shader_cache_.LinkProgram(
+        kProgramName,
+        {kVertexShaderName, kFragmentShaderName})) {
+      std::cout << "Unable to link: "
+                << kProgramName
+                << " info: "
+                << shader_cache_.GetProgramInfo(kProgramName)
+                << std::endl;
+      return false;
+    }
+    if (!shader_cache_.GetProgramReference(
+        kProgramName, &program_reference_)) {
+      return false;
+    }
+    matrix_location_ = glGetUniformLocation(
+        program_reference_, "matrix");
+    std::cout << shader_cache_.GetProgramInfo(kProgramName)
+              << std::endl;
+    return true;
+  }
+
+  void ProcessClientInput() {
+    glfwPollEvents();
+    ecs::Enumerate<InputComponent,
+                   PhysicsComponent,
+                   component::TransformComponent>(
+        [this](ecs::Entity ent,
+           InputComponent& input,
+           PhysicsComponent& physics,
+           component::TransformComponent& transform) {
+      // Apply rotation. 
+      int state = glfwGetKey(glfw_window_, GLFW_KEY_A);
+      if (state == GLFW_PRESS) {
+        input.a_pressed = true;
+      }
+      state = glfwGetKey(glfw_window_, GLFW_KEY_D);
+      if (state == GLFW_PRESS) {
+        input.d_pressed = true;
+      }
+      // Set acceleration to facing direction times acceleration_speed.
+      auto u = transform.orientation.Up();
+      state = glfwGetKey(glfw_window_, GLFW_KEY_W);
+      physics.acceleration = math::Vec3f(0.f, 0.f, 0.f);
+      if (state == GLFW_PRESS) {
+        physics.acceleration = u * physics.acceleration_speed;
+      }
+      state = glfwGetKey(glfw_window_, GLFW_KEY_S);
+      if (state == GLFW_PRESS) {
+        physics.acceleration = u * -physics.acceleration_speed;
+      }
+      state = glfwGetKey(glfw_window_, GLFW_KEY_SPACE);
+      // If the current state of space was release and the previous
+      // was pressed then set the ship to fire.
+      if (state == GLFW_RELEASE && input.space_state == GLFW_PRESS) {
+        input.shoot_projectile = true;
+      }
+      input.space_state = state;
+    });
+  }
+
   void CreateAsteroidGeometry(
       const std::vector<math::Vec2f>& geometry, float scale) {
     std::vector<math::Vec2f> scaled_geometry;
@@ -590,7 +618,8 @@ class Asteroids : public game::Game {
     }
     asteroid_geometry_.push_back(scaled_geometry);
     asteroid_vao_reference_.push_back(
-        renderer::CreateGeometryVAO(scaled_geometry));
+        IsHeadless() ?
+            0 : renderer::CreateGeometryVAO(scaled_geometry));
   }
 
   int matrix_location_;
@@ -598,6 +627,7 @@ class Asteroids : public game::Game {
   ecs::Entity free_entity_ = 1;
   GLFWwindow* glfw_window_;
   renderer::GLShaderCache shader_cache_;
+  uint32_t program_reference_;
   uint32_t projectile_vao_reference_;
   uint32_t projectile_program_reference_;
   std::vector<uint32_t> asteroid_vao_reference_;
