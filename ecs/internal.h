@@ -6,15 +6,14 @@
 namespace ecs {
 namespace internal {
 
-template <typename T>
-std::pair<Entity, T>* GetComponentPointer() {
-  if (components_<T>.empty()) return nullptr;
-  return &components_<T>[0];
-}
-
-template <typename... Args>
-std::tuple<std::pair<Entity, Args>*...> Gather() {
-  return std::make_tuple(GetComponentPointer<Args>()...);
+template <typename T, typename... TT>
+std::pair<Entity, T>* GetComponentPointer(
+    std::tuple<std::vector<std::pair<Entity, TT>>...>&
+        components_storage) {
+  auto& components = std::get<std::vector<std::pair<Entity, T>>>(
+      components_storage);
+  if (components.empty()) return nullptr;
+  return &components[0];
 }
 
 template <class Tup>
