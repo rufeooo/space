@@ -45,12 +45,6 @@ class AsteroidsClient : public game::Game {
   }
 
   bool ProcessInput() override {
-    assert(game_options_.game_state.components
-        .Get<asteroids::PhysicsComponent>(player_) != nullptr);
-    assert(game_options_.game_state.components
-        .Get<asteroids::InputComponent>(player_) != nullptr);
-    assert(game_options_.game_state.components
-        .Get<component::TransformComponent>(player_) != nullptr);
     asteroids::ProcessClientInput(game_options_);
     SendPlayerState();
     return true;
