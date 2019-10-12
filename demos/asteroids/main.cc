@@ -112,11 +112,6 @@ struct PhysicsComponent {
   float max_velocity = kShipAcceleration * kSecsToMaxSpeed * 60.f;
 };
 
-struct AsteroidComponent {
-  uint32_t vao_reference;
-  uint32_t program_reference;
-};
-
 struct TTLComponent {
   uint32_t updates_to_live = kProjectileUpdatesToLive;
 };
