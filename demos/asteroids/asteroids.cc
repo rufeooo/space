@@ -37,7 +37,6 @@ constexpr const char* kFragmentShaderName = "frag";
 constexpr const char* kProgramName = "prog";
 
 bool InitializeGraphics(Options& options) {
-  std::cout << "INIT GRAPHICS." << std::endl;
   auto& opengl = *options.opengl;
   auto& components = options.game_state.components;
   opengl.glfw_window = renderer::InitGLAndCreateWindow(
@@ -117,7 +116,6 @@ ecs::Entity SpawnPlayer(Options& options,
                             options.entity_geometry.ship_geometry);
   components.Assign<component::TransformComponent>(options.free_entity);
   if (options.opengl) {
-    std::cout << "PLAYER" << std::endl;;
     components.Assign<component::RenderingComponent>(
       options.free_entity,
       options.opengl->game_references.ship_vao_reference,

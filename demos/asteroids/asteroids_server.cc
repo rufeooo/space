@@ -31,6 +31,7 @@ class AsteroidsServer : public game::Game {
       std::cout << "Failed to initialize asteroids." << std::endl;
       return false;
     }
+
     game_options_.game_state.components
         .Assign<asteroids::GameStateComponent>(
             game_options_.free_entity++);
@@ -38,6 +39,7 @@ class AsteroidsServer : public game::Game {
   }
 
   bool ProcessInput() override {
+    if (!IsHeadless()) glfwPollEvents();
     return true;
   }
 
@@ -49,6 +51,13 @@ class AsteroidsServer : public game::Game {
   bool Render() override {
     if (!IsHeadless()) return asteroids::RenderGame(game_options_);
     return true;
+  }
+
+  void OnGameEnd() override {
+    if (network_thread_.joinable()) {
+      incoming_message_queue_.Stop();
+      network_thread_.join();
+    }
   }
 
  private:

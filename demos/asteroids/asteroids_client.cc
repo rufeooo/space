@@ -59,6 +59,13 @@ class AsteroidsClient : public game::Game {
     return asteroids::RenderGame(game_options_);
   }
 
+  void OnGameEnd() override {
+    if (network_thread_.joinable()) {
+      outgoing_message_queue_.Stop();
+      network_thread_.join();
+    }
+  }
+
  private:
   void SendPlayerState() {
     // Singleplayer games don't send data to the server.
