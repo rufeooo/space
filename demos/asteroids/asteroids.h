@@ -89,6 +89,13 @@ struct TTLComponent {
   uint32_t updates_to_live = kProjectileUpdatesToLive;
 };
 
+struct RandomNumberIntChoiceComponent {
+  RandomNumberIntChoiceComponent() = default;
+  RandomNumberIntChoiceComponent(uint8_t number) :
+    random_number(number) {}
+  uint8_t random_number;
+};
+
 // References used for OpenGL.
 struct OpenGLGameReferences {
   // Projectiles
@@ -129,7 +136,8 @@ struct GameState {
   ecs::ComponentStorage<
     component::ViewComponent, PhysicsComponent, PolygonShape,
     component::TransformComponent, InputComponent, GameStateComponent,
-    component::RenderingComponent, TTLComponent> components;
+    component::RenderingComponent, TTLComponent,
+    RandomNumberIntChoiceComponent> components;
 };
 
 struct Options {
@@ -139,6 +147,10 @@ struct Options {
   std::optional<OpenGL> opengl;
   GameState game_state;
 };
+
+ecs::Entity SpawnAsteroid(
+    Options& options, const math::Vec3f& position, math::Vec3f dir,
+    float angle, int random_number=-1);
 
 ecs::Entity SpawnPlayer(Options& options, const math::Vec3f& position);
 

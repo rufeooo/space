@@ -151,8 +151,9 @@ void SpawnPlayerProjectile(
   ++options.free_entity;
 }
 
-void SpawnAsteroid(Options& options, const math::Vec3f& position,
-                   math::Vec3f dir, float angle) {
+ecs::Entity SpawnAsteroid(
+    Options& options, const math::Vec3f& position, math::Vec3f dir,
+    float angle, int random_number) {
   auto& components = options.game_state.components;
   dir.Normalize();
   components.Assign<component::TransformComponent>(options.free_entity);
@@ -167,18 +168,29 @@ void SpawnAsteroid(Options& options, const math::Vec3f& position,
   static std::mt19937 gen(rd());
   static std::uniform_int_distribution<>
       disi(0, options.entity_geometry.asteroid_geometry.size() - 1);
-  int idx = disi(gen);
+  if (random_number == -1) {
+    random_number = disi(gen);
+  }
+  // Store off the random number that was used to create the asteroid.
+  // This is useful for server->client communication when the client
+  // needs to recreate the asteroid.
+  components.Assign<RandomNumberIntChoiceComponent>(
+      options.free_entity, (uint8_t)random_number);
   components.Assign<PolygonShape>(
       options.free_entity,
-      options.entity_geometry.asteroid_geometry[idx]);
+      options.entity_geometry.asteroid_geometry[random_number]);
   if (options.opengl) {
     components.Assign<component::RenderingComponent>(
         options.free_entity,
-        options.opengl->game_references.asteroid_vao_references[idx],
+        options.opengl->game_references
+            .asteroid_vao_references[random_number],
         options.opengl->game_references.program_reference,
-        options.entity_geometry.asteroid_geometry[idx].size());
+        options.entity_geometry
+            .asteroid_geometry[random_number].size());
   }
+  options.game_state.asteroid_entities.insert(options.free_entity);
   ++options.free_entity;
+  return options.free_entity - 1;
 }
 
 void UpdatePhysics(PhysicsComponent& physics_component) {
@@ -409,6 +421,7 @@ void UpdateGame(Options& options) {
     components.Remove<PhysicsComponent>(e);
     components.Remove<PolygonShape>(e);
     components.Remove<component::RenderingComponent>(e);
+    components.Remove<RandomNumberIntChoiceComponent>(e);
     options.game_state.asteroid_entities.erase(e);
   }
 

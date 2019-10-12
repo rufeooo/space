@@ -29,9 +29,17 @@ struct PlayerState {
   physics:Physics;
 }
 
+struct AsteroidState {
+  entity_id:uint64; 
+  transform:Transform;
+  physics:Physics;
+  // Random number used when making this asteroid
+  random_number:uint8;
+}
+
 table Packet {
   player_state:PlayerState;
-  game_updates:uint64;
+  asteroid_state:AsteroidState;
 }
 
 root_type Packet;
