@@ -35,8 +35,7 @@ int ClientId(char* address) {
 }
 
 void StartServer(const char* port,
-                 std::array<OutgoingMessageQueue, kMaxClients>*
-                     outgoing_message_queues,
+                 OutgoingMessageQueue* outgoing_message_queue,
                  IncomingMessageQueue* incoming_message_queue) {
   if (!SocketInit()) {
     printf("Failed to initialize...\n\n");
@@ -129,8 +128,10 @@ void StartServer(const char* port,
         strncpy(connection.address_buffer, address_buffer,
                 kAddressSize);
         id = kClientCount;
+        outgoing_message_queue->AddRecipient(id);
         kClients[kClientCount++] = connection;
-        printf("Caching address %s\n\n", address_buffer);
+        printf("Caching address %s client_id(%d)\n\n",
+               address_buffer, id);
       }
       Message msg;
       msg.data = (char*)malloc(bytes_received);
@@ -148,9 +149,19 @@ void StartServer(const char* port,
     // msg within the last N milliseconds.
     // TODO: Is this the best way to manage sending messages to certain
     // clients?
-    for (int i = 0; i < kMaxClients; ++i) {
+    flatbuffers::DetachedBuffer msg
+          = outgoing_message_queue->Dequeue();
+    while (msg.size() != 0) {
+      for (int client_id : outgoing_message_queue->Recipients()) {
+        sendto(socket_listen, (char*)msg.data(), msg.size(), 0,
+               (struct sockaddr*)&kClients[client_id].client_address,
+               kClients[client_id].client_len);
+        msg = outgoing_message_queue->Dequeue();
+      }
+    }
+    /*for (int i = 0; i < kMaxClients; ++i) {
       flatbuffers::DetachedBuffer msg
-          = (*outgoing_message_queues)[i].Dequeue();
+          = outgoing_message_queue->Dequeue();
       while (msg.size() != 0) {
         printf("Sending msg to client %d\n\n", i);
         sendto(socket_listen, (char*)msg.data(), msg.size(), 0,
@@ -158,7 +169,7 @@ void StartServer(const char* port,
                kClients[i].client_len);
         msg = (*outgoing_message_queues)[i].Dequeue();
       }
-    }
+    }*/
     //}
 
     // If the server is supposed to stop, stop it.
@@ -172,8 +183,7 @@ void StartServer(const char* port,
 }  // anonymous
 
 std::thread Create(const char* port,
-                   std::array<OutgoingMessageQueue, kMaxClients>*
-                       outgoing_message_queue,
+                   OutgoingMessageQueue* outgoing_message_queue,
                    IncomingMessageQueue* incoming_message_queue) {
   return std::thread(StartServer, port, outgoing_message_queue,
                     incoming_message_queue);

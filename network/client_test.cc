@@ -12,13 +12,11 @@
 
 TEST(Server, ClientHappyPath) {
   using namespace std::chrono_literals;
-  std::array<network::OutgoingMessageQueue,
-             network::server::kMaxClients>
-                 server_outgoing_message_queues;
+  network::OutgoingMessageQueue server_outgoing_message_queue;
   network::IncomingMessageQueue server_incoming_message_queue;
   std::thread server_thread
       = network::server::Create("7890",
-                                &server_outgoing_message_queues,
+                                &server_outgoing_message_queue,
                                 &server_incoming_message_queue);
   // Give the server a little time to spin  up
   std::cout << "waiting for server to start..."
@@ -56,7 +54,7 @@ TEST(Server, ClientHappyPath) {
     auto data = fbb.CreateString("Hello Back!");
     auto packet = testdata::CreatePacket(fbb, data);
     fbb.Finish(packet);
-    server_outgoing_message_queues[0].Enqueue(fbb.Release());
+    server_outgoing_message_queue.Enqueue(fbb.Release());
     network::Message client_incoming_msg;
     do {
       client_incoming_msg = client_incoming_message_queue.Dequeue();

@@ -59,11 +59,10 @@ char* ReadSocketData(SOCKET client_socket) {
 }
 
 TEST(Server, ServerHappyPath) {
-  std::array<network::OutgoingMessageQueue,
-             network::server::kMaxClients> outgoing_message_queues;
+  network::OutgoingMessageQueue outgoing_message_queue;            
   network::IncomingMessageQueue incoming_message_queue;
   std::thread server_thread
-      = network::server::Create("7890", &outgoing_message_queues,
+      = network::server::Create("7890", &outgoing_message_queue,
                                 &incoming_message_queue);
   // Create a client connection which the server will respond to when
   // new events enter its message queue.
@@ -86,7 +85,7 @@ TEST(Server, ServerHappyPath) {
     auto data = fbb.CreateString("Hello!");
     auto packet = testdata::CreatePacket(fbb, data);
     fbb.Finish(packet);
-    outgoing_message_queues[0].Enqueue(fbb.Release());
+    outgoing_message_queue.Enqueue(fbb.Release());
     char* socket_data = ReadSocketData(client_socket);
     auto* received_packet = testdata::GetPacket(
         (const void*)socket_data);
@@ -103,7 +102,7 @@ TEST(Server, ServerHappyPath) {
         "The quick brown fox jumps over the lazy dog.");
     auto packet = testdata::CreatePacket(fbb, data);
     fbb.Finish(packet);
-    outgoing_message_queues[0].Enqueue(fbb.Release());
+    outgoing_message_queue.Enqueue(fbb.Release());
     char* socket_data = ReadSocketData(client_socket);
     auto* received_packet = testdata::GetPacket(
         (const void*)socket_data);

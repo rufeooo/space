@@ -63,4 +63,21 @@ bool OutgoingMessageQueue::IsStopped() const {
   return stop_;
 }
 
+void OutgoingMessageQueue::AddRecipient(int client_id) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  recipients_.insert(client_id);
+}
+
+void OutgoingMessageQueue::RemoveRecipient(int client_id) {
+  std::lock_guard<std::mutex> lock(mutex_);
+  auto found = recipients_.find(client_id);
+  if (found == recipients_.end()) return;
+  recipients_.erase(client_id);
+}
+
+std::vector<int> OutgoingMessageQueue::Recipients() const {
+  std::lock_guard<std::mutex> lock(mutex_);
+  return std::vector<int>(recipients_.begin(), recipients_.end());
+}
+
 }

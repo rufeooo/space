@@ -3,6 +3,8 @@
 #include <mutex>
 #include <queue>
 #include <cassert>
+#include <unordered_set>
+#include <vector>
 
 #include <flatbuffers/flatbuffers.h>
 
@@ -38,10 +40,16 @@ class OutgoingMessageQueue {
   void Stop();
   bool IsStopped() const;
 
+  void AddRecipient(int client_id);
+  void RemoveRecipient(int client_id);
+
+  std::vector<int> Recipients() const;
+
  private:
   mutable std::mutex mutex_;
   std::queue<flatbuffers::DetachedBuffer> queue_;
   bool stop_ = false;
+  std::unordered_set<int> recipients_;
 };
 
 }
