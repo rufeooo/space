@@ -34,17 +34,6 @@ int ClientId(char* address) {
   return -1;
 }
 
-void SendToAllClients(SOCKET socket_listen,
-                      flatbuffers::DetachedBuffer& msg) {
-  for (int i = 0; i < kClientCount; ++i) {
-    //printf("Sending msg to %s data: %.*s\n\n",
-    //       kClients[i].address_buffer, msg.size(), msg.data());
-    sendto(socket_listen, (char*)msg.data(), msg.size(), 0,
-           (struct sockaddr*) &kClients[i].client_address,
-           kClients[i].client_len);
-  }
-}
-
 void StartServer(const char* port,
                  std::array<OutgoingMessageQueue, kMaxClients>*
                      outgoing_message_queues,
@@ -163,6 +152,7 @@ void StartServer(const char* port,
       flatbuffers::DetachedBuffer msg
           = (*outgoing_message_queues)[i].Dequeue();
       while (msg.size() != 0) {
+        printf("Sending msg to client %d\n\n", i);
         sendto(socket_listen, (char*)msg.data(), msg.size(), 0,
                (struct sockaddr*) &kClients[i].client_address,
                kClients[i].client_len);

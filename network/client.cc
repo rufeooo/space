@@ -81,8 +81,8 @@ void StartClient(const char* hostname, const char* port,
                 network::SocketErrno());
         continue;
       }
-      //printf("Message from host data: %.*s bytes: %i\n\n",
-      //       bytes_received, read, bytes_received);
+      printf("Message from host data: %.*s bytes: %i\n\n",
+             bytes_received, read, bytes_received);
       Message msg;
       msg.data = (char*)malloc(bytes_received);
       memcpy(msg.data, &read[0], bytes_received);
