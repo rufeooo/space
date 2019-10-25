@@ -141,6 +141,9 @@ void SpawnPlayerProjectile(
       options.free_entity, math::Vec3f(), dir * kProjectileSpeed, 0.f,
       0.f);
   components.Assign<TTLComponent>(options.free_entity);
+  components.Assign<PolygonShape>(
+      options.free_entity,
+      options.entity_geometry.projectile_geometry);
   if (options.opengl) {
     components.Assign<component::RenderingComponent>(
         options.free_entity,
@@ -448,20 +451,57 @@ void UpdateGame(Options& options) {
     }
   });
 
-  components.Enumerate<PhysicsComponent, component::TransformComponent>(
+  components.Enumerate<PhysicsComponent, component::TransformComponent,
+                       PolygonShape>(
       [](ecs::Entity ent, PhysicsComponent& physics,
-         component::TransformComponent& transform) {
+         component::TransformComponent& transform,
+         PolygonShape& shape) {
     transform.prev_position = transform.position;
     transform.position += physics.velocity;
+    // Get entity min/max x and y.
+    auto world_transform =
+        math::CreateTranslationMatrix(transform.position) *
+        math::CreateRotationMatrix(transform.orientation);
+    float min_x = 10000.f, max_x = -10000.f,
+          min_y = 10000.f, max_y = -10000.f;
+    int min_x_idx, max_x_idx, min_y_idx, max_y_idx;
+    for (int i = 0; i < shape.points.size(); ++i) {
+      const auto& point = shape.points[i];
+      math::Vec3f world_point = 
+        world_transform * math::Vec3f(point.x(), point.y(), 0.f);
+      if (world_point.x() < min_x) {
+        min_x = world_point.x();
+        min_x_idx = i;
+      }
+      if (world_point.x() > max_x) {
+        max_x = world_point.x();
+        max_x_idx = i;
+      }
+      if (world_point.y() < min_y) {
+        min_y = world_point.y();
+        min_y_idx = i;
+      }
+      if (world_point.y() > max_y) {
+        max_y = world_point.y();
+        max_y_idx = i;
+      }
+    }
+    //math::Vec3f rotated_local_point =
+    //math::CreateRotationMatrix(transform.orientation)
     //std::cout << transform.position.String() << std::endl;
-    if (transform.position.x() <= -1.0f) { 
-      transform.position.x() = 0.99f;
-    } else if (transform.position.x() >= 1.0f) {
+    if (max_x <= -1.0f) {
+      //std::cout << "max x 1" << std::endl;
+      //std::cout << -min_x + 0.99f << std::endl;
+      transform.position.x() = .99f;
+    } else if (min_x >= 1.0f) {
+      //std::cout << "max x 2" << std::endl;
       transform.position.x() = -0.99f;
     }
-    if (transform.position.y() <= -1.0f) { 
+    if (max_y <= -1.0f) { 
+      //std::cout << max_y << " <= 1.0f" << std::endl;
       transform.position.y() = 0.99f;
-    } else if (transform.position.y() >= 1.0f) {
+    } else if (min_y >= 1.0f) {
+      //std::cout << min_y << " >= 1.0f" << std::endl;
       transform.position.y() = -0.99f;
     }
   });

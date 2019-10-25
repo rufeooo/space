@@ -13,7 +13,7 @@
 DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
               "the game singleplayer otherwise.");
-DEFINE_string(port, "1843", "Port for this application.");
+DEFINE_string(port, "9843", "Port for this application.");
 
 bool IsSinglePlayer() { return FLAGS_hostname.empty(); }
 
@@ -27,6 +27,9 @@ class AsteroidsClient : public game::Game {
           FLAGS_hostname.c_str(), FLAGS_port.c_str(),
           &outgoing_message_queue_, &incoming_message_queue_);
     }
+    // Add a single receipient for the server. Otherwise messages
+    // can not be added to the queue :(
+    outgoing_message_queue_.AddRecipient(0);
     game_options_.opengl = asteroids::OpenGL();
     if (!asteroids::Initialize(game_options_)) {
       std::cout << "Failed to initialize asteroids." << std::endl;

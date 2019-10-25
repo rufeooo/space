@@ -50,16 +50,17 @@ void StartClient(const char* hostname, const char* port,
 
 
   char read[kMaxMessageSize];
+  struct timeval timeout = {};
+  timeout.tv_sec = 0; 
+  timeout.tv_usec = 5000;
+
   while (1) {
     fd_set reads;
     FD_ZERO(&reads);
     FD_SET(socket_host, &reads);
-    struct timeval timeout;
     // TODO: This timeout doesn't seem to consistently work? Benchmark
     // and consider using a cross platform poll() instead.
-    timeout.tv_sec = 0; 
-    timeout.tv_usec = 5000;
-    //printf("select()\n\n");
+        //printf("select()\n\n");
     if (select(socket_host + 1, &reads, 0, 0, &timeout) < 0) {
       fprintf(stderr, "select() failed (%d)\n\n",
               network::SocketErrno());
@@ -94,6 +95,7 @@ void StartClient(const char* hostname, const char* port,
       flatbuffers::DetachedBuffer msg
           = outgoing_message_queue->Dequeue();
       do {
+        //printf("Sending msg size: %zu\n\n", msg.size());
         // Send outgoing messages to server.
         sendto(socket_host, msg.data(), msg.size(), 0,
                host_address->ai_addr, host_address->ai_addrlen);

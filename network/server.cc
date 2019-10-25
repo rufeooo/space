@@ -12,7 +12,7 @@ namespace server {
 
 namespace {
 
-constexpr int kAddressSize = 100;
+constexpr int kAddressSize = 256;
 
 struct ClientConnection {
   struct sockaddr_storage client_address = {};
@@ -25,7 +25,7 @@ struct ClientConnection {
 static struct ClientConnection kClients[kMaxClients]; 
 static int kClientCount = 0;
 
-int ClientId(char* address) {
+int GetClientId(char* address) {
   for (int i = 0; i < kClientCount; ++i) {
     if (strcmp(kClients[i].address_buffer, address) == 0) {
       return i;
@@ -80,15 +80,14 @@ void StartServer(const char* port,
 
   char read[kMaxMessageSize];
   char address_buffer[kAddressSize];
+  struct timeval timeout = {};
+  timeout.tv_sec = 0;
+  timeout.tv_usec = 5000;
   while (1) {
     fd_set reads;
     reads = master;
-    struct timeval timeout;
     // TODO: This timeout doesn't seem to consistently work? Benchmark
     // and consider using a cross platform poll() instead.
-    timeout.tv_sec = 0; 
-    timeout.tv_usec = 5000;
-    //printf("select()\n\n");
     if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
       fprintf(stderr, "select() failed (%d)\n\n",
               network::SocketErrno());
@@ -97,12 +96,11 @@ void StartServer(const char* port,
 
     //printf("select()\n\n");
 
-    bool fd_isset = FD_ISSET(socket_listen, &reads);
     //bool queue_has_items = !outgoing_message_queue->Empty();
-
     // If there is data to read from the socket, read it and cache
     // off the client address.    
-    if (fd_isset) {
+    if (FD_ISSET(socket_listen, &reads)) {
+      printf("fd_isset\n\n");
       struct sockaddr_storage client_address;
       socklen_t client_len = sizeof(client_address);
       memset(&read[0], 0, kMaxMessageSize);
@@ -118,7 +116,7 @@ void StartServer(const char* port,
       getnameinfo((struct sockaddr*)&client_address, client_len,
                   address_buffer, kAddressSize, 0, 0,
                   NI_NUMERICHOST);
-      int id = ClientId(address_buffer);
+      int id = GetClientId(address_buffer);
       if (id == -1) {
         // Save off client connections? When do we remove from this
         // list?
@@ -138,7 +136,7 @@ void StartServer(const char* port,
       memcpy(msg.data, &read[0], bytes_received);
       msg.size = bytes_received;
       msg.client_id = id;
-      //printf("gots bytes: %d\n\n", bytes_received);
+      printf("gots bytes: %d\n\n", bytes_received);
       incoming_message_queue->Enqueue(msg); 
     }
 
@@ -159,18 +157,6 @@ void StartServer(const char* port,
         msg = outgoing_message_queue->Dequeue();
       }
     }
-    /*for (int i = 0; i < kMaxClients; ++i) {
-      flatbuffers::DetachedBuffer msg
-          = outgoing_message_queue->Dequeue();
-      while (msg.size() != 0) {
-        printf("Sending msg to client %d\n\n", i);
-        sendto(socket_listen, (char*)msg.data(), msg.size(), 0,
-               (struct sockaddr*) &kClients[i].client_address,
-               kClients[i].client_len);
-        msg = (*outgoing_message_queues)[i].Dequeue();
-      }
-    }*/
-    //}
 
     // If the server is supposed to stop, stop it.
     // TODO: Probably do something better here for stopping server.

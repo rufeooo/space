@@ -35,6 +35,10 @@ bool IncomingMessageQueue::IsStopped() const {
 void OutgoingMessageQueue::Enqueue(
     flatbuffers::DetachedBuffer&& message) {
   assert(message.size() <= kMaxMessageSize);
+  // This might be a bit strange to have here but I'm not sure where
+  // else it should go. If the outgoing queue has no recipients then
+  // do not allow adding a message to the queue.
+  if (recipients_.empty()) return;
   std::lock_guard<std::mutex> lock(mutex_);
   queue_.push(std::move(message));
 }

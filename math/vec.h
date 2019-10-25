@@ -252,6 +252,10 @@ class Vec3 : public Vec<T, 3> {
   T x() const { return this->data_[0]; };
   T y() const { return this->data_[1]; };
   T z() const { return this->data_[2]; };
+
+  math::Vec2<T> xy() const {
+    return math::Vec2<T>(x(), y());
+  }
 };
 
 template <typename T>

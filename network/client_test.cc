@@ -21,7 +21,7 @@ TEST(Server, ClientHappyPath) {
   // Give the server a little time to spin  up
   std::cout << "waiting for server to start..."
             << std::endl << std::endl;
-  std::this_thread::sleep_for(1s);
+  std::this_thread::sleep_for(10s);
   network::OutgoingMessageQueue client_outgoing_message_queue;
   network::IncomingMessageQueue client_incoming_message_queue;
   std::thread client_thread

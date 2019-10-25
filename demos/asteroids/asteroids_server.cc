@@ -9,7 +9,7 @@
 #include "protocol/asteroids_packet_generated.h"
 #include "game/game.h"
 
-DEFINE_string(port, "1843", "Port for this application.");
+DEFINE_string(port, "9843", "Port for this application.");
 DEFINE_bool(headless, true, "Set to false to render game. Should be "
                             "used for debug only");
 
@@ -58,6 +58,7 @@ class AsteroidsServer : public game::Game {
 
   void OnGameEnd() override {
     if (network_thread_.joinable()) {
+      std::cout << "ON_GAME_END" << std::endl;
       incoming_message_queue_.Stop();
       network_thread_.join();
     }
@@ -152,9 +153,7 @@ class AsteroidsServer : public game::Game {
       auto packet = asteroids::CreatePacket(
           fbb, nullptr, &asteroid_state);
       fbb.Finish(packet);
-      for (const auto& client : client_entity_mappings_) {
-        outgoing_message_queue_[client.first].Enqueue(fbb.Release());
-      }
+      outgoing_message_queue_.Enqueue(fbb.Release());
     }
   }
 
@@ -162,8 +161,7 @@ class AsteroidsServer : public game::Game {
   asteroids::Options game_options_;
 
   // Network related.
-  std::array<network::OutgoingMessageQueue,
-             network::server::kMaxClients> outgoing_message_queue_;
+  network::OutgoingMessageQueue outgoing_message_queue_;
   network::IncomingMessageQueue incoming_message_queue_;
   std::thread network_thread_;
 

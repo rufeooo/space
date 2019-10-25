@@ -3,7 +3,7 @@
 #include "network/network.h"
 
 DEFINE_string(hostname, "127.0.0.1", "hostname");
-DEFINE_string(port, "8080", "port");
+DEFINE_string(port, "9843", "port");
 DEFINE_string(message, "Hello!", "message to send");
 
 int main(int argc, char** argv) {
