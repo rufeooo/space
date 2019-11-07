@@ -97,7 +97,7 @@ void StartClient(const char* hostname, const char* port,
       do {
         //printf("Sending msg size: %zu\n\n", msg.size());
         // Send outgoing messages to server.
-        sendto(socket_host, msg.data(), msg.size(), 0,
+        sendto(socket_host, (const char*)msg.data(), msg.size(), 0,
                host_address->ai_addr, host_address->ai_addrlen);
         //free(msg.data);
         msg = outgoing_message_queue->Dequeue();
