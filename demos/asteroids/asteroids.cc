@@ -486,23 +486,26 @@ void UpdateGame(Options& options) {
         max_y_idx = i;
       }
     }
-    //math::Vec3f rotated_local_point =
-    //math::CreateRotationMatrix(transform.orientation)
-    //std::cout << transform.position.String() << std::endl;
+    bool teleported = false;
     if (max_x <= -1.0f) {
-      //std::cout << "max x 1" << std::endl;
-      //std::cout << -min_x + 0.99f << std::endl;
       transform.position.x() = .99f;
+      teleported = true;
     } else if (min_x >= 1.0f) {
-      //std::cout << "max x 2" << std::endl;
       transform.position.x() = -0.99f;
+      teleported = true;
     }
     if (max_y <= -1.0f) { 
-      //std::cout << max_y << " <= 1.0f" << std::endl;
       transform.position.y() = 0.99f;
+      teleported = true;
     } else if (min_y >= 1.0f) {
-      //std::cout << min_y << " >= 1.0f" << std::endl;
       transform.position.y() = -0.99f;
+      teleported = true;
+    }
+    if (teleported) {
+      // Teleporting across the screen causes collision detection to draw
+      // a line across the screen when detecting hits. Force the prev position
+      // to be something more reasonable if the entity teleports.
+      transform.prev_position = transform.position;
     }
   });
 
