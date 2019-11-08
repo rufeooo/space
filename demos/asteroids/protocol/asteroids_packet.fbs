@@ -37,9 +37,29 @@ struct AsteroidState {
   random_number:uint8;
 }
 
+struct CreatePlayerRequest {
+  entity_id:uint64;
+}
+
+struct CreatePlayerResponse {
+  entity_id:uint64;
+}
+
+table Request {
+  msg_id:uint16;
+  create_player:CreatePlayerRequest;
+}
+
+table Response {
+  msg_id:uint16;
+  create_player:CreatePlayerResponse;
+}
+
 table Packet {
   player_state:PlayerState;
   asteroid_state:AsteroidState;
+  request:Request;
+  response:Response;
 }
 
 root_type Packet;
