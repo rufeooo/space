@@ -1,0 +1,31 @@
+Client 0            Client 1             Server 
+
+Create player 0     Create player 0     Create Player {0 : {0, 0}}
+                                        Create Player {1 : {0, 1}}
+
+                                        Update(0) of server_entity(1)
+
+?? Is there just a way to snapshot game state in a reasonable way ??
+
+Client 0            Client 1             Server
+
+Create player 0     Create player 0      Create Player {0 : {0, 0}}
+state {0, player}   state {0, player}    Create Player {1 : {0, 1}}
+                    Player shot
+                    {0, player     }
+                    {1, projectile } 
+
+                                         Create asteroid 2
+                                         Create asteroid 3
+                                         Create projectile 4
+                                         
+                                         Relevant state...
+                                             owner
+                                         { 0, 0,      <ship>       }
+                                         { 1, 1,      <ship>       }
+                                         { 2, server, <asteroid>   }
+                                         { 3, server, <asteroid>   }
+                                         { 4, 1,      <projectile> }
+
+Can i just snapshot relevant ECS data?
+

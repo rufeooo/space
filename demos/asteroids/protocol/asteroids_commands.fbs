@@ -1,0 +1,51 @@
+namespace asteroids;
+
+struct Vec3 {
+  x:float;
+  y:float;
+  z:float;
+}
+
+struct Vec4 {
+  x:float;
+  y:float;
+  z:float;
+  w:float;
+}
+
+struct Transform {
+  position:Vec3;
+  orientation:Vec4;
+}
+
+struct CreatePlayer {
+  entity_id:uint64;
+  position:Vec3; 
+}
+
+struct CreateProjectile {
+  entity_id:uint64;
+  transform:Transform;
+}
+
+struct CreateAsteroid {
+  entity_id:uint64;
+  position:Vec3;
+  direction:Vec3;
+  angle:float;
+  random_number:int;
+}
+
+struct Acknowledge {
+  success:bool;
+}
+
+table Command {
+  command_id:uint16;
+  create_player:CreatePlayer;
+  create_projectile:CreateProjectile;
+  create_asteroid:CreateAsteroid; 
+  acknowledge:Acknowledge;
+}
+
+root_type Command;

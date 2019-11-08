@@ -1,20 +1,22 @@
 include_directories(${CMAKE_SOURCE_DIR})
 
 build_flatbuffers(
-    "protocol/asteroids_packet.fbs" "" asteroids_packet_fbs "" "protocol/" "" "")
+    "protocol/asteroids_commands.fbs" "" asteroids_command_fbs "" "protocol/" "" "")
 
-add_library(asteroids_lib "asteroids.h" "asteroids.cc")
+add_library(asteroids_lib "asteroids.h" "asteroids.cc"
+            "asteroids_commands.h" "asteroids_commands.cc"
+            "asteroids_state.h" "asteroids_state.cc"
+            "asteroids_components.h")
 add_executable(asteroids_client "asteroids_client.cc")
 add_executable(asteroids_server "asteroids_server.cc")
 
-target_link_libraries(asteroids_lib glfw_renderer math_lib)
+target_link_libraries(asteroids_lib glfw_renderer math_lib flatbuffers)
 target_link_libraries(asteroids_client asteroids_lib game_lib
                       glfw_renderer client gflags)
 target_link_libraries(asteroids_server asteroids_lib game_lib
                       glfw_renderer server gflags)
 
-add_dependencies(asteroids_client asteroids_packet_fbs)
-add_dependencies(asteroids_server asteroids_packet_fbs)
+add_dependencies(asteroids_lib asteroids_command_fbs)
 
 set_target_properties(asteroids_lib PROPERTIES FOLDER Demos)
 set_target_properties(asteroids_client PROPERTIES FOLDER Demos)

@@ -13,7 +13,7 @@ namespace network {
 constexpr int kMaxMessageSize = 1024;
 
 struct Message {
-  char* data = nullptr;
+  uint8_t* data = nullptr;
   int size = 0;
   int client_id = -1;
 };

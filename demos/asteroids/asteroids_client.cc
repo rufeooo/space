@@ -2,10 +2,12 @@
 #include <gflags/gflags.h>
 
 #include "asteroids.h"
+#include "asteroids_commands.h"
+#include "asteroids_state.h"
 #include "components/common/transform_component.h"
 #include "network/client.h"
 #include "network/message_queue.h"
-#include "protocol/asteroids_packet_generated.h"
+#include "protocol/asteroids_commands_generated.h"
 #include "game/game.h"
 
 #include "ecs/internal.h"
@@ -30,35 +32,36 @@ class AsteroidsClient : public game::Game {
     // Add a single receipient for the server. Otherwise messages
     // can not be added to the queue :(
     outgoing_message_queue_.AddRecipient(0);
-    game_options_.opengl = asteroids::OpenGL();
-    if (!asteroids::Initialize(game_options_)) {
+    if (!asteroids::Initialize()) {
       std::cout << "Failed to initialize asteroids." << std::endl;
       return false;
     }
-    player_ = asteroids::SpawnPlayer(game_options_,
-                                     math::Vec3f(0.f, 0.f, 0.f));
-    game_options_.game_state.components
-        .Assign<asteroids::InputComponent>(player_);
+    auto player = asteroids::SpawnPlayer(math::Vec3f(0.f, 0.f, 0.f));
+    asteroids::GlobalGameState().components
+        .Assign<asteroids::InputComponent>(player);
+    //asteroids::CreatePlayer create_player(
+    //    FreeEntity()++, asteroids::Vec3(0.f, 0.f, 0.f));
+    //asteroids::commands::Execute(create_player);
     if (IsSinglePlayer()) {
-      game_options_.game_state.components
-        .Assign<asteroids::GameStateComponent>(
-            game_options_.free_entity++);
+      asteroids::GlobalGameState().components
+          .Assign<asteroids::GameStateComponent>(
+              asteroids::GlobalFreeEntity()++);
     }
     return true;
   }
 
   bool ProcessInput() override {
-    asteroids::ProcessClientInput(game_options_);
+    asteroids::ProcessClientInput();
     return true;
   }
 
   bool Update() override {
-    asteroids::UpdateGame(game_options_);
+    asteroids::UpdateGame();
     return true;
   }
 
   bool Render() override {
-    return asteroids::RenderGame(game_options_);
+    return asteroids::RenderGame();
   }
 
   void OnGameEnd() override {
@@ -69,8 +72,6 @@ class AsteroidsClient : public game::Game {
   }
 
  private:
-  // Game related.
-  asteroids::Options game_options_;
   ecs::Entity player_;
 
   // Network related.
