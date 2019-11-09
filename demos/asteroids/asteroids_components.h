@@ -3,6 +3,8 @@
 #include <vector>
 
 #include "math/vec.h"
+#include "network/client.h"
+#include "network/message_queue.h"
 
 namespace asteroids {
 
@@ -57,6 +59,13 @@ struct RandomNumberIntChoiceComponent {
   RandomNumberIntChoiceComponent(uint8_t number) :
     random_number(number) {}
   uint8_t random_number;
+};
+
+struct ConnectionComponent {
+  network::OutgoingMessageQueue outgoing_message_queue;
+  network::IncomingMessageQueue incoming_message_queue;
+  std::thread network_thread;
+  bool is_connected = false;
 };
 
 }

@@ -95,7 +95,7 @@ void StartClient(const char* hostname, const char* port,
       flatbuffers::DetachedBuffer msg
           = outgoing_message_queue->Dequeue();
       do {
-        //printf("Sending msg size: %zu\n\n", msg.size());
+        printf("Sending msg size: %zu\n\n", msg.size());
         // Send outgoing messages to server.
         sendto(socket_host, (const char*)msg.data(), msg.size(), 0,
                host_address->ai_addr, host_address->ai_addrlen);

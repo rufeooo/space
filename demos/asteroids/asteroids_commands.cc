@@ -39,6 +39,14 @@ void Execute(const asteroids::CreatePlayer& create_player) {
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<asteroids::InputComponent>(
       create_player.entity_id());
+  auto& singleton_components = GlobalGameState().singleton_components;
+  ConnectionComponent* connection =
+    singleton_components.Get<ConnectionComponent>();
+  if (!connection->is_connected) return;
+  flatbuffers::FlatBufferBuilder fbb;
+  auto command = asteroids::CreateCommand(fbb, 0, &create_player);
+  fbb.Finish(command);
+  connection->outgoing_message_queue.Enqueue(fbb.Release());
 }
 
 void Execute(const asteroids::CreateProjectile& create_projectile) {

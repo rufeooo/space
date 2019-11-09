@@ -161,4 +161,51 @@ class ComponentStorage {
       components_;
 };
 
+template <typename... COMPONENTS>
+class SingletonComponentStorage {
+ public:
+  // Given an entity retrieves a pointer to the component specified
+  // by the templated argument. For example -
+  //
+  //   Foo* foo = ecs::Get<Foo>(3);
+  //
+  // Will -
+  //
+  //   return Foo* in the components_ vector as specified by the Entity.
+  //
+  // Or -
+  //
+  //   return nullptr if the component doesn't exist in the component
+  //   for that entity id.
+  //   TODO: This function needs to go or return a copy. This is danger
+  //   time if the underlying vector changes beneath the user after the
+  //   pointer has been returned.
+  template <typename T>
+  T* Get() {
+    return &std::get<T>(components_);;
+  }
+
+  // Given a entity id and a constructor list will create a new component
+  // and forward args to that components constructor. For example -
+  //
+  // struct Foo {
+  //   Foo(int n) : n_(n) {}
+  //   int n_
+  // };
+  //
+  // ecs::Assign<Foo>(1, 3);
+  //
+  // Will create an object of type Foo and append it to the component
+  // list components_<Foo>.
+  template <typename T, typename... Args>
+  T* Assign(Args&& ...args) {
+    *Get<T>() = T(std::forward<Args>(args)...);
+    return Get<T>();
+  }
+
+ private:
+  std::tuple<COMPONENTS...> components_;
+};
+
+
 }  // namespace ecs

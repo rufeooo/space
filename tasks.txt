@@ -3,18 +3,12 @@ Testing
 [] Use gtest in search_test instead of catch.
 [] Remove catch submodule.
 
-Network
-  [] Server outgoing message queue should be better abstracted. It
-     should have N outgoing clients to send messages to but only
-     allocates for a packet once. Enqueing should be something like -
-     
-          outgoing_queue.Enqueue( { clients }, msg )
-
-Demos
-  [] Asteroids
-      
-       [] Update clients with postional updates of other clients.
-
-Misc
-[] Create some more meaningful units that things move around in. Right
-now everything is in regards to opengl's coordinate system
+Component
+[] Add fbs for common components.
+    [] Transform
+    [] Vec3
+    [] Quat
+[] Add conversion from fbs to in memory.
+    [] Transform
+    [] Vec3
+    [] Quat 

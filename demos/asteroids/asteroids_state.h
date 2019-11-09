@@ -61,6 +61,8 @@ struct GameState {
     component::TransformComponent, InputComponent, GameStateComponent,
     component::RenderingComponent, TTLComponent,
     RandomNumberIntChoiceComponent> components;
+  ecs::SingletonComponentStorage<ConnectionComponent>
+    singleton_components; 
 };
 
 GameState& GlobalGameState();

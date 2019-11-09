@@ -4,6 +4,7 @@
 #include <cassert>
 
 #include "asteroids.h"
+#include "asteroids_commands.h"
 #include "asteroids_state.h"
 #include "network/server.h"
 #include "network/message_queue.h"
@@ -20,9 +21,13 @@ class AsteroidsServer : public game::Game {
   AsteroidsServer() : game::Game() {};
   bool Initialize() override {
     assert(!FLAGS_port.empty());
-    network_thread_ = network::server::Create(
-        FLAGS_port.c_str(), &outgoing_message_queue_,
-        &incoming_message_queue_);
+    auto* connection_component =
+        asteroids::GlobalGameState().singleton_components
+            .Get<asteroids::ConnectionComponent>();
+    connection_component->network_thread = network::server::Create(
+        FLAGS_port.c_str(),
+        &connection_component->outgoing_message_queue,
+        &connection_component->incoming_message_queue);
     if (!asteroids::Initialize()) {
       std::cout << "Failed to initialize asteroids." << std::endl;
       return false;
@@ -35,6 +40,16 @@ class AsteroidsServer : public game::Game {
 
   bool ProcessInput() override {
     glfwPollEvents();
+    // Execute all commands received from clients.
+    auto* connection_component =
+        asteroids::GlobalGameState().singleton_components
+            .Get<asteroids::ConnectionComponent>();
+    network::Message msg =
+        connection_component->incoming_message_queue.Dequeue();
+    while (msg.size != 0) {
+      asteroids::commands::Execute(msg.data);
+      msg = connection_component->incoming_message_queue.Dequeue();
+    }
     return true;
   }
 
@@ -48,18 +63,16 @@ class AsteroidsServer : public game::Game {
   }
 
   void OnGameEnd() override {
-    if (network_thread_.joinable()) {
-      incoming_message_queue_.Stop();
-      network_thread_.join();
+    auto* connection_component =
+        asteroids::GlobalGameState().singleton_components
+            .Get<asteroids::ConnectionComponent>();
+    if (connection_component->network_thread.joinable()) {
+      connection_component->incoming_message_queue.Stop();
+      connection_component->network_thread.join();
     }
   }
 
  private:
-  // Network related.
-  network::OutgoingMessageQueue outgoing_message_queue_;
-  network::IncomingMessageQueue incoming_message_queue_;
-  std::thread network_thread_;
-
   // Client Entity Mappings.
   std::unordered_map<
       int, std::unordered_map<ecs::Entity, ecs::Entity>>

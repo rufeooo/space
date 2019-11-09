@@ -43,11 +43,6 @@ static float kProjectileSpeed = 0.005;
 static float kSecsToSpawnAsteroid = 2.3f;
 static uint64_t kMaxAsteroidCount = 100;
 
-ecs::Entity SpawnAsteroid(const math::Vec3f& position, math::Vec3f dir,
-                          float angle, int random_number=-1);
-
-ecs::Entity SpawnPlayer(const math::Vec3f& position);
-
 bool Initialize();
 
 void ProcessClientInput();
