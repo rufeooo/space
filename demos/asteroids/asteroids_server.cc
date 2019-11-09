@@ -4,18 +4,16 @@
 #include <cassert>
 
 #include "asteroids.h"
+#include "asteroids_state.h"
 #include "network/server.h"
 #include "network/message_queue.h"
-#include "protocol/asteroids_packet_generated.h"
+#include "protocol/asteroids_commands_generated.h"
 #include "game/game.h"
 
-DEFINE_string(port, "9843", "Port for this application.");
+DEFINE_string(port, "9845", "Port for this application.");
+// TODO: Reimplement.
 DEFINE_bool(headless, true, "Set to false to render game. Should be "
                             "used for debug only");
-
-bool IsHeadless() {
-  return FLAGS_headless;
-}
 
 class AsteroidsServer : public game::Game {
  public:
@@ -25,33 +23,28 @@ class AsteroidsServer : public game::Game {
     network_thread_ = network::server::Create(
         FLAGS_port.c_str(), &outgoing_message_queue_,
         &incoming_message_queue_);
-    if (!IsHeadless()) {
-      game_options_.opengl = asteroids::OpenGL();
-    }
-    if (!asteroids::Initialize(game_options_)) {
+    if (!asteroids::Initialize()) {
       std::cout << "Failed to initialize asteroids." << std::endl;
       return false;
     }
-
-    game_options_.game_state.components
+    asteroids::GlobalGameState().components
         .Assign<asteroids::GameStateComponent>(
-            game_options_.free_entity++);
+            asteroids::GlobalFreeEntity()++);
     return true;
   }
 
   bool ProcessInput() override {
-    if (!IsHeadless()) glfwPollEvents();
+    glfwPollEvents();
     return true;
   }
 
   bool Update() override {
-    asteroids::UpdateGame(game_options_);
+    asteroids::UpdateGame();
     return true;
   }
 
   bool Render() override {
-    if (!IsHeadless()) return asteroids::RenderGame(game_options_);
-    return true;
+    return asteroids::RenderGame();
   }
 
   void OnGameEnd() override {
@@ -62,9 +55,6 @@ class AsteroidsServer : public game::Game {
   }
 
  private:
-  // Game related.
-  asteroids::Options game_options_;
-
   // Network related.
   network::OutgoingMessageQueue outgoing_message_queue_;
   network::IncomingMessageQueue incoming_message_queue_;

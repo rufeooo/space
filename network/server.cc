@@ -132,7 +132,7 @@ void StartServer(const char* port,
                address_buffer, id);
       }
       Message msg;
-      msg.data = (char*)malloc(bytes_received);
+      msg.data = (uint8_t*)malloc(bytes_received);
       memcpy(msg.data, &read[0], bytes_received);
       msg.size = bytes_received;
       msg.client_id = id;
