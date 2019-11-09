@@ -4,6 +4,13 @@
 
 namespace asteroids {
 
+namespace {
+
+static ecs::Entity kFree = 0;
+static int kIncrement = 1;
+
+}
+
 OpenGLGameReferences& GlobalOpenGLGameReferences() {
   static OpenGLGameReferences opengl_game_references;
   return opengl_game_references;
@@ -27,6 +34,20 @@ GameState& GlobalGameState() {
 ecs::Entity& GlobalFreeEntity() {
   static ecs::Entity free_entity = 1;
   return free_entity;
+}
+
+void SetEntityStart(ecs::Entity entity) {
+  kFree = entity;
+}
+
+void SetEntityIncrement(int increment) {
+  kIncrement = increment;
+}
+
+ecs::Entity GenerateFreeEntity() {
+  ecs::Entity free = kFree;
+  kFree += kIncrement;
+  return free;
 }
 
 }

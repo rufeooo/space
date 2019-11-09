@@ -72,7 +72,7 @@ class AsteroidsServer : public game::Game {
     }
     asteroids::GlobalGameState().components
         .Assign<asteroids::GameStateComponent>(
-            asteroids::GlobalFreeEntity()++);
+            asteroids::GenerateFreeEntity());
     return true;
   }
 

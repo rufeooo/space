@@ -87,6 +87,9 @@ struct GameState {
 
 GameState& GlobalGameState();
 
-ecs::Entity& GlobalFreeEntity();
+// For entity generation.
+void SetEntityStart(ecs::Entity entity);
+void SetEntityIncrement(int increment);
+ecs::Entity GenerateFreeEntity();
 
 }

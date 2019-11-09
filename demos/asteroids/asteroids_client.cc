@@ -47,6 +47,13 @@ class AsteroidsClient : public game::Game {
           &connection_component->incoming_message_queue);
       connection_component->is_connected = true;
     }
+
+    // Clients entities start at max free entity and then decrement.
+    // These are largely ephemeral and will be deleted when the server
+    // replicates client created entities.
+    asteroids::SetEntityStart(ecs::ENTITY_LAST_FREE);
+    asteroids::SetEntityIncrement(-1);
+
     // Add a single receipient for the server. Otherwise messages
     // can not be added to the queue :(
     connection_component->outgoing_message_queue.AddRecipient(0);
@@ -56,14 +63,14 @@ class AsteroidsClient : public game::Game {
     }
 
     asteroids::CreatePlayer create_player(
-        asteroids::GlobalFreeEntity()++,
+        asteroids::GenerateFreeEntity(),
         asteroids::Vec3(0.f, 0.f, 0.f));
     asteroids::commands::Execute(create_player);
    
     if (IsSinglePlayer()) {
       asteroids::GlobalGameState().components
           .Assign<asteroids::GameStateComponent>(
-              asteroids::GlobalFreeEntity()++);
+              asteroids::GenerateFreeEntity());
     }
   
     return true;

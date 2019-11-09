@@ -357,7 +357,7 @@ void UpdateGame() {
     UpdatePhysics(physics);
     if (input.shoot_projectile) {
       asteroids::CreateProjectile create_projectile(
-          GlobalFreeEntity()++,
+          GenerateFreeEntity(),
           asteroids::Transform(
               asteroids::Vec3(transform.position.x(),
                               transform.position.y(),
@@ -449,7 +449,7 @@ void UpdateGame() {
       static std::uniform_real_distribution<>
           disr(-10000.0, 10000.0);
       asteroids::CreateAsteroid create_asteroid(
-          GlobalFreeEntity()++,
+          GenerateFreeEntity(),
           asteroids::Vec3(disr(gen), disr(gen), 0.f),
           asteroids::Vec3(disr(gen), disr(gen), 0.f),
           disr(gen), 0);
