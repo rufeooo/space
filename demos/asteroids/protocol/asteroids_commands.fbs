@@ -23,6 +23,10 @@ struct CreatePlayer {
   position:Vec3; 
 }
 
+struct DeletePlayer {
+  entity_id:uint64;
+}
+
 struct CreateProjectile {
   entity_id:uint64;
   transform:Transform;
@@ -43,6 +47,7 @@ struct Acknowledge {
 table Command {
   command_id:uint16;
   create_player:CreatePlayer;
+  delete_player:DeletePlayer;
   create_projectile:CreateProjectile;
   create_asteroid:CreateAsteroid; 
   acknowledge:Acknowledge;

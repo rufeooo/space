@@ -65,7 +65,8 @@ struct ConnectionComponent {
   network::OutgoingMessageQueue outgoing_message_queue;
   network::IncomingMessageQueue incoming_message_queue;
   std::thread network_thread;
-  bool is_connected = false;
+  bool is_client = false;
+  bool is_server = false;
 };
 
 }

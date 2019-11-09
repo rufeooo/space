@@ -36,7 +36,7 @@ void SendRecepientFullGameState(
        asteroids::GlobalGameState().asteroid_entities) {
     flatbuffers::FlatBufferBuilder fbb;
     auto command = asteroids::CreateCommand(
-        fbb, 0, 0, 0, &asteroid.create_asteroid);
+        fbb, 0, 0, 0, 0, &asteroid.create_asteroid);
     fbb.Finish(command);
     connection->outgoing_message_queue.Enqueue(fbb.Release());
   }
@@ -66,6 +66,7 @@ class AsteroidsServer : public game::Game {
         FLAGS_port.c_str(),
         &connection_component->outgoing_message_queue,
         &connection_component->incoming_message_queue);
+    connection_component->is_server = true;
     if (!asteroids::Initialize()) {
       std::cout << "Failed to initialize asteroids." << std::endl;
       return false;

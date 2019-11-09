@@ -45,7 +45,7 @@ class AsteroidsClient : public game::Game {
           FLAGS_hostname.c_str(), FLAGS_port.c_str(),
           &connection_component->outgoing_message_queue,
           &connection_component->incoming_message_queue);
-      connection_component->is_connected = true;
+      connection_component->is_client = true;
     }
 
     // Clients entities start at max free entity and then decrement.

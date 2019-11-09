@@ -11,9 +11,14 @@ namespace commands {
 
 void Execute(uint8_t* command_bytes);
 
-void Execute(const asteroids::CreatePlayer& create_player);
-void Execute(const asteroids::CreateProjectile& create_projectile);
-void Execute(const asteroids::CreateAsteroid& create_asteroid);
+void Execute(asteroids::CreatePlayer& create_player,
+             bool is_remote=false);
+void Execute(asteroids::DeletePlayer& delete_player,
+             bool is_remote=false);
+void Execute(asteroids::CreateProjectile& create_projectile,
+             bool is_remote=false);
+void Execute(asteroids::CreateAsteroid& create_asteroid,
+             bool is_remote=false);
 
 }
 

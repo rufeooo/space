@@ -10,22 +10,32 @@ namespace asteroids {
 namespace commands {
 
 void Execute(uint8_t* command_bytes) {
-  const asteroids::Command* command =
-      asteroids::GetCommand((void*)command_bytes);
+  asteroids::Command* command =
+      asteroids::GetMutableCommand((void*)command_bytes);
   if (command->create_player()) {
-    Execute(*command->create_player());
+    Execute(*command->mutable_create_player(), true);
+  }
+  if (command->delete_player()) {
+    Execute(*command->mutable_delete_player(), true);
   }
   if (command->create_projectile()) {
-    Execute(*command->create_projectile());
+    Execute(*command->mutable_create_projectile(), true);
   }
   if (command->create_asteroid()) {
-    Execute(*command->create_asteroid());
+    Execute(*command->mutable_create_asteroid(), true);
   }
   if (command->acknowledge()) {
   }
 }
 
-void Execute(const asteroids::CreatePlayer& create_player) {
+void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
+  auto& singleton_components = GlobalGameState().singleton_components;
+  ConnectionComponent* connection =
+    singleton_components.Get<ConnectionComponent>();
+  uint64_t original_entity = create_player.entity_id();
+  if (is_remote && connection->is_server) {
+    create_player.mutate_entity_id(GenerateFreeEntity());
+  }
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id());
   components.Assign<PolygonShape>(
@@ -39,17 +49,40 @@ void Execute(const asteroids::CreatePlayer& create_player) {
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<asteroids::InputComponent>(
       create_player.entity_id());
-  auto& singleton_components = GlobalGameState().singleton_components;
-  ConnectionComponent* connection =
-    singleton_components.Get<ConnectionComponent>();
-  if (!connection->is_connected) return;
-  flatbuffers::FlatBufferBuilder fbb;
-  auto command = asteroids::CreateCommand(fbb, 0, &create_player);
-  fbb.Finish(command);
-  connection->outgoing_message_queue.Enqueue(fbb.Release());
+  std::cout << "Created player: " << create_player.entity_id() << std::endl;
+  if (connection->is_client && !is_remote) {
+    flatbuffers::FlatBufferBuilder fbb;
+    auto create_command =
+        asteroids::CreateCommand(fbb, 0, &create_player);
+    fbb.Finish(create_command);
+    connection->outgoing_message_queue.Enqueue(fbb.Release());
+  } else if (connection->is_server) {
+    flatbuffers::FlatBufferBuilder fbb;
+    auto delete_player = asteroids::DeletePlayer(original_entity);
+    auto delete_and_create_command =
+        asteroids::CreateCommand(fbb, 0, &create_player,
+                                 &delete_player);
+    fbb.Finish(delete_and_create_command);
+    connection->outgoing_message_queue.Enqueue(fbb.Release());
+  }
 }
 
-void Execute(const asteroids::CreateProjectile& create_projectile) {
+void Execute(asteroids::DeletePlayer& delete_player, bool is_remote) {
+  auto& components = GlobalGameState().components;
+  components.Remove<PhysicsComponent>(delete_player.entity_id());
+  components.Remove<PolygonShape>(delete_player.entity_id());
+  components.Remove<component::TransformComponent>(
+      delete_player.entity_id());
+  components.Remove<component::RenderingComponent>(
+      delete_player.entity_id());
+  components.Remove<asteroids::InputComponent>(
+      delete_player.entity_id());
+  std::cout << "Delete player: " << delete_player.entity_id() << std::endl;
+}
+
+
+void Execute(asteroids::CreateProjectile& create_projectile,
+             bool is_remote) {
   auto& components = GlobalGameState().components;
   component::TransformComponent transform;
   transform.position =
@@ -83,7 +116,8 @@ void Execute(const asteroids::CreateProjectile& create_projectile) {
       {create_projectile.entity_id(), create_projectile});
 }
 
-void Execute(const asteroids::CreateAsteroid& create_asteroid) {
+void Execute(asteroids::CreateAsteroid& create_asteroid,
+             bool is_remote) {
   auto& components = GlobalGameState().components;
   math::Vec3f dir(create_asteroid.direction().x(),
                   create_asteroid.direction().y(),
