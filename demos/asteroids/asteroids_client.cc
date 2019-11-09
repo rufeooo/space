@@ -36,12 +36,10 @@ class AsteroidsClient : public game::Game {
       std::cout << "Failed to initialize asteroids." << std::endl;
       return false;
     }
-    auto player = asteroids::SpawnPlayer(math::Vec3f(0.f, 0.f, 0.f));
-    asteroids::GlobalGameState().components
-        .Assign<asteroids::InputComponent>(player);
-    //asteroids::CreatePlayer create_player(
-    //    FreeEntity()++, asteroids::Vec3(0.f, 0.f, 0.f));
-    //asteroids::commands::Execute(create_player);
+    asteroids::CreatePlayer create_player(
+        asteroids::GlobalFreeEntity()++,
+        asteroids::Vec3(0.f, 0.f, 0.f));
+    asteroids::commands::Execute(create_player);
     if (IsSinglePlayer()) {
       asteroids::GlobalGameState().components
           .Assign<asteroids::GameStateComponent>(

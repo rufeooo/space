@@ -3,6 +3,7 @@
 #include <iostream>
 #include <random>
 
+#include "asteroids_commands.h"
 #include "asteroids_state.h"
 #include "ecs/ecs.h"
 #include "math/intersection.h"
@@ -106,83 +107,6 @@ void CreateAsteroidGeometry(
       renderer::CreateGeometryVAO(scaled_geometry));
 }
 
-ecs::Entity SpawnPlayer(const math::Vec3f& position) {
-  auto& components = GlobalGameState().components;
-  components.Assign<PhysicsComponent>(GlobalFreeEntity());
-  components.Assign<PolygonShape>(
-      GlobalFreeEntity(), GlobalEntityGeometry().ship_geometry);
-  components.Assign<component::TransformComponent>(GlobalFreeEntity());
-  components.Assign<component::RenderingComponent>(
-    GlobalFreeEntity(),
-    GlobalOpenGLGameReferences().ship_vao_reference,
-    GlobalOpenGLGameReferences().program_reference,
-    GlobalEntityGeometry().ship_geometry.size());
-  ++GlobalFreeEntity();
-  return GlobalFreeEntity() - 1;
-}
-
-void SpawnPlayerProjectile(
-    const component::TransformComponent& transform) {
-  auto& components = GlobalGameState().components;
-  auto& orientation = transform.orientation;
-  auto dir = orientation.Up();
-  dir.Normalize();
-  component::TransformComponent projectile_transform(transform);
-  projectile_transform.position += (dir * .08f);
-  components.Assign<component::TransformComponent>(
-      GlobalFreeEntity(), projectile_transform);
-  components.Assign<PhysicsComponent>(
-      GlobalFreeEntity(), math::Vec3f(), dir * kProjectileSpeed, 0.f,
-      0.f);
-  components.Assign<TTLComponent>(GlobalFreeEntity());
-  components.Assign<PolygonShape>(
-      GlobalFreeEntity(), GlobalEntityGeometry().projectile_geometry);
-  components.Assign<component::RenderingComponent>(
-      GlobalFreeEntity(),
-      GlobalOpenGLGameReferences().projectile_vao_reference,
-      GlobalOpenGLGameReferences().program_reference,
-      GlobalEntityGeometry().projectile_geometry.size());
-  ++GlobalFreeEntity();
-}
-
-ecs::Entity SpawnAsteroid(const math::Vec3f& position, math::Vec3f dir,
-                          float angle, int random_number) {
-  auto& components = GlobalGameState().components;
-  dir.Normalize();
-  components.Assign<component::TransformComponent>(GlobalFreeEntity());
-  auto* transform = components.Get<component::TransformComponent>(
-      GlobalFreeEntity());
-  transform->position = position;
-  transform->orientation.Set(angle, math::Vec3f(0.f, 0.f, 1.f));
-  components.Assign<PhysicsComponent>(GlobalFreeEntity());
-  auto* physics = components.Get<PhysicsComponent>(GlobalFreeEntity());
-  physics->velocity = dir * kShipAcceleration * 50.f;
-  static std::random_device rd;
-  static std::mt19937 gen(rd());
-  static std::uniform_int_distribution<>
-      disi(0, GlobalEntityGeometry().asteroid_geometry.size() - 1);
-  if (random_number == -1) {
-    random_number = disi(gen);
-  }
-  // Store off the random number that was used to create the asteroid.
-  // This is useful for server->client communication when the client
-  // needs to recreate the asteroid.
-  components.Assign<RandomNumberIntChoiceComponent>(
-      GlobalFreeEntity(), (uint8_t)random_number);
-  components.Assign<PolygonShape>(
-      GlobalFreeEntity(),
-      GlobalEntityGeometry().asteroid_geometry[random_number]);
-  components.Assign<component::RenderingComponent>(
-      GlobalFreeEntity(),
-      GlobalOpenGLGameReferences()
-          .asteroid_vao_references[random_number],
-      GlobalOpenGLGameReferences().program_reference,
-      GlobalEntityGeometry().asteroid_geometry[random_number].size());
-  GlobalGameState().asteroid_entities.insert(GlobalFreeEntity());
-  ++GlobalFreeEntity();
-  return GlobalFreeEntity() - 1;
-}
-
 void UpdatePhysics(PhysicsComponent& physics_component) {
   // If the ship is not at max velocity and the ship has
   // acceleration.
@@ -247,6 +171,9 @@ bool ProjectileCollidesWithAsteroid(
   auto* asteroid_transform
       = components.Get<component::TransformComponent>(asteroid);
   auto* asteroid_shape = components.Get<PolygonShape>(asteroid);
+  assert(projectile_physics != nullptr);
+  assert(asteroid_transform != nullptr);
+  assert(asteroid_shape != nullptr);
   math::Vec2f projectile_start(projectile_transform->prev_position.x(),
                                projectile_transform->prev_position.y());
   math::Vec2f projectile_end(projectile_transform->position.x(),
@@ -412,8 +339,17 @@ void UpdateGame() {
                  InputComponent& input) {
     UpdatePhysics(physics);
     if (input.shoot_projectile) {
-      GlobalGameState().projectile_entities.insert(GlobalFreeEntity());
-      SpawnPlayerProjectile(transform);
+      asteroids::CreateProjectile create_projectile(
+          GlobalFreeEntity()++,
+          asteroids::Transform(
+              asteroids::Vec3(transform.position.x(),
+                              transform.position.y(),
+                              transform.position.z()),
+              asteroids::Vec4(transform.orientation.x(),
+                              transform.orientation.y(),
+                              transform.orientation.z(),
+                              transform.orientation.w())));
+      commands::Execute(create_projectile);
       input.shoot_projectile = false;
     }
     if (input.a_pressed) {
@@ -495,11 +431,12 @@ void UpdateGame() {
       static std::mt19937 gen(rd());
       static std::uniform_real_distribution<>
           disr(-10000.0, 10000.0);
-      GlobalGameState().asteroid_entities.insert(GlobalFreeEntity());
-      SpawnAsteroid(
-          math::Vec3f(disr(gen), disr(gen), 0.f),
-          math::Vec3f(disr(gen), disr(gen), 0.f),
-          disr(gen));
+      asteroids::CreateAsteroid create_asteroid(
+          GlobalFreeEntity()++,
+          asteroids::Vec3(disr(gen), disr(gen), 0.f),
+          asteroids::Vec3(disr(gen), disr(gen), 0.f),
+          disr(gen), 0);
+      commands::Execute(create_asteroid);
       game_state.seconds_since_last_asteroid_spawn = 0.f;
       game_state.asteroid_count++;
     }
