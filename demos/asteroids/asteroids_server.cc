@@ -29,6 +29,35 @@ void ProcessIncomingCommands() {
   }
 }
 
+void ProcessOutgoingCommands() {
+  auto& components = asteroids::GlobalGameState().components;
+  auto* connection_component =
+      asteroids::GlobalGameState().singleton_components
+          .Get<asteroids::ConnectionComponent>();
+  components.Enumerate<component::ServerAuthoratativeComponent<
+      component::TransformComponent>>([&](
+          ecs::Entity entity, component::ServerAuthoratativeComponent<
+            component::TransformComponent>){
+    auto* transform_component =
+        components.Get<component::TransformComponent>(entity);
+    assert(transform_component != nullptr);
+    // TODO: Make automatic conversions for some of these things...
+    flatbuffers::FlatBufferBuilder fbb;
+    auto& p = transform_component->position;
+    auto& o = transform_component->orientation;
+    asteroids::UpdateTransform update_transform(
+       entity, asteroids::Transform(
+         asteroids::Vec3(p.x(), p.y(), p.z()),
+         asteroids::Vec4(o.x(), o.y(), o.z(), o.w())));
+    auto create_command =
+        asteroids::CreateCommand(fbb, 0, 0, 0, 0, 0,
+                                 &update_transform);
+    fbb.Finish(create_command);
+    connection_component->outgoing_message_queue.Enqueue(
+        fbb.Release());
+  });
+}
+
 void SendRecepientFullGameState(
     asteroids::ConnectionComponent* connection, int client_id) {
   // Get all asteroid creation commands and send them
@@ -81,6 +110,7 @@ class AsteroidsServer : public game::Game {
     glfwPollEvents();
     ProcessIncomingCommands();
     ProcessNewRecipientConnections();
+    ProcessOutgoingCommands();
     return true;
   }
 

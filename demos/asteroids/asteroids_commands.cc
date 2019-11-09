@@ -4,6 +4,7 @@
 
 #include "asteroids.h"
 #include "asteroids_state.h"
+#include "components/network/server_authoritative_component.h"
 
 namespace asteroids {
 
@@ -23,6 +24,9 @@ void Execute(uint8_t* command_bytes) {
   }
   if (command->create_asteroid()) {
     Execute(*command->mutable_create_asteroid(), true);
+  }
+  if (command->update_transform()) {
+    Execute(*command->mutable_update_transform(), true);
   }
   if (command->acknowledge()) {
   }
@@ -170,7 +174,34 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
   create_command.mutate_random_number(random_number);
   GlobalGameState().asteroid_entities.push_back(
       {create_asteroid.entity_id(), create_command});
+  auto& singleton_components = GlobalGameState().singleton_components;
+  ConnectionComponent* connection =
+    singleton_components.Get<ConnectionComponent>();
+  if (connection->is_server || connection->is_client) {
+    components.Assign<component::ServerAuthoratativeComponent<
+        component::TransformComponent>>(create_asteroid.entity_id());
+  }
 }
+
+void Execute(asteroids::UpdateTransform& update_transform,
+             bool is_remote) {
+  component::TransformComponent transform;
+  transform.position =
+      math::Vec3f(update_transform.transform().position().x(),
+                  update_transform.transform().position().y(),
+                  update_transform.transform().position().z());
+  transform.orientation =
+      math::Quatf(update_transform.transform().orientation().x(),
+                  update_transform.transform().orientation().y(),
+                  update_transform.transform().orientation().z(),
+                  update_transform.transform().orientation().w());
+  auto& components = GlobalGameState().components;
+  auto* transform_component =
+      components.Get<component::TransformComponent>(
+          update_transform.entity_id());
+  if (transform_component) *transform_component = transform;
+}
+
 
 }
 

@@ -40,6 +40,11 @@ struct CreateAsteroid {
   random_number:int;
 }
 
+struct UpdateTransform {
+  entity_id:uint64;
+  transform:Transform;
+}
+
 struct Acknowledge {
   success:bool;
 }
@@ -50,6 +55,7 @@ table Command {
   delete_player:DeletePlayer;
   create_projectile:CreateProjectile;
   create_asteroid:CreateAsteroid; 
+  update_transform:UpdateTransform;
   acknowledge:Acknowledge;
 }
 
