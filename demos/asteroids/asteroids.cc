@@ -365,7 +365,10 @@ void UpdateGame() {
               asteroids::Vec4(transform.orientation.x(),
                               transform.orientation.y(),
                               transform.orientation.z(),
-                              transform.orientation.w())));
+                              transform.orientation.w()),
+               asteroids::Vec3(transform.prev_position.x(),
+                               transform.prev_position.y(),
+                               transform.prev_position.z())));
       commands::Execute(create_projectile);
       input.shoot_projectile = false;
     }

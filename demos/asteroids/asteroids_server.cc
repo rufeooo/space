@@ -44,11 +44,13 @@ void ProcessOutgoingCommands() {
     // TODO: Make automatic conversions for some of these things...
     flatbuffers::FlatBufferBuilder fbb;
     auto& p = transform_component->position;
+    auto& pp = transform_component->prev_position;
     auto& o = transform_component->orientation;
     asteroids::UpdateTransform update_transform(
        entity, asteroids::Transform(
          asteroids::Vec3(p.x(), p.y(), p.z()),
-         asteroids::Vec4(o.x(), o.y(), o.z(), o.w())));
+         asteroids::Vec4(o.x(), o.y(), o.z(), o.w()),
+         asteroids::Vec3(pp.x(), pp.y(), pp.z())));
     auto create_command =
         asteroids::CreateCommand(fbb, 0, 0, 0, 0, 0,
                                  &update_transform);

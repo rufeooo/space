@@ -16,6 +16,7 @@ struct Vec4 {
 struct Transform {
   position:Vec3;
   orientation:Vec4;
+  prev_position:Vec3;
 }
 
 struct CreatePlayer {

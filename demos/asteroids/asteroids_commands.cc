@@ -87,6 +87,7 @@ void Execute(asteroids::DeletePlayer& delete_player, bool is_remote) {
 
 void Execute(asteroids::CreateProjectile& create_projectile,
              bool is_remote) {
+  std::cout << "Spawn projectile: " << create_projectile.entity_id() << std::endl;
   auto& components = GlobalGameState().components;
   component::TransformComponent transform;
   transform.position =
@@ -127,6 +128,7 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
                   create_asteroid.direction().y(),
                   create_asteroid.direction().z());
   dir.Normalize();
+  std::cout << "CreateAsteroid: " << create_asteroid.entity_id() << std::endl;
   components.Assign<component::TransformComponent>(
       create_asteroid.entity_id());
   auto* transform = components.Get<component::TransformComponent>(
@@ -153,6 +155,7 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
   } else {
     random_number = disi(gen);
   }
+  create_asteroid.mutate_random_number(random_number);
   // Store off the random number that was used to create the asteroid.
   // This is useful for server->client communication when the client
   // needs to recreate the asteroid.
@@ -181,6 +184,13 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
     components.Assign<component::ServerAuthoratativeComponent<
         component::TransformComponent>>(create_asteroid.entity_id());
   }
+  if (connection->is_server) {
+    flatbuffers::FlatBufferBuilder fbb;
+    auto create_command =
+        asteroids::CreateCommand(fbb, 0, 0, 0, 0, &create_asteroid);
+    fbb.Finish(create_command);
+    connection->outgoing_message_queue.Enqueue(fbb.Release());
+  }
 }
 
 void Execute(asteroids::UpdateTransform& update_transform,
@@ -195,6 +205,10 @@ void Execute(asteroids::UpdateTransform& update_transform,
                   update_transform.transform().orientation().y(),
                   update_transform.transform().orientation().z(),
                   update_transform.transform().orientation().w());
+  transform.prev_position =
+      math::Vec3f(update_transform.transform().prev_position().x(),
+                  update_transform.transform().prev_position().y(),
+                  update_transform.transform().prev_position().z());
   auto& components = GlobalGameState().components;
   auto* transform_component =
       components.Get<component::TransformComponent>(
