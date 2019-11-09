@@ -78,7 +78,7 @@ TEST(Server, ServerHappyPath) {
     msg = incoming_message_queue.Dequeue();
   } while (msg.size == 0);
   ASSERT_EQ(msg.size, 7);
-  ASSERT_EQ(strncmp(msg.data, "Connect", msg.size), 0);
+  ASSERT_EQ(strncmp((char*)msg.data, "Connect", msg.size), 0);
   {
     // Enqueue a flatbuffer with message 'hello'
     flatbuffers::FlatBufferBuilder fbb;
