@@ -79,8 +79,8 @@ void Execute(const asteroids::CreateProjectile& create_projectile) {
       GlobalOpenGLGameReferences().projectile_vao_reference,
       GlobalOpenGLGameReferences().program_reference,
       GlobalEntityGeometry().projectile_geometry.size());
-  GlobalGameState().projectile_entities.insert(
-      create_projectile.entity_id());
+  GlobalGameState().projectile_entities.push_back(
+      {create_projectile.entity_id(), create_projectile});
 }
 
 void Execute(const asteroids::CreateAsteroid& create_asteroid) {
@@ -106,26 +106,36 @@ void Execute(const asteroids::CreateAsteroid& create_asteroid) {
   static std::random_device rd;
   static std::mt19937 gen(rd());
   static std::uniform_int_distribution<>
-      disi(0, GlobalEntityGeometry().asteroid_geometry.size() - 1);
+      disi(1, GlobalEntityGeometry().asteroid_geometry.size());
   // TODO: random_number also exists in create_asteroid and should come
   // from it when a server exists again.
-  int random_number = disi(gen);
+  int random_number = 0;
+  if (create_asteroid.random_number() != 0) {
+    random_number = create_asteroid.random_number();
+  } else {
+    random_number = disi(gen);
+  }
   // Store off the random number that was used to create the asteroid.
   // This is useful for server->client communication when the client
   // needs to recreate the asteroid.
   components.Assign<RandomNumberIntChoiceComponent>(
       create_asteroid.entity_id(), (uint8_t)random_number);
+  // Use random_number - 1 so we an assume 0 is unset and can
+  // differentiate between providing a random number vs not.
   components.Assign<PolygonShape>(
       create_asteroid.entity_id(),
-      GlobalEntityGeometry().asteroid_geometry[random_number]);
+      GlobalEntityGeometry().asteroid_geometry[random_number - 1]);
   components.Assign<component::RenderingComponent>(
       create_asteroid.entity_id(),
       GlobalOpenGLGameReferences()
-          .asteroid_vao_references[random_number],
+          .asteroid_vao_references[random_number - 1],
       GlobalOpenGLGameReferences().program_reference,
-      GlobalEntityGeometry().asteroid_geometry[random_number].size());
-  GlobalGameState().asteroid_entities.insert(
-      create_asteroid.entity_id());
+      GlobalEntityGeometry()
+          .asteroid_geometry[random_number - 1].size());
+  asteroids::CreateAsteroid create_command(create_asteroid);
+  create_command.mutate_random_number(random_number);
+  GlobalGameState().asteroid_entities.push_back(
+      {create_asteroid.entity_id(), create_command});
 }
 
 }

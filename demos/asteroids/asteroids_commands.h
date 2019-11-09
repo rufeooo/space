@@ -3,6 +3,7 @@
 #include <functional>
 
 #include "protocol/asteroids_commands_generated.h"
+#include "ecs/entity.h"
 
 namespace asteroids {
 

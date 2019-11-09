@@ -12,3 +12,15 @@ Component
     [] Transform
     [] Vec3
     [] Quat 
+
+Asteroids
+
+When commands are send to clients via SendRecepientFullGameState
+entities begin to conflict. As in a command is sent to create asteroid
+with entity 1 but entity 1 may exist already on that client and
+furthermore the clients "free" entity list is not properly updated.
+
+Now that commands come in entities that exist are properly CREATED
+on the client but they are not in the correct position. I think this
+is ok and will be addressed when components become synchable between
+client / server.

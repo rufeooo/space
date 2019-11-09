@@ -1,6 +1,7 @@
 #pragma once
 
 #include <set>
+#include <vector>
 
 #include "asteroids_components.h"
 
@@ -9,6 +10,7 @@
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
 #include "math/vec.h"
+#include "protocol/asteroids_commands_generated.h"
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
@@ -52,10 +54,28 @@ struct EntityGeometry {
 
 EntityGeometry& GlobalEntityGeometry();
 
+struct ProjectileEntityData {
+  ProjectileEntityData(
+      const ecs::Entity& entity,
+      const CreateProjectile& create_projectile) :
+    entity(entity), create_projectile(create_projectile) {}
+  ecs::Entity entity;
+  CreateProjectile create_projectile;
+};
+
+struct AsteroidEntityData {
+  AsteroidEntityData(
+      const ecs::Entity& entity,
+      const CreateAsteroid& create_asteroid) :
+    entity(entity), create_asteroid(create_asteroid) {}
+  ecs::Entity entity;
+  CreateAsteroid create_asteroid;
+};
+
 struct GameState {
   // ordered_set for determinism when calculating collision.
-  std::set<ecs::Entity> projectile_entities;
-  std::set<ecs::Entity> asteroid_entities;
+  std::vector<ProjectileEntityData> projectile_entities;
+  std::vector<AsteroidEntityData> asteroid_entities;
   ecs::ComponentStorage<
     component::ViewComponent, PhysicsComponent, PolygonShape,
     component::TransformComponent, InputComponent, GameStateComponent,

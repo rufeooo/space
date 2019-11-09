@@ -16,6 +16,44 @@ DEFINE_string(port, "9845", "Port for this application.");
 DEFINE_bool(headless, true, "Set to false to render game. Should be "
                             "used for debug only");
 
+void ProcessIncomingCommands() {
+  // Execute all commands received from clients.
+  auto* connection_component =
+      asteroids::GlobalGameState().singleton_components
+          .Get<asteroids::ConnectionComponent>();
+  network::Message msg =
+      connection_component->incoming_message_queue.Dequeue();
+  while (msg.size != 0) {
+    asteroids::commands::Execute(msg.data);
+    msg = connection_component->incoming_message_queue.Dequeue();
+  }
+}
+
+void SendRecepientFullGameState(
+    asteroids::ConnectionComponent* connection, int client_id) {
+  // Get all asteroid creation commands and send them
+  for (const auto& asteroid :
+       asteroids::GlobalGameState().asteroid_entities) {
+    flatbuffers::FlatBufferBuilder fbb;
+    auto command = asteroids::CreateCommand(
+        fbb, 0, 0, 0, &asteroid.create_asteroid);
+    fbb.Finish(command);
+    connection->outgoing_message_queue.Enqueue(fbb.Release());
+  }
+}
+
+void ProcessNewRecipientConnections() {
+  auto* connection_component =
+      asteroids::GlobalGameState().singleton_components
+          .Get<asteroids::ConnectionComponent>();
+  auto new_recipients =
+      connection_component->outgoing_message_queue.NewRecipients();
+  // Send the new clients all the relevant state from the server.
+  for (auto recepient : new_recipients) {
+    SendRecepientFullGameState(connection_component, recepient);
+  }
+}
+
 class AsteroidsServer : public game::Game {
  public:
   AsteroidsServer() : game::Game() {};
@@ -40,16 +78,8 @@ class AsteroidsServer : public game::Game {
 
   bool ProcessInput() override {
     glfwPollEvents();
-    // Execute all commands received from clients.
-    auto* connection_component =
-        asteroids::GlobalGameState().singleton_components
-            .Get<asteroids::ConnectionComponent>();
-    network::Message msg =
-        connection_component->incoming_message_queue.Dequeue();
-    while (msg.size != 0) {
-      asteroids::commands::Execute(msg.data);
-      msg = connection_component->incoming_message_queue.Dequeue();
-    }
+    ProcessIncomingCommands();
+    ProcessNewRecipientConnections();
     return true;
   }
 
@@ -71,12 +101,6 @@ class AsteroidsServer : public game::Game {
       connection_component->network_thread.join();
     }
   }
-
- private:
-  // Client Entity Mappings.
-  std::unordered_map<
-      int, std::unordered_map<ecs::Entity, ecs::Entity>>
-          client_entity_mappings_;
 };
 
 int main(int argc, char** argv) {

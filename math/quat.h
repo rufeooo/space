@@ -78,6 +78,8 @@ class Quat : public Vec4<T> {
         -1.f + 2.f * x * x + 2.f * y * y);
   }
 
+  float Angle() const { return angle_degrees_; }
+
  private:
   Vec3<T> axis_;
   float angle_degrees_;

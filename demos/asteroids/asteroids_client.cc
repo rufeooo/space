@@ -19,6 +19,19 @@ DEFINE_string(port, "9845", "Port for this application.");
 
 bool IsSinglePlayer() { return FLAGS_hostname.empty(); }
 
+void ProcessIncomingCommands() {
+  // Execute all commands received from server.
+  auto* connection_component =
+      asteroids::GlobalGameState().singleton_components
+          .Get<asteroids::ConnectionComponent>();
+  network::Message msg =
+      connection_component->incoming_message_queue.Dequeue();
+  while (msg.size != 0) {
+    asteroids::commands::Execute(msg.data);
+    msg = connection_component->incoming_message_queue.Dequeue();
+  }
+}
+
 class AsteroidsClient : public game::Game {
  public:
   AsteroidsClient() : game::Game() {}
@@ -58,6 +71,7 @@ class AsteroidsClient : public game::Game {
 
   bool ProcessInput() override {
     asteroids::ProcessClientInput();
+    ProcessIncomingCommands();
     return true;
   }
 

@@ -44,12 +44,14 @@ class OutgoingMessageQueue {
   void RemoveRecipient(int client_id);
 
   std::vector<int> Recipients() const;
+  std::vector<int> NewRecipients();
 
  private:
   mutable std::mutex mutex_;
   std::queue<flatbuffers::DetachedBuffer> queue_;
   bool stop_ = false;
   std::unordered_set<int> recipients_;
+  std::unordered_set<int> new_recipients_;
 };
 
 }

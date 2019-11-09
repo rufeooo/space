@@ -299,9 +299,10 @@ void UpdateGame() {
   // in the future.
   for (const auto& projectile : GlobalGameState().projectile_entities) {
     for (const auto& asteroid : GlobalGameState().asteroid_entities) {
-      if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
-        asteroids_to_kill.insert(asteroid);
-        projectiles_to_kill.insert(projectile);
+      if (ProjectileCollidesWithAsteroid(
+          projectile.entity, asteroid.entity)) {
+        asteroids_to_kill.insert(asteroid.entity);
+        projectiles_to_kill.insert(projectile.entity);
         break;
       }
     }
@@ -319,7 +320,15 @@ void UpdateGame() {
     components.Remove<PolygonShape>(e);
     components.Remove<component::RenderingComponent>(e);
     components.Remove<TTLComponent>(e);
-    GlobalGameState().projectile_entities.erase(e);
+    for (int i = 0;
+         i < GlobalGameState().projectile_entities.size(); ++i) {
+      auto& projectile_data = GlobalGameState().projectile_entities[i];
+      if (projectile_data.entity == e) {
+        GlobalGameState().projectile_entities.erase(
+          GlobalGameState().projectile_entities.begin() + i);
+        break;
+      }
+    }
   }
 
   for (const auto& e : asteroids_to_kill) {
@@ -328,7 +337,15 @@ void UpdateGame() {
     components.Remove<PolygonShape>(e);
     components.Remove<component::RenderingComponent>(e);
     components.Remove<RandomNumberIntChoiceComponent>(e);
-    GlobalGameState().asteroid_entities.erase(e);
+    for (int i = 0;
+         i < GlobalGameState().asteroid_entities.size(); ++i) {
+      auto& asteroid_data = GlobalGameState().asteroid_entities[i];
+      if (asteroid_data.entity == e) {
+        GlobalGameState().asteroid_entities.erase(
+          GlobalGameState().asteroid_entities.begin() + i);
+        break;
+      }
+    }
   }
 
   // Provide ship control to the entity with Input (the player.)
