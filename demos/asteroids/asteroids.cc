@@ -5,6 +5,7 @@
 
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
+#include "components/network/server_authoritative_component.h"
 #include "ecs/ecs.h"
 #include "math/intersection.h"
 #include "math/mat_ops.h"
@@ -298,6 +299,8 @@ void UpdateGame() {
     components.Remove<PolygonShape>(e);
     components.Remove<component::RenderingComponent>(e);
     components.Remove<RandomNumberIntChoiceComponent>(e);
+    components.Remove<component::ServerAuthoratativeComponent<
+        component::TransformComponent>>(e);
     for (int i = 0;
          i < GlobalGameState().asteroid_entities.size(); ++i) {
       auto& asteroid_data = GlobalGameState().asteroid_entities[i];

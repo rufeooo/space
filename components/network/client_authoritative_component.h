@@ -3,6 +3,6 @@
 namespace component {
 
 template <class T>
-struct ServerAuthoratativeComponent {};
+struct ClientAuthoratativeComponent {};
 
 }

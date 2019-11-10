@@ -82,7 +82,7 @@ bool RunServerLoop(char* read_buffer, char* address_buffer,
   // If there is data to read from the socket, read it and cache
   // off the client address.    
   if (FD_ISSET(socket_listen, &reads)) {
-    printf("fd_isset\n\n");
+    //printf("fd_isset\n\n");
     struct sockaddr_storage client_address;
     socklen_t client_len = sizeof(client_address);
     memset(read_buffer, 0, kMaxMessageSize);
@@ -118,7 +118,7 @@ bool RunServerLoop(char* read_buffer, char* address_buffer,
     memcpy(msg.data, read_buffer, bytes_received);
     msg.size = bytes_received;
     msg.client_id = id;
-    printf("gots bytes: %d\n\n", bytes_received);
+    //printf("gots bytes: %d\n\n", bytes_received);
     incoming_message_queue->Enqueue(msg); 
   }
 

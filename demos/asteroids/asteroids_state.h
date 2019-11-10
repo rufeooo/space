@@ -8,6 +8,7 @@
 #include "components/common/input_component.h"
 #include "components/common/transform_component.h"
 #include "components/network/server_authoritative_component.h"
+#include "components/network/client_authoritative_component.h"
 #include "components/rendering/rendering_component.h"
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
@@ -84,7 +85,9 @@ struct GameState {
     GameStateComponent, component::RenderingComponent, TTLComponent,
     RandomNumberIntChoiceComponent,
     component::ServerAuthoratativeComponent<
-        component::TransformComponent>> components;
+        component::TransformComponent>,
+    component::ClientAuthoratativeComponent<
+        component::InputComponent>> components;
   ecs::SingletonComponentStorage<ConnectionComponent>
     singleton_components; 
 };

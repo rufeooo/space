@@ -19,6 +19,11 @@ struct Transform {
   prev_position:Vec3;
 }
 
+struct Input {
+  input_mask:uint8;
+  previous_input_mask:uint8;
+}
+
 struct CreatePlayer {
   entity_id:uint64;
   position:Vec3; 
@@ -46,6 +51,11 @@ struct UpdateTransform {
   transform:Transform;
 }
 
+struct UpdateInput {
+  entity_id:uint64;
+  input:Input;
+}
+
 struct Acknowledge {
   success:bool;
 }
@@ -57,6 +67,7 @@ table Command {
   create_projectile:CreateProjectile;
   create_asteroid:CreateAsteroid; 
   update_transform:UpdateTransform;
+  update_input:UpdateInput;
   acknowledge:Acknowledge;
 }
 

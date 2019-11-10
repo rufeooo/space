@@ -33,6 +33,32 @@ void ProcessIncomingCommands() {
   }
 }
 
+void ProcessOutgoingCommands() {
+  auto& components = asteroids::GlobalGameState().components;
+  auto* connection_component =
+      asteroids::GlobalGameState().singleton_components
+          .Get<asteroids::ConnectionComponent>();
+  components.Enumerate<component::ClientAuthoratativeComponent<
+      component::InputComponent>>([&](
+          ecs::Entity entity, component::ClientAuthoratativeComponent<
+            component::InputComponent>){
+    auto* input_component =
+        components.Get<component::InputComponent>(entity);
+    assert(input_component != nullptr);
+    // TODO: Make automatic conversions for some of these things...
+    flatbuffers::FlatBufferBuilder fbb;
+    asteroids::UpdateInput update_input(
+       entity,
+       asteroids::Input(input_component->input_mask,
+                        input_component->previous_input_mask));
+    auto create_command =
+        asteroids::CreateCommand(fbb, 0, 0, 0, 0, 0, 0, &update_input);
+    fbb.Finish(create_command);
+    connection_component->outgoing_message_queue.Enqueue(
+        fbb.Release());
+  });
+}
+
 void ProcessClientInput() {
   auto& opengl = asteroids::GlobalOpenGL();
   auto& components = asteroids::GlobalGameState().components;
@@ -107,6 +133,7 @@ class AsteroidsClient : public game::Game {
   bool ProcessInput() override {
     ProcessClientInput();
     ProcessIncomingCommands();
+    ProcessOutgoingCommands();
     return true;
   }
 
@@ -128,12 +155,6 @@ class AsteroidsClient : public game::Game {
       connection_component->network_thread.join();
     }
   }
-
- private:
-  ecs::Entity player_;
-
-  // Server Entity Mappings.
-  std::unordered_map<ecs::Entity, ecs::Entity> server_entity_mappings_;
 };
 
 int main(int argc, char** argv) {

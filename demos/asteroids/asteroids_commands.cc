@@ -5,6 +5,7 @@
 #include "asteroids.h"
 #include "asteroids_state.h"
 #include "components/common/input_component.h"
+#include "components/network/client_authoritative_component.h"
 #include "components/network/server_authoritative_component.h"
 
 namespace asteroids {
@@ -28,6 +29,9 @@ void Execute(uint8_t* command_bytes) {
   }
   if (command->update_transform()) {
     Execute(*command->mutable_update_transform(), true);
+  }
+  if (command->update_input()) {
+    Execute(*command->mutable_update_input(), true);
   }
   if (command->acknowledge()) {
   }
@@ -54,6 +58,8 @@ void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<component::InputComponent>(
       create_player.entity_id());
+  components.Assign<component::ClientAuthoratativeComponent<
+      component::InputComponent>>(create_player.entity_id());
   std::cout << "Created player: " << create_player.entity_id() << std::endl;
   if (connection->is_client && !is_remote) {
     flatbuffers::FlatBufferBuilder fbb;
@@ -82,6 +88,8 @@ void Execute(asteroids::DeletePlayer& delete_player, bool is_remote) {
       delete_player.entity_id());
   components.Remove<component::InputComponent>(
       delete_player.entity_id());
+  components.Remove<component::ClientAuthoratativeComponent<
+      component::InputComponent>>(delete_player.entity_id());
   std::cout << "Delete player: " << delete_player.entity_id() << std::endl;
 }
 
@@ -217,6 +225,17 @@ void Execute(asteroids::UpdateTransform& update_transform,
   if (transform_component) *transform_component = transform;
 }
 
+void Execute(asteroids::UpdateInput& update_input, bool is_remote) {
+  component::InputComponent input;
+  input.input_mask = update_input.input().input_mask();
+  input.previous_input_mask =
+      update_input.input().previous_input_mask();
+  auto& components = GlobalGameState().components;
+  auto* input_component =
+      components.Get<component::InputComponent>(
+          update_input.entity_id());
+  if (input_component) *input_component = input;
+}
 
 }
 

@@ -21,7 +21,8 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
              bool is_remote=false);
 void Execute(asteroids::UpdateTransform& update_transform,
              bool is_remote=false);
-
+void Execute(asteroids::UpdateInput& update_input,
+             bool is_remote=false);
 
 }
 
