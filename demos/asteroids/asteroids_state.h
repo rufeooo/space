@@ -5,6 +5,7 @@
 
 #include "asteroids_components.h"
 
+#include "components/common/input_component.h"
 #include "components/common/transform_component.h"
 #include "components/network/server_authoritative_component.h"
 #include "components/rendering/rendering_component.h"
@@ -79,8 +80,8 @@ struct GameState {
   std::vector<AsteroidEntityData> asteroid_entities;
   ecs::ComponentStorage<
     component::ViewComponent, PhysicsComponent, PolygonShape,
-    component::TransformComponent, InputComponent, GameStateComponent,
-    component::RenderingComponent, TTLComponent,
+    component::TransformComponent, component::InputComponent,
+    GameStateComponent, component::RenderingComponent, TTLComponent,
     RandomNumberIntChoiceComponent,
     component::ServerAuthoratativeComponent<
         component::TransformComponent>> components;

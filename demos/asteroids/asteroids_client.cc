@@ -5,6 +5,7 @@
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
 #include "components/common/transform_component.h"
+#include "components/common/input_component.h"
 #include "network/client.h"
 #include "network/message_queue.h"
 #include "protocol/asteroids_commands_generated.h"
@@ -30,6 +31,33 @@ void ProcessIncomingCommands() {
     asteroids::commands::Execute(msg.data);
     msg = connection_component->incoming_message_queue.Dequeue();
   }
+}
+
+void ProcessClientInput() {
+  auto& opengl = asteroids::GlobalOpenGL();
+  auto& components = asteroids::GlobalGameState().components;
+  glfwPollEvents();
+  components.Enumerate<component::InputComponent>(
+      [&opengl](ecs::Entity ent, component::InputComponent& input) {
+    input.previous_input_mask = input.input_mask;
+    input.input_mask = 0;
+    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_W)) {
+      component::SetKeyDown(input.input_mask, component::KEYBOARD_W); 
+    }
+    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_A)) {
+      component::SetKeyDown(input.input_mask, component::KEYBOARD_A); 
+    }
+    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_S)) {
+      component::SetKeyDown(input.input_mask, component::KEYBOARD_S); 
+    }
+    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_D)) {
+      component::SetKeyDown(input.input_mask, component::KEYBOARD_D); 
+    }
+    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
+      component::SetKeyDown(input.input_mask,
+                            component::KEYBOARD_SPACE); 
+    }
+  });
 }
 
 class AsteroidsClient : public game::Game {
@@ -77,7 +105,7 @@ class AsteroidsClient : public game::Game {
   }
 
   bool ProcessInput() override {
-    asteroids::ProcessClientInput();
+    ProcessClientInput();
     ProcessIncomingCommands();
     return true;
   }

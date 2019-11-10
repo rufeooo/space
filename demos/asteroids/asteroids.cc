@@ -250,45 +250,6 @@ bool Initialize() {
   return true;
 }
 
-void ProcessClientInput() {
-  auto& opengl = GlobalOpenGL();
-  auto& components = GlobalGameState().components;
-  glfwPollEvents();
-  components.Enumerate<InputComponent, PhysicsComponent,
-                       component::TransformComponent>(
-      [&](ecs::Entity ent, InputComponent& input,
-          PhysicsComponent& physics,
-          component::TransformComponent& transform) {
-    // Apply rotation. 
-    int state = glfwGetKey(opengl.glfw_window, GLFW_KEY_A);
-    if (state == GLFW_PRESS) {
-      input.a_pressed = true;
-    }
-    state = glfwGetKey(opengl.glfw_window, GLFW_KEY_D);
-    if (state == GLFW_PRESS) {
-      input.d_pressed = true;
-    }
-    // Set acceleration to facing direction times acceleration_speed.
-    auto u = transform.orientation.Up();
-    state = glfwGetKey(opengl.glfw_window, GLFW_KEY_W);
-    physics.acceleration = math::Vec3f(0.f, 0.f, 0.f);
-    if (state == GLFW_PRESS) {
-      physics.acceleration = u * physics.acceleration_speed;
-    }
-    state = glfwGetKey(opengl.glfw_window, GLFW_KEY_S);
-    if (state == GLFW_PRESS) {
-      physics.acceleration = u * -physics.acceleration_speed;
-    }
-    state = glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE);
-    // If the current state of space was release and the previous
-    // was pressed then set the ship to fire.
-    if (state == GLFW_RELEASE && input.space_state == GLFW_PRESS) {
-      input.shoot_projectile = true;
-    }
-    input.space_state = state;
-  });
-}
-
 void UpdateGame() {
   auto& components = GlobalGameState().components;
   std::set<ecs::Entity> asteroids_to_kill;
@@ -350,12 +311,16 @@ void UpdateGame() {
 
   // Provide ship control to the entity with Input (the player.)
   components.Enumerate<PhysicsComponent, component::TransformComponent,
-                       InputComponent>(
+                       component::InputComponent>(
       [](ecs::Entity ent, PhysicsComponent& physics,
-                 component::TransformComponent& transform,
-                 InputComponent& input) {
+         component::TransformComponent& transform,
+         component::InputComponent& input) {
     UpdatePhysics(physics);
-    if (input.shoot_projectile) {
+    // TODO: Make sure this doesn't happen too often???
+    if (component::IsKeyDown(
+          input.previous_input_mask, component::KEYBOARD_SPACE) &&
+        component::IsKeyUp(
+          input.input_mask, component::KEYBOARD_SPACE)) {
       asteroids::CreateProjectile create_projectile(
           GenerateFreeEntity(),
           asteroids::Transform(
@@ -370,15 +335,24 @@ void UpdateGame() {
                                transform.prev_position.y(),
                                transform.prev_position.z())));
       commands::Execute(create_projectile);
-      input.shoot_projectile = false;
     }
-    if (input.a_pressed) {
+    if (component::IsKeyDown(
+        input.input_mask, component::KEYBOARD_A)) {
       transform.orientation.Rotate(-kRotationSpeed);
-      input.a_pressed = false;
     }
-    if (input.d_pressed) {
+    if (component::IsKeyDown(
+        input.input_mask, component::KEYBOARD_D)) {
       transform.orientation.Rotate(kRotationSpeed);
-      input.d_pressed = false;
+    }
+    auto u = transform.orientation.Up();
+    physics.acceleration = math::Vec3f(0.f, 0.f, 0.f);
+    if (component::IsKeyDown(
+        input.input_mask, component::KEYBOARD_W)) {
+      physics.acceleration = u * physics.acceleration_speed;
+    }
+    if (component::IsKeyDown(
+        input.input_mask, component::KEYBOARD_S)) {
+      physics.acceleration = u * -physics.acceleration_speed;
     }
   });
 

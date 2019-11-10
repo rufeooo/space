@@ -4,6 +4,7 @@
 
 #include "asteroids.h"
 #include "asteroids_state.h"
+#include "components/common/input_component.h"
 #include "components/network/server_authoritative_component.h"
 
 namespace asteroids {
@@ -51,7 +52,7 @@ void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
       GlobalOpenGLGameReferences().ship_vao_reference,
       GlobalOpenGLGameReferences().program_reference,
       GlobalEntityGeometry().ship_geometry.size());
-  components.Assign<asteroids::InputComponent>(
+  components.Assign<component::InputComponent>(
       create_player.entity_id());
   std::cout << "Created player: " << create_player.entity_id() << std::endl;
   if (connection->is_client && !is_remote) {
@@ -79,7 +80,7 @@ void Execute(asteroids::DeletePlayer& delete_player, bool is_remote) {
       delete_player.entity_id());
   components.Remove<component::RenderingComponent>(
       delete_player.entity_id());
-  components.Remove<asteroids::InputComponent>(
+  components.Remove<component::InputComponent>(
       delete_player.entity_id());
   std::cout << "Delete player: " << delete_player.entity_id() << std::endl;
 }
