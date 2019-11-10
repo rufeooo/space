@@ -277,11 +277,7 @@ void UpdateGame() {
   });
 
   for (const auto& e : projectiles_to_kill) {
-    components.Remove<component::TransformComponent>(e);
-    components.Remove<PhysicsComponent>(e);
-    components.Remove<PolygonShape>(e);
-    components.Remove<component::RenderingComponent>(e);
-    components.Remove<TTLComponent>(e);
+    components.Delete(e);
     for (int i = 0;
          i < GlobalGameState().projectile_entities.size(); ++i) {
       auto& projectile_data = GlobalGameState().projectile_entities[i];
@@ -294,13 +290,7 @@ void UpdateGame() {
   }
 
   for (const auto& e : asteroids_to_kill) {
-    components.Remove<component::TransformComponent>(e);
-    components.Remove<PhysicsComponent>(e);
-    components.Remove<PolygonShape>(e);
-    components.Remove<component::RenderingComponent>(e);
-    components.Remove<RandomNumberIntChoiceComponent>(e);
-    components.Remove<component::ServerAuthoratativeComponent<
-        component::TransformComponent>>(e);
+    components.Delete(e);
     for (int i = 0;
          i < GlobalGameState().asteroid_entities.size(); ++i) {
       auto& asteroid_data = GlobalGameState().asteroid_entities[i];

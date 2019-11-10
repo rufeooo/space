@@ -18,14 +18,14 @@ void Execute(uint8_t* command_bytes) {
   if (command->create_player()) {
     Execute(*command->mutable_create_player(), true);
   }
-  if (command->delete_player()) {
-    Execute(*command->mutable_delete_player(), true);
-  }
   if (command->create_projectile()) {
     Execute(*command->mutable_create_projectile(), true);
   }
   if (command->create_asteroid()) {
     Execute(*command->mutable_create_asteroid(), true);
+  }
+  if (command->delete_entity()) {
+    Execute(*command->mutable_delete_entity(), true);
   }
   if (command->update_transform()) {
     Execute(*command->mutable_update_transform(), true);
@@ -38,13 +38,6 @@ void Execute(uint8_t* command_bytes) {
 }
 
 void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
-  auto& singleton_components = GlobalGameState().singleton_components;
-  ConnectionComponent* connection =
-    singleton_components.Get<ConnectionComponent>();
-  uint64_t original_entity = create_player.entity_id();
-  if (is_remote && connection->is_server) {
-    create_player.mutate_entity_id(GenerateFreeEntity());
-  }
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id());
   components.Assign<PolygonShape>(
@@ -61,38 +54,7 @@ void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
   components.Assign<component::ClientAuthoratativeComponent<
       component::InputComponent>>(create_player.entity_id());
   std::cout << "Created player: " << create_player.entity_id() << std::endl;
-  if (connection->is_client && !is_remote) {
-    flatbuffers::FlatBufferBuilder fbb;
-    auto create_command =
-        asteroids::CreateCommand(fbb, 0, &create_player);
-    fbb.Finish(create_command);
-    connection->outgoing_message_queue.Enqueue(fbb.Release());
-  } else if (connection->is_server) {
-    flatbuffers::FlatBufferBuilder fbb;
-    auto delete_player = asteroids::DeletePlayer(original_entity);
-    auto delete_and_create_command =
-        asteroids::CreateCommand(fbb, 0, &create_player,
-                                 &delete_player);
-    fbb.Finish(delete_and_create_command);
-    connection->outgoing_message_queue.Enqueue(fbb.Release());
-  }
 }
-
-void Execute(asteroids::DeletePlayer& delete_player, bool is_remote) {
-  auto& components = GlobalGameState().components;
-  components.Remove<PhysicsComponent>(delete_player.entity_id());
-  components.Remove<PolygonShape>(delete_player.entity_id());
-  components.Remove<component::TransformComponent>(
-      delete_player.entity_id());
-  components.Remove<component::RenderingComponent>(
-      delete_player.entity_id());
-  components.Remove<component::InputComponent>(
-      delete_player.entity_id());
-  components.Remove<component::ClientAuthoratativeComponent<
-      component::InputComponent>>(delete_player.entity_id());
-  std::cout << "Delete player: " << delete_player.entity_id() << std::endl;
-}
-
 
 void Execute(asteroids::CreateProjectile& create_projectile,
              bool is_remote) {
@@ -186,21 +148,14 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
   create_command.mutate_random_number(random_number);
   GlobalGameState().asteroid_entities.push_back(
       {create_asteroid.entity_id(), create_command});
-  auto& singleton_components = GlobalGameState().singleton_components;
-  ConnectionComponent* connection =
-    singleton_components.Get<ConnectionComponent>();
-  if (connection->is_server || connection->is_client) {
-    components.Assign<component::ServerAuthoratativeComponent<
-        component::TransformComponent>>(create_asteroid.entity_id());
-  }
-  if (connection->is_server) {
-    flatbuffers::FlatBufferBuilder fbb;
-    auto create_command =
-        asteroids::CreateCommand(fbb, 0, 0, 0, 0, &create_asteroid);
-    fbb.Finish(create_command);
-    connection->outgoing_message_queue.Enqueue(fbb.Release());
-  }
 }
+
+void Execute(asteroids::DeleteEntity& delete_entity,
+             bool is_remote) {
+  auto& components = GlobalGameState().components;
+  components.Delete(delete_entity.entity_id());
+}
+
 
 void Execute(asteroids::UpdateTransform& update_transform,
              bool is_remote) {

@@ -29,10 +29,6 @@ struct CreatePlayer {
   position:Vec3; 
 }
 
-struct DeletePlayer {
-  entity_id:uint64;
-}
-
 struct CreateProjectile {
   entity_id:uint64;
   transform:Transform;
@@ -56,16 +52,20 @@ struct UpdateInput {
   input:Input;
 }
 
+struct DeleteEntity {
+  entity_id:uint64;
+}
+
 struct Acknowledge {
-  success:bool;
+  command_id:uint16;
 }
 
 table Command {
   command_id:uint16;
   create_player:CreatePlayer;
-  delete_player:DeletePlayer;
   create_projectile:CreateProjectile;
   create_asteroid:CreateAsteroid; 
+  delete_entity:DeleteEntity;
   update_transform:UpdateTransform;
   update_input:UpdateInput;
   acknowledge:Acknowledge;
