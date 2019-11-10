@@ -96,8 +96,7 @@ bool RunServerLoop(char* read_buffer, char* address_buffer,
     }
     memset(&address_buffer[0], 0, kAddressSize);
     getnameinfo((struct sockaddr*)&client_address, client_len,
-                address_buffer, kAddressSize, 0, 0,
-                NI_NUMERICHOST);
+                address_buffer, kAddressSize, 0, 0, NI_NUMERICHOST);
     int id = GetClientId(address_buffer);
     if (id == -1) {
       // Save off client connections? When do we remove from this

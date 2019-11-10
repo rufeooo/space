@@ -41,15 +41,15 @@ void ProcessOutgoingCommands() {
   components.Enumerate<component::ClientAuthoratativeComponent<
       component::InputComponent>>([&](
           ecs::Entity entity, component::ClientAuthoratativeComponent<
-            component::InputComponent>){
+              component::InputComponent>){
     auto* input_component =
         components.Get<component::InputComponent>(entity);
     assert(input_component != nullptr);
     // TODO: Make automatic conversions for some of these things...
     flatbuffers::FlatBufferBuilder fbb;
     asteroids::UpdateInput update_input(
-       entity,
-       asteroids::Input(input_component->input_mask,
+        entity,
+        asteroids::Input(input_component->input_mask,
                         input_component->previous_input_mask));
     auto create_command =
         asteroids::CreateCommand(fbb, 0, 0, 0, 0, 0, 0, &update_input);
