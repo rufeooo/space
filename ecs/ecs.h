@@ -6,6 +6,9 @@
 #include <algorithm>
 #include <tuple>
 #include <iostream>
+#include <unordered_map>
+#include <functional>
+#include <vector>
 
 #include "entity.h"
 #include "internal.h"
@@ -92,6 +95,10 @@ class ComponentStorage {
     } else {
       auto inserted = components.insert(
           found, {entity, T(std::forward<Args>(args)...)});
+      // Store deletion necessary when cleaning up this entity.
+      deletion_[entity].push_back([this, entity]() {
+        Remove<T>(entity);
+      });
       return &inserted->second;
     }
   }
@@ -145,10 +152,6 @@ class ComponentStorage {
   //
   // Clear<Foo>()
   // Will remove all components of type Foo.
-  //
-  // TODO: It would be helpful, primarily for testing, to be able to 
-  // remove all components from every component lists. I'm not sure that
-  // is possible though.
   template <typename T>
   void Clear() {
     auto& components = std::get<std::vector<std::pair<Entity, T>>>(
@@ -156,9 +159,22 @@ class ComponentStorage {
     components.clear(); 
   }
 
+  // Removes all components from every component list given the entity.
+  void Delete(ecs::Entity entity) {
+    auto found = deletion_.find(entity);
+    if (found == deletion_.end()) return;
+    for (auto& delete_func : found->second) {
+      delete_func();
+    }
+    deletion_.erase(found);
+  }
+
  private:
   std::tuple<std::vector<std::pair<Entity, COMPONENTS>>...>
       components_;
+  std::unordered_map<ecs::Entity, std::vector<std::function<void()>>>
+      deletion_;
+
 };
 
 template <typename... COMPONENTS>

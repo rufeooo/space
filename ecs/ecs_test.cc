@@ -169,8 +169,7 @@ TEST_CASE("Sorted insertion and Enumerate", "[ecs]") {
     REQUIRE(i == 10000);
   }
 }
-// TODO: Add sorted Assign and then enumeration this will NOT work
-// currently but will work when the lists remain sorted.
+
 TEST_CASE("Unsorted insertion and Enumerate", "[ecs]") {
   ecs::ComponentStorage<PositionComponent, VelocityComponent> storage;
   storage.Assign<PositionComponent>(3, 1, 2);
@@ -213,4 +212,28 @@ TEST_CASE("Mutating components during Enumerate", "[ecs]") {
   storage.Enumerate<Component>([&](ecs::Entity /*e*/, Component& comp) {
     REQUIRE(comp.n_ == i++);
   });
+}
+
+TEST_CASE("Delete Entity", "[ecs]") {
+  ecs::ComponentStorage<PositionComponent, VelocityComponent> storage;
+  storage.Assign<PositionComponent>(3, 1, 2);
+  storage.Assign<PositionComponent>(1, 5, 7);
+  storage.Assign<VelocityComponent>(1, 5.0f, 15.0f);
+  storage.Assign<PositionComponent>(2, 15, 20);
+  storage.Assign<VelocityComponent>(2, 15.0f, 45.0f);
+  storage.Assign<PositionComponent>(7, 20, 30);
+  storage.Assign<VelocityComponent>(7, 5.0f, 0.0f);
+  storage.Assign<PositionComponent>(4, 3, 4);
+  storage.Assign<VelocityComponent>(4, 1.0f, 3.0f);
+
+  storage.Delete(2);
+  std::vector<ecs::Entity> entities;
+  storage.Enumerate<PositionComponent, VelocityComponent>([&]
+      (ecs::Entity e,
+       PositionComponent& /*position*/,
+       VelocityComponent& /*velocity*/) {
+    entities.push_back(e);
+  });
+  REQUIRE(entities ==
+      std::vector<ecs::Entity>({1, 4, 7}));
 }
