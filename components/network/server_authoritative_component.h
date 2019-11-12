@@ -4,7 +4,7 @@
 
 namespace component {
 
-struct ServerAuthoratativeComponent {
+struct ServerAuthoritativeComponent {
   std::vector<int> typeids;
 };
 

@@ -45,7 +45,7 @@ void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<component::InputComponent>(
       create_player.entity_id());
-  components.Assign<component::ClientAuthoratativeComponent>(
+  components.Assign<component::ClientAuthoritativeComponent>(
       create_player.entity_id());
   std::cout << "Created player: " << create_player.entity_id() << std::endl;
 }
