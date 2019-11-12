@@ -84,10 +84,8 @@ struct GameState {
     component::TransformComponent, component::InputComponent,
     GameStateComponent, component::RenderingComponent, TTLComponent,
     RandomNumberIntChoiceComponent,
-    component::ServerAuthoratativeComponent<
-        component::TransformComponent>,
-    component::ClientAuthoratativeComponent<
-        component::InputComponent>> components;
+    component::ServerAuthoratativeComponent,
+    component::ClientAuthoratativeComponent> components;
   ecs::SingletonComponentStorage<ConnectionComponent>
     singleton_components; 
 };

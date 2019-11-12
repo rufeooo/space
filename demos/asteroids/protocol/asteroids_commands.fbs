@@ -42,14 +42,8 @@ struct CreateAsteroid {
   random_number:int;
 }
 
-struct UpdateTransform {
+struct CreateClientEntity {
   entity_id:uint64;
-  transform:Transform;
-}
-
-struct UpdateInput {
-  entity_id:uint64;
-  input:Input;
 }
 
 struct DeleteEntity {
@@ -66,8 +60,6 @@ table Command {
   create_projectile:CreateProjectile;
   create_asteroid:CreateAsteroid; 
   delete_entity:DeleteEntity;
-  update_transform:UpdateTransform;
-  update_input:UpdateInput;
   acknowledge:Acknowledge;
 }
 

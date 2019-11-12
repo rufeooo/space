@@ -16,75 +16,6 @@ DEFINE_string(port, "9845", "Port for this application.");
 DEFINE_bool(headless, true, "Set to false to render game. Should be "
                             "used for debug only");
 
-void ProcessIncomingCommands() {
-  // Execute all commands received from clients.
-  auto* connection_component =
-      asteroids::GlobalGameState().singleton_components
-          .Get<asteroids::ConnectionComponent>();
-  network::Message msg =
-      connection_component->incoming_message_queue.Dequeue();
-  while (msg.size != 0) {
-    asteroids::commands::Execute(msg.data);
-    msg = connection_component->incoming_message_queue.Dequeue();
-  }
-}
-
-void ProcessOutgoingCommands() {
-  auto& components = asteroids::GlobalGameState().components;
-  auto* connection_component =
-      asteroids::GlobalGameState().singleton_components
-          .Get<asteroids::ConnectionComponent>();
-  components.Enumerate<component::ServerAuthoratativeComponent<
-      component::TransformComponent>>([&](
-          ecs::Entity entity, component::ServerAuthoratativeComponent<
-            component::TransformComponent>){
-    auto* transform_component =
-        components.Get<component::TransformComponent>(entity);
-    assert(transform_component != nullptr);
-    // TODO: Make automatic conversions for some of these things...
-    flatbuffers::FlatBufferBuilder fbb;
-    auto& p = transform_component->position;
-    auto& pp = transform_component->prev_position;
-    auto& o = transform_component->orientation;
-    asteroids::UpdateTransform update_transform(
-       entity, asteroids::Transform(
-         asteroids::Vec3(p.x(), p.y(), p.z()),
-         asteroids::Vec4(o.x(), o.y(), o.z(), o.w()),
-         asteroids::Vec3(pp.x(), pp.y(), pp.z())));
-    auto create_command =
-        asteroids::CreateCommand(fbb, 0, 0, 0, 0, 0,
-                                 &update_transform);
-    fbb.Finish(create_command);
-    connection_component->outgoing_message_queue.Enqueue(
-        fbb.Release());
-  });
-}
-
-void SendRecepientFullGameState(
-    asteroids::ConnectionComponent* connection, int client_id) {
-  // Get all asteroid creation commands and send them
-  for (const auto& asteroid :
-       asteroids::GlobalGameState().asteroid_entities) {
-    flatbuffers::FlatBufferBuilder fbb;
-    auto command = asteroids::CreateCommand(
-        fbb, 0, 0, 0, 0, &asteroid.create_asteroid);
-    fbb.Finish(command);
-    connection->outgoing_message_queue.Enqueue(fbb.Release());
-  }
-}
-
-void ProcessNewRecipientConnections() {
-  auto* connection_component =
-      asteroids::GlobalGameState().singleton_components
-          .Get<asteroids::ConnectionComponent>();
-  auto new_recipients =
-      connection_component->outgoing_message_queue.NewRecipients();
-  // Send the new clients all the relevant state from the server.
-  for (auto recepient : new_recipients) {
-    SendRecepientFullGameState(connection_component, recepient);
-  }
-}
-
 class AsteroidsServer : public game::Game {
  public:
   AsteroidsServer() : game::Game() {};
@@ -110,9 +41,6 @@ class AsteroidsServer : public game::Game {
 
   bool ProcessInput() override {
     glfwPollEvents();
-    ProcessIncomingCommands();
-    ProcessNewRecipientConnections();
-    ProcessOutgoingCommands();
     return true;
   }
 

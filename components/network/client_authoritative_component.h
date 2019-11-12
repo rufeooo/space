@@ -1,8 +1,11 @@
 #pragma once
 
+#include <vector>
+
 namespace component {
 
-template <class T>
-struct ClientAuthoratativeComponent {};
+struct ClientAuthoratativeComponent {
+  std::vector<int> typeids;
+};
 
 }

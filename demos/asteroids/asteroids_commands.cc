@@ -27,12 +27,6 @@ void Execute(uint8_t* command_bytes) {
   if (command->delete_entity()) {
     Execute(*command->mutable_delete_entity(), true);
   }
-  if (command->update_transform()) {
-    Execute(*command->mutable_update_transform(), true);
-  }
-  if (command->update_input()) {
-    Execute(*command->mutable_update_input(), true);
-  }
   if (command->acknowledge()) {
   }
 }
@@ -51,8 +45,8 @@ void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<component::InputComponent>(
       create_player.entity_id());
-  components.Assign<component::ClientAuthoratativeComponent<
-      component::InputComponent>>(create_player.entity_id());
+  components.Assign<component::ClientAuthoratativeComponent>(
+      create_player.entity_id());
   std::cout << "Created player: " << create_player.entity_id() << std::endl;
 }
 
@@ -154,42 +148,6 @@ void Execute(asteroids::DeleteEntity& delete_entity,
              bool is_remote) {
   auto& components = GlobalGameState().components;
   components.Delete(delete_entity.entity_id());
-}
-
-
-void Execute(asteroids::UpdateTransform& update_transform,
-             bool is_remote) {
-  component::TransformComponent transform;
-  transform.position =
-      math::Vec3f(update_transform.transform().position().x(),
-                  update_transform.transform().position().y(),
-                  update_transform.transform().position().z());
-  transform.orientation =
-      math::Quatf(update_transform.transform().orientation().x(),
-                  update_transform.transform().orientation().y(),
-                  update_transform.transform().orientation().z(),
-                  update_transform.transform().orientation().w());
-  transform.prev_position =
-      math::Vec3f(update_transform.transform().prev_position().x(),
-                  update_transform.transform().prev_position().y(),
-                  update_transform.transform().prev_position().z());
-  auto& components = GlobalGameState().components;
-  auto* transform_component =
-      components.Get<component::TransformComponent>(
-          update_transform.entity_id());
-  if (transform_component) *transform_component = transform;
-}
-
-void Execute(asteroids::UpdateInput& update_input, bool is_remote) {
-  component::InputComponent input;
-  input.input_mask = update_input.input().input_mask();
-  input.previous_input_mask =
-      update_input.input().previous_input_mask();
-  auto& components = GlobalGameState().components;
-  auto* input_component =
-      components.Get<component::InputComponent>(
-          update_input.entity_id());
-  if (input_component) *input_component = input;
 }
 
 }
