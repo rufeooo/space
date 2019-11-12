@@ -48,6 +48,10 @@ class EntityReplication {
   // there was a delta to poll.
   bool PollDeltas(EntitySystemDelta* delta);
 
+  // Apply the delta to existing state. This will add and remove
+  // entities to the client list.
+  void ApplyDelta(const EntitySystemDelta& delta);
+
  private:
   // The authority entity list is the entity list that should be
   // replicated to all clients.

@@ -45,6 +45,11 @@ TEST(EntityReplication, EntityReplicationHappyPath) {
   AssertRemoveContainsEntities({4, 5}, delta);
   AssertAddContainsEntities({1, 3}, delta);
   ASSERT_FALSE(replication.PollDeltas(&delta));
+  // Apply the delta.
+  replication.ApplyDelta(delta);
+  // Now running replication should produce no deltas.
+  replication.Run();
+  ASSERT_FALSE(replication.PollDeltas(&delta));
 }
 
 // Authority: 1 2 3

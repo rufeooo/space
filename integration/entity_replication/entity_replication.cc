@@ -73,5 +73,16 @@ bool EntityReplication::PollDeltas(EntitySystemDelta* delta) {
   return true;
 }
 
+void EntityReplication::ApplyDelta(const EntitySystemDelta& delta) {
+  assert(delta.client_id != -1);
+  auto found = client_entities_.find(delta.client_id);
+  if (found == client_entities_.end()) return;
+  for (const auto& entity : delta.remove) {
+    found->second.erase(entity);
+  }
+  for (const auto& entity : delta.add) {
+    found->second.insert(entity.first);
+  }
+}
 
 }
