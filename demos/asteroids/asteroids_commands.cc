@@ -3,10 +3,12 @@
 #include <random>
 
 #include "asteroids.h"
+#include "asteroids_serialize.h"
 #include "asteroids_state.h"
 #include "components/common/input_component.h"
 #include "components/network/client_authoritative_component.h"
 #include "components/network/server_authoritative_component.h"
+#include "integration/entity_replication/entity_replication_server.h"
 
 namespace asteroids {
 
@@ -47,12 +49,12 @@ void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
       create_player.entity_id());
   components.Assign<component::ClientAuthoritativeComponent>(
       create_player.entity_id());
-  std::cout << "Created player: " << create_player.entity_id() << std::endl;
+  integration::entity_replication::CreateEntity(
+      create_player.entity_id(), Serialize(create_player));
 }
 
 void Execute(asteroids::CreateProjectile& create_projectile,
              bool is_remote) {
-  std::cout << "Spawn projectile: " << create_projectile.entity_id() << std::endl;
   auto& components = GlobalGameState().components;
   component::TransformComponent transform;
   transform.position =
@@ -84,6 +86,8 @@ void Execute(asteroids::CreateProjectile& create_projectile,
       GlobalEntityGeometry().projectile_geometry.size());
   GlobalGameState().projectile_entities.push_back(
       {create_projectile.entity_id(), create_projectile});
+  integration::entity_replication::CreateEntity(
+      create_projectile.entity_id(), Serialize(create_projectile));
 }
 
 void Execute(asteroids::CreateAsteroid& create_asteroid,
@@ -93,7 +97,6 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
                   create_asteroid.direction().y(),
                   create_asteroid.direction().z());
   dir.Normalize();
-  std::cout << "CreateAsteroid: " << create_asteroid.entity_id() << std::endl;
   components.Assign<component::TransformComponent>(
       create_asteroid.entity_id());
   auto* transform = components.Get<component::TransformComponent>(
@@ -142,12 +145,16 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
   create_command.mutate_random_number(random_number);
   GlobalGameState().asteroid_entities.push_back(
       {create_asteroid.entity_id(), create_command});
+  integration::entity_replication::CreateEntity(
+      create_asteroid.entity_id(), Serialize(create_asteroid));
 }
 
 void Execute(asteroids::DeleteEntity& delete_entity,
              bool is_remote) {
   auto& components = GlobalGameState().components;
   components.Delete(delete_entity.entity_id());
+  integration::entity_replication::RemoveEntity(
+      delete_entity.entity_id());
 }
 
 }

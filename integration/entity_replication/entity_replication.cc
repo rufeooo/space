@@ -40,8 +40,8 @@ void EntityReplication::Run() {
 }
 
 void EntityReplication::AddEntityAuthority(
-    ecs::Entity entity, std::vector<uint8_t>&& data) {
-  authority_entities_[entity] = data;
+    ecs::Entity entity, std::vector<uint8_t>&& command_data) {
+  authority_entities_[entity] = command_data;
 }
 
 void EntityReplication::RemoveEntityAuthority(ecs::Entity entity) {

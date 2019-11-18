@@ -6,6 +6,7 @@
 #include "asteroids.h"
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
+#include "integration/entity_replication/entity_replication_server.h"
 #include "network/server.h"
 #include "network/message_queue.h"
 #include "protocol/asteroids_commands_generated.h"
@@ -21,14 +22,9 @@ class AsteroidsServer : public game::Game {
   AsteroidsServer() : game::Game() {};
   bool Initialize() override {
     assert(!FLAGS_port.empty());
-    auto* connection_component =
-        asteroids::GlobalGameState().singleton_components
-            .Get<asteroids::ConnectionComponent>();
-    connection_component->network_thread = network::server::Create(
-        FLAGS_port.c_str(),
-        &connection_component->outgoing_message_queue,
-        &connection_component->incoming_message_queue);
-    connection_component->is_server = true;
+    integration::entity_replication::Start(
+        integration::entity_replication::ReplicationType::SERVER,
+        FLAGS_port.c_str());
     if (!asteroids::Initialize()) {
       std::cout << "Failed to initialize asteroids." << std::endl;
       return false;
@@ -54,13 +50,7 @@ class AsteroidsServer : public game::Game {
   }
 
   void OnGameEnd() override {
-    auto* connection_component =
-        asteroids::GlobalGameState().singleton_components
-            .Get<asteroids::ConnectionComponent>();
-    if (connection_component->network_thread.joinable()) {
-      connection_component->incoming_message_queue.Stop();
-      connection_component->network_thread.join();
-    }
+    integration::entity_replication::Stop();
   }
 };
 

@@ -33,9 +33,10 @@ class EntityReplication {
  public:
   // Calculate all deltas and store the result in deltas_.
   void Run();
-  // Add entity to authority list with arbitrary byte stream, this
-  // is likely the packet used to create the entity.
-  void AddEntityAuthority(ecs::Entity, std::vector<uint8_t>&& data);
+  // Add entity to authority list with arbitrary byte stream used to
+  // create the entity.
+  void AddEntityAuthority(ecs::Entity, std::vector<uint8_t>&&
+      command_data);
   // Drop the authorities entity.
   void RemoveEntityAuthority(ecs::Entity);
 

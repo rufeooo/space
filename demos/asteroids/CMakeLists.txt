@@ -6,6 +6,7 @@ build_flatbuffers(
 add_library(asteroids_lib "asteroids.h" "asteroids.cc"
             "asteroids_commands.h" "asteroids_commands.cc"
             "asteroids_state.h" "asteroids_state.cc"
+            "asteroids_serialize.h" "asteroids_serialize.cc"
             "asteroids_components.h")
 add_executable(asteroids_client "asteroids_client.cc")
 add_executable(asteroids_server "asteroids_server.cc")
@@ -14,7 +15,7 @@ target_link_libraries(asteroids_lib glfw_renderer math_lib flatbuffers)
 target_link_libraries(asteroids_client asteroids_lib game_lib
                       glfw_renderer client gflags)
 target_link_libraries(asteroids_server asteroids_lib game_lib
-                      glfw_renderer server gflags)
+                      glfw_renderer server gflags entity_replication)
 
 add_dependencies(asteroids_lib asteroids_command_fbs)
 

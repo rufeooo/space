@@ -9,6 +9,7 @@ else (WIN32)
 endif (WIN32)
 
 include_directories(${CMAKE_SOURCE_DIR})
+include_directories(${CMAKE_SOURCE_DIR}/third_party/flatbuffers/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/googletest/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/googlemock/include)
 

@@ -53,11 +53,13 @@ SOCKET CreateAndBindSocket(struct addrinfo* bind_address) {
     fprintf(stderr, "socket() failed. (%d)\n", network::SocketErrno());
     return INVALID_SOCKET;
   }
+
   if (bind(socket_listen, bind_address->ai_addr,
            bind_address->ai_addrlen)) {
     fprintf(stderr, "bind() failed. (%d)\n", network::SocketErrno());
     return  INVALID_SOCKET;
   }
+
   return socket_listen;
 }
 
