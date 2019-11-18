@@ -94,15 +94,13 @@ void OnEnd() {
 
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  game::Setup(
-      &Initialize,
-      &ProcessInput,
-      &Update,
-      &Render,
-      &OnEnd);
+  game::Setup(&Initialize, &ProcessInput, &Update, &Render, &OnEnd);
 
+
+      
   if (!game::Run()) {
     std::cerr << "Encountered error running game..." << std::endl;
   }
+
   return 0;
 }
