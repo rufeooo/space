@@ -20,7 +20,37 @@ DEFINE_string(port, "9845", "Port for this application.");
 
 bool IsSinglePlayer() { return FLAGS_hostname.empty(); }
 
-void ProcessClientInput() {
+bool Initialize() {
+  // Clients entities start at max free entity and then decrement.
+  // These are largely ephemeral and will be deleted when the server
+  // replicates client created entities.
+  asteroids::SetEntityStart(ecs::ENTITY_LAST_FREE);
+  asteroids::SetEntityIncrement(-1);
+
+  // Add a single receipient for the server. Otherwise messages
+  // can not be added to the queue :(
+  //connection_component->outgoing_message_queue.AddRecipient(0);
+  if (!asteroids::Initialize()) {
+    std::cout << "Failed to initialize asteroids." << std::endl;
+    return false;
+  }
+
+  asteroids::CreatePlayer create_player(
+      asteroids::GenerateFreeEntity(),
+      asteroids::Vec3(0.f, 0.f, 0.f));
+  asteroids::commands::Execute(create_player);
+ 
+  if (IsSinglePlayer()) {
+    asteroids::GlobalGameState().components
+        .Assign<asteroids::GameStateComponent>(
+            asteroids::GenerateFreeEntity());
+  }
+
+  return true;
+}
+
+bool ProcessInput() {
+  glfwPollEvents();
   auto& opengl = asteroids::GlobalOpenGL();
   auto& components = asteroids::GlobalGameState().components;
   glfwPollEvents();
@@ -45,80 +75,34 @@ void ProcessClientInput() {
                             component::KEYBOARD_SPACE); 
     }
   });
+
+  return true;
 }
 
-class AsteroidsClient : public game::Game {
- public:
-  AsteroidsClient() : game::Game() {}
+bool Update() {
+  asteroids::UpdateGame();
+  return true;
+}
 
-  bool Initialize() override {
-    auto* connection_component =
-        asteroids::GlobalGameState().singleton_components
-            .Get<asteroids::ConnectionComponent>();
-    if (!FLAGS_hostname.empty()) {
-      connection_component->network_thread = network::client::Create(
-          FLAGS_hostname.c_str(), FLAGS_port.c_str(),
-          &connection_component->outgoing_message_queue,
-          &connection_component->incoming_message_queue);
-      connection_component->is_client = true;
-    }
+bool Render() {
+  return asteroids::RenderGame();
+}
 
-    // Clients entities start at max free entity and then decrement.
-    // These are largely ephemeral and will be deleted when the server
-    // replicates client created entities.
-    asteroids::SetEntityStart(ecs::ENTITY_LAST_FREE);
-    asteroids::SetEntityIncrement(-1);
-
-    // Add a single receipient for the server. Otherwise messages
-    // can not be added to the queue :(
-    connection_component->outgoing_message_queue.AddRecipient(0);
-    if (!asteroids::Initialize()) {
-      std::cout << "Failed to initialize asteroids." << std::endl;
-      return false;
-    }
-
-    asteroids::CreatePlayer create_player(
-        asteroids::GenerateFreeEntity(),
-        asteroids::Vec3(0.f, 0.f, 0.f));
-    asteroids::commands::Execute(create_player);
-   
-    if (IsSinglePlayer()) {
-      asteroids::GlobalGameState().components
-          .Assign<asteroids::GameStateComponent>(
-              asteroids::GenerateFreeEntity());
-    }
-  
-    return true;
-  }
-
-  bool ProcessInput() override {
-    ProcessClientInput();
-    return true;
-  }
-
-  bool Update() override {
-    asteroids::UpdateGame();
-    return true;
-  }
-
-  bool Render() override {
-    return asteroids::RenderGame();
-  }
-
-  void OnGameEnd() override {
-    auto* connection_component =
-      asteroids::GlobalGameState().singleton_components
-          .Get<asteroids::ConnectionComponent>();
-    if (connection_component->network_thread.joinable()) {
-      connection_component->outgoing_message_queue.Stop();
-      connection_component->network_thread.join();
-    }
-  }
-};
+void OnEnd() {
+  //integration::entity_replication::Stop();
+}
 
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  AsteroidsClient asteroids_client;
-  asteroids_client.Run();
+  game::Setup(
+      &Initialize,
+      &ProcessInput,
+      &Update,
+      &Render,
+      &OnEnd);
+
+  if (!game::Run()) {
+    std::cerr << "Encountered error running game..." << std::endl;
+  }
   return 0;
 }

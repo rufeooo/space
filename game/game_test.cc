@@ -3,20 +3,43 @@
 #include "gtest/gtest.h"
 #include "game.h"
 
+namespace {
+
+bool DumbInitialize() {
+  return true;
+}
+
+bool DumbProcessInput() {
+  return true;
+}
+
+bool DumbUpdate() {
+  return true;
+}
+
+bool DumbRender() {
+  return true;
+}
+
+void DumbEnd() {
+
+}
+
+}
+
 TEST(Game, HappyPathGameTest) {
-  class TestGame : public game::Game {
-   public:
-    bool ProcessInput() override { return true; }
-    bool Update() override { return true; }
-    bool Render() override { return true; }
-  };
+  game::Setup(
+      &DumbInitialize,
+      &DumbProcessInput,
+      &DumbUpdate,
+      &DumbRender,
+      &DumbEnd);
   uint64_t count = 500;
-  TestGame game;
-  game.Run(count);
-  ASSERT_EQ(game.game_updates(), count);
+  game::Run(count);
+  ASSERT_EQ(game::Updates(), count);
   // Total game time should be game updates * milliseconds_per_update.
   // 500 * 15 = 7500
-  ASSERT_EQ(game.game_time(), std::chrono::milliseconds(7500));
+  ASSERT_EQ(game::Time(), std::chrono::milliseconds(7500));
 }
 
 int main(int argc, char** argv) {
