@@ -1,7 +1,5 @@
 #include "game.h"
 
-#include <iostream>
-#include <unordered_map>
 #include <thread>
 
 #include "event_buffer.h"
@@ -11,25 +9,24 @@ namespace game {
 namespace {
 
 struct State {
-  // Run each game logic update with a delta_time of ms_per_update_.
-  std::chrono::milliseconds ms_per_update_ = 
+  // Run each game logic update with a delta_time of ms_per_update.
+  std::chrono::milliseconds ms_per_update = 
       std::chrono::milliseconds(15);
   // Run a frame every min_ms_per_frame if the time it takes to run
   // update / render  is under this value the system will sleep until
-  // it reaches min_ms_per_frame_. This is really just to save battery
+  // it reaches min_ms_per_frame. This is really just to save battery
   // on my laptop at the moment. I'm not really sure it's worth always
   // doing.
-  std::chrono::milliseconds min_ms_per_frame_ = 
+  std::chrono::milliseconds min_ms_per_frame = 
       std::chrono::milliseconds(15);
-  std::chrono::milliseconds game_time_;
-  std::chrono::milliseconds real_time_;
-  std::chrono::milliseconds ms_per_frame_;
-  bool paused_ = false;
-  bool end_ = false;
-  bool sleep_on_loop_end_ = true;
+  std::chrono::milliseconds game_time;
+  std::chrono::milliseconds real_time;
+  std::chrono::milliseconds ms_per_frame;
+  bool paused = false;
+  bool end = false;
+  bool sleep_on_loop_end = true;
   // Number of times the game has been updated.
-  uint64_t game_updates_ = 0;
-  uint64_t game_loops_ = 0;
+  uint64_t game_updates = 0;
 };
 
 static State kGameState;
@@ -55,14 +52,14 @@ void Setup(
     HandleEvent event_callback,
     Update update_callback,
     Render render_callback,
-    OnEnd end_callback) {
+    OnEnd endcallback) {
   // Reset game state.
   kGameState = State();
   _Initialize = init_callback;
   _ProcessInput = input_callback;
   _Update = update_callback;
   _Render = render_callback;
-  _OnEnd = end_callback;
+  _OnEnd = endcallback;
   // 2 kB event buffer.
   AllocateEventBuffer(2048);
 }
@@ -75,25 +72,25 @@ bool Run(uint64_t loop_count) {
   }
   auto previous = NowMS();
   std::chrono::milliseconds lag(0);
-  kGameState.game_updates_ = 0;
-  kGameState.game_time_ = std::chrono::milliseconds(0);
-  std::chrono::milliseconds current, elapsed, end_loop;
-  while (loop_count == 0 || kGameState.game_updates_ < loop_count) {
+  kGameState.game_updates = 0;
+  kGameState.game_time = std::chrono::milliseconds(0);
+  std::chrono::milliseconds current, elapsed, endloop;
+  while (loop_count == 0 || kGameState.game_updates < loop_count) {
 
-    if (kGameState.end_) {
+    if (kGameState.end) {
       _OnEnd();
       return true;
     }
 
     current = NowMS();
     elapsed = current - previous;
-    if (!kGameState.paused_) lag += elapsed;
+    if (!kGameState.paused) lag += elapsed;
 
     _ProcessInput();
-    kGameState.real_time_ += elapsed;
+    kGameState.real_time += elapsed;
 
-    while (!kGameState.paused_ &&
-           lag >= kGameState.ms_per_update_) {
+    while (!kGameState.paused &&
+           lag >= kGameState.ms_per_update) {
       // Dequeue and handle all events in event queue.
       Event event;
       while (PollEvent(&event)) {
@@ -107,9 +104,9 @@ bool Run(uint64_t loop_count) {
       // a fixed delta so no need to provide a delta time.
       _Update();
 
-      lag -= kGameState.ms_per_update_;
-      kGameState.game_time_ += kGameState.ms_per_update_;
-      ++kGameState.game_updates_;
+      lag -= kGameState.ms_per_update;
+      kGameState.game_time += kGameState.ms_per_update;
+      ++kGameState.game_updates;
     }
 
     if (!_Render()) {
@@ -117,41 +114,44 @@ bool Run(uint64_t loop_count) {
       return true; // Returns ??
     }
 
-    end_loop = NowMS();
+    endloop = NowMS();
     previous = current;
-    auto ms = end_loop - current;
+    auto ms = endloop - current;
 
-    // sleep s.t. we only do min_ms_per_frame_.
-    if (kGameState.sleep_on_loop_end_ &&
-        ms < kGameState.min_ms_per_frame_) {
-      auto sleep_time = kGameState.min_ms_per_frame_ - ms;
+    // sleep s.t. we only do min_ms_per_frame.
+    if (kGameState.sleep_on_loop_end &&
+        ms < kGameState.min_ms_per_frame) {
+      auto sleep_time = kGameState.min_ms_per_frame - ms;
       std::this_thread::sleep_for(sleep_time);
     }
 
-    kGameState.ms_per_frame_ = NowMS() - current;
+    kGameState.ms_per_frame = NowMS() - current;
   }
+
   _OnEnd();
+  DeallocateEventBuffer();
+
   return true;
 }
 
 void Pause() {
-  kGameState.paused_ = true;
+  kGameState.paused = true;
 }
 
 void Resume() {
-  kGameState.paused_ = false;
+  kGameState.paused = false;
 }
 
 void End() {
-  kGameState.end_ = true;
+  kGameState.end = true;
 }
 
 std::chrono::milliseconds Time() {
-  return kGameState.game_time_;
+  return kGameState.game_time;
 }
 
 int Updates() {
-  return kGameState.game_updates_;
+  return kGameState.game_updates;
 }
 
 }

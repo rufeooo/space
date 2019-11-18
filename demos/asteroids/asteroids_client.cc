@@ -79,6 +79,9 @@ bool ProcessInput() {
   return true;
 }
 
+void HandleEvent(game::Event event) {
+}
+
 bool Update() {
   asteroids::UpdateGame();
   return true;
@@ -94,10 +97,8 @@ void OnEnd() {
 
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  game::Setup(&Initialize, &ProcessInput, &Update, &Render, &OnEnd);
-
-
-      
+  game::Setup(&Initialize, &ProcessInput, &HandleEvent,
+              &Update, &Render, &OnEnd);
   if (!game::Run()) {
     std::cerr << "Encountered error running game..." << std::endl;
   }

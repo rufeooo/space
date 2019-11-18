@@ -14,7 +14,7 @@ typedef bool (*Initialize)(void);
 typedef bool (*ProcessInput)(void);
 
 // Function called when event queue is dequeued.
-typedef bool (*HandleEvent)(Event event);
+typedef void (*HandleEvent)(Event event);
 
 // Run N times for each game loop with fixed time step ms_per_update_.
 typedef bool (*Update)(void);
