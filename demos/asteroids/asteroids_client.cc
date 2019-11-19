@@ -3,17 +3,12 @@
 #include <gflags/gflags.h>
 
 #include "asteroids.h"
-#include "asteroids_commands.h"
 #include "asteroids_state.h"
 #include "components/common/transform_component.h"
 #include "components/common/input_component.h"
-#include "network/client.h"
-#include "network/message_queue.h"
-#include "protocol/asteroids_commands_generated.h"
+#include "ecs/internal.h"
 #include "game/event_buffer.h"
 #include "game/game.h"
-
-#include "ecs/internal.h"
 
 DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
