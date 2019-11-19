@@ -42,25 +42,6 @@ struct CreateAsteroid {
   random_number:int;
 }
 
-struct CreateClientEntity {
-  entity_id:uint64;
-}
-
 struct DeleteEntity {
   entity_id:uint64;
 }
-
-struct Acknowledge {
-  command_id:uint16;
-}
-
-table Command {
-  command_id:uint16;
-  create_player:CreatePlayer;
-  create_projectile:CreateProjectile;
-  create_asteroid:CreateAsteroid; 
-  delete_entity:DeleteEntity;
-  acknowledge:Acknowledge;
-}
-
-root_type Command;
