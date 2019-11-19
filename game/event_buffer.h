@@ -20,4 +20,12 @@ bool PollEvent(Event* event);
 // Memset all memory in the buffer to 0.
 void ResetEventBuffer();
 
+// Given a type and ID create an event. Typically ID is
+// some sort of enum that will later be used to determine type.
+template <class T, class ID>
+T* CreateEvent(ID event_id) {
+  T* e = (T*)EnqueueEvent(sizeof(T), (uint16_t)event_id);
+  return e;
+}
+
 }

@@ -3,7 +3,6 @@
 #include <random>
 
 #include "asteroids.h"
-#include "asteroids_serialize.h"
 #include "asteroids_state.h"
 #include "components/common/input_component.h"
 #include "components/network/client_authoritative_component.h"
@@ -14,26 +13,7 @@ namespace asteroids {
 
 namespace commands {
 
-void Execute(uint8_t* command_bytes) {
-  asteroids::Command* command =
-      asteroids::GetMutableCommand((void*)command_bytes);
-  if (command->create_player()) {
-    Execute(*command->mutable_create_player(), true);
-  }
-  if (command->create_projectile()) {
-    Execute(*command->mutable_create_projectile(), true);
-  }
-  if (command->create_asteroid()) {
-    Execute(*command->mutable_create_asteroid(), true);
-  }
-  if (command->delete_entity()) {
-    Execute(*command->mutable_delete_entity(), true);
-  }
-  if (command->acknowledge()) {
-  }
-}
-
-void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
+void Execute(asteroids::CreatePlayer& create_player) {
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id());
   components.Assign<PolygonShape>(
@@ -49,12 +29,9 @@ void Execute(asteroids::CreatePlayer& create_player, bool is_remote) {
       create_player.entity_id());
   components.Assign<component::ClientAuthoritativeComponent>(
       create_player.entity_id());
-  //integration::entity_replication::CreateEntity(
-  //    create_player.entity_id(), Serialize(create_player));
 }
 
-void Execute(asteroids::CreateProjectile& create_projectile,
-             bool is_remote) {
+void Execute(asteroids::CreateProjectile& create_projectile) {
   auto& components = GlobalGameState().components;
   component::TransformComponent transform;
   transform.position =
@@ -86,12 +63,9 @@ void Execute(asteroids::CreateProjectile& create_projectile,
       GlobalEntityGeometry().projectile_geometry.size());
   GlobalGameState().projectile_entities.push_back(
       {create_projectile.entity_id(), create_projectile});
-  //integration::entity_replication::CreateEntity(
-  //    create_projectile.entity_id(), Serialize(create_projectile));
 }
 
-void Execute(asteroids::CreateAsteroid& create_asteroid,
-             bool is_remote) {
+void Execute(asteroids::CreateAsteroid& create_asteroid) {
   auto& components = GlobalGameState().components;
   math::Vec3f dir(create_asteroid.direction().x(),
                   create_asteroid.direction().y(),
@@ -145,16 +119,11 @@ void Execute(asteroids::CreateAsteroid& create_asteroid,
   create_command.mutate_random_number(random_number);
   GlobalGameState().asteroid_entities.push_back(
       {create_asteroid.entity_id(), create_command});
-  //integration::entity_replication::CreateEntity(
-  //    create_asteroid.entity_id(), Serialize(create_asteroid));
 }
 
-void Execute(asteroids::DeleteEntity& delete_entity,
-             bool is_remote) {
+void Execute(asteroids::DeleteEntity& delete_entity) {
   auto& components = GlobalGameState().components;
   components.Delete(delete_entity.entity_id());
-  //integration::entity_replication::RemoveEntity(
-  //    delete_entity.entity_id());
 }
 
 }

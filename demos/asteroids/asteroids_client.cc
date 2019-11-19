@@ -1,3 +1,4 @@
+#include <cassert>
 #include <thread>
 #include <gflags/gflags.h>
 
@@ -9,6 +10,7 @@
 #include "network/client.h"
 #include "network/message_queue.h"
 #include "protocol/asteroids_commands_generated.h"
+#include "game/event_buffer.h"
 #include "game/game.h"
 
 #include "ecs/internal.h"
@@ -35,10 +37,9 @@ bool Initialize() {
     return false;
   }
 
-  asteroids::CreatePlayer create_player(
-      asteroids::GenerateFreeEntity(),
-      asteroids::Vec3(0.f, 0.f, 0.f));
-  asteroids::commands::Execute(create_player);
+  auto* create_player = game::CreateEvent<asteroids::CreatePlayer>(
+      asteroids::Event::CREATE_PLAYER);
+  create_player->mutate_entity_id(asteroids::GenerateFreeEntity());
  
   if (IsSinglePlayer()) {
     asteroids::GlobalGameState().components
@@ -53,7 +54,6 @@ bool ProcessInput() {
   glfwPollEvents();
   auto& opengl = asteroids::GlobalOpenGL();
   auto& components = asteroids::GlobalGameState().components;
-  glfwPollEvents();
   components.Enumerate<component::InputComponent>(
       [&opengl](ecs::Entity ent, component::InputComponent& input) {
     input.previous_input_mask = input.input_mask;
@@ -75,30 +75,19 @@ bool ProcessInput() {
                             component::KEYBOARD_SPACE); 
     }
   });
-
   return true;
-}
-
-void HandleEvent(game::Event event) {
-}
-
-bool Update() {
-  asteroids::UpdateGame();
-  return true;
-}
-
-bool Render() {
-  return asteroids::RenderGame();
 }
 
 void OnEnd() {
-  //integration::entity_replication::Stop();
 }
 
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  game::Setup(&Initialize, &ProcessInput, &HandleEvent,
-              &Update, &Render, &OnEnd);
+  game::Setup(&Initialize, &ProcessInput,
+              &asteroids::HandleEvent,
+              &asteroids::UpdateGame,
+              &asteroids::RenderGame,
+              &OnEnd);
   if (!game::Run()) {
     std::cerr << "Encountered error running game..." << std::endl;
   }

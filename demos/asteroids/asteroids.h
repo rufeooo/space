@@ -8,11 +8,18 @@
 #include "components/rendering/rendering_component.h"
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
+#include "game/event.h"
 #include "math/vec.h"
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
 namespace asteroids {
+
+enum class Event {
+  CREATE_PLAYER = 0,
+  CREATE_ASTEROID = 1,
+  CREATE_PROJECTILE = 2
+};
 
 //////// Ship Constants //////// 
 // Seconds until the ship reaches max speed.
@@ -45,9 +52,9 @@ static uint64_t kMaxAsteroidCount = 100;
 
 bool Initialize();
 
-void ProcessClientInput();
+void HandleEvent(game::Event event);
 
-void UpdateGame();
+bool UpdateGame();
 
 bool RenderGame();
 

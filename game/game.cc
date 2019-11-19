@@ -57,6 +57,7 @@ void Setup(
   kGameState = State();
   _Initialize = init_callback;
   _ProcessInput = input_callback;
+  _HandleEvent = event_callback;
   _Update = update_callback;
   _Render = render_callback;
   _OnEnd = endcallback;

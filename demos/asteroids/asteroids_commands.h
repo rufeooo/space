@@ -9,16 +9,10 @@ namespace asteroids {
 
 namespace commands {
 
-void Execute(uint8_t* command_bytes);
-
-void Execute(asteroids::CreatePlayer& create_player,
-             bool is_remote=false);
-void Execute(asteroids::CreateProjectile& create_projectile,
-             bool is_remote=false);
-void Execute(asteroids::CreateAsteroid& create_asteroid,
-             bool is_remote=false);
-void Execute(asteroids::DeleteEntity& delete_entity,
-             bool is_remote=false);
+void Execute(asteroids::CreatePlayer& create_player);
+void Execute(asteroids::CreateProjectile& create_projectile);
+void Execute(asteroids::CreateAsteroid& create_asteroid);
+void Execute(asteroids::DeleteEntity& delete_entity);
 
 }
 

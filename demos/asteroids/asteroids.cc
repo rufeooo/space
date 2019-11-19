@@ -7,6 +7,8 @@
 #include "asteroids_state.h"
 #include "components/network/server_authoritative_component.h"
 #include "ecs/ecs.h"
+#include "game/game.h"
+#include "game/event_buffer.h"
 #include "math/intersection.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
@@ -251,7 +253,23 @@ bool Initialize() {
   return true;
 }
 
-void UpdateGame() {
+void HandleEvent(game::Event event) {
+  switch ((Event)event.metadata) {
+    case Event::CREATE_PLAYER:
+      commands::Execute(*((CreatePlayer*)event.data));
+      break;
+    case Event::CREATE_ASTEROID:
+      commands::Execute(*((CreateAsteroid*)event.data));
+      break;
+    case Event::CREATE_PROJECTILE:
+      commands::Execute(*((CreateProjectile*)event.data));
+      break;
+    default:
+      assert("Event is unhandled.");
+  }
+}
+
+bool UpdateGame() {
   auto& components = GlobalGameState().components;
   std::set<ecs::Entity> asteroids_to_kill;
   std::set<ecs::Entity> projectiles_to_kill;
@@ -314,20 +332,23 @@ void UpdateGame() {
           input.previous_input_mask, component::KEYBOARD_SPACE) &&
         component::IsKeyUp(
           input.input_mask, component::KEYBOARD_SPACE)) {
-      asteroids::CreateProjectile create_projectile(
-          GenerateFreeEntity(),
-          asteroids::Transform(
-              asteroids::Vec3(transform.position.x(),
-                              transform.position.y(),
-                              transform.position.z()),
-              asteroids::Vec4(transform.orientation.x(),
-                              transform.orientation.y(),
-                              transform.orientation.z(),
-                              transform.orientation.w()),
-               asteroids::Vec3(transform.prev_position.x(),
-                               transform.prev_position.y(),
-                               transform.prev_position.z())));
-      commands::Execute(create_projectile);
+      auto* create_projectile = game::CreateEvent<asteroids::CreateProjectile>(
+          Event::CREATE_PROJECTILE);
+      create_projectile->mutate_entity_id(GenerateFreeEntity());
+      auto& projectile_transform = create_projectile->mutable_transform();
+      projectile_transform.mutable_position() =
+          asteroids::Vec3(transform.position.x(),
+                          transform.position.y(),
+                          transform.position.z());
+      projectile_transform.mutable_orientation() =
+          asteroids::Vec4(transform.orientation.x(),
+                          transform.orientation.y(),
+                          transform.orientation.z(),
+                          transform.orientation.w());
+      projectile_transform.mutable_prev_position() =
+           asteroids::Vec3(transform.prev_position.x(),
+                           transform.prev_position.y(),
+                           transform.prev_position.z());
     }
     if (component::IsKeyDown(
         input.input_mask, component::KEYBOARD_A)) {
@@ -418,16 +439,21 @@ void UpdateGame() {
       static std::mt19937 gen(rd());
       static std::uniform_real_distribution<>
           disr(-10000.0, 10000.0);
-      asteroids::CreateAsteroid create_asteroid(
-          GenerateFreeEntity(),
-          asteroids::Vec3(disr(gen), disr(gen), 0.f),
-          asteroids::Vec3(disr(gen), disr(gen), 0.f),
-          disr(gen), 0);
-      commands::Execute(create_asteroid);
+      auto* create_asteroid = game::CreateEvent<CreateAsteroid>(
+          Event::CREATE_ASTEROID);
+      create_asteroid->mutate_entity_id(GenerateFreeEntity());
+      create_asteroid->mutable_position() =
+          asteroids::Vec3(disr(gen), disr(gen), 0.f);
+      create_asteroid->mutable_direction() =
+          asteroids::Vec3(disr(gen), disr(gen), 0.f);
+      create_asteroid->mutate_angle(disr(gen));
+      create_asteroid->mutate_random_number(0);
       game_state.seconds_since_last_asteroid_spawn = 0.f;
       game_state.asteroid_count++;
     }
   });
+
+  return true;
 }
 
 bool RenderGame() {

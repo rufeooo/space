@@ -6,7 +6,6 @@ build_flatbuffers(
 add_library(asteroids_lib "asteroids.h" "asteroids.cc"
             "asteroids_commands.h" "asteroids_commands.cc"
             "asteroids_state.h" "asteroids_state.cc"
-            "asteroids_serialize.h" "asteroids_serialize.cc"
             "asteroids_components.h")
 add_executable(asteroids_client "asteroids_client.cc")
 add_executable(asteroids_server "asteroids_server.cc")
