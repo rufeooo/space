@@ -3,6 +3,7 @@
 #include <thread>
 
 #include "event_buffer.h"
+#include "platform/filesystem.h"
 
 namespace game {
 
@@ -63,6 +64,7 @@ void Setup(
   _OnEnd = endcallback;
   // 2 kB event buffer.
   AllocateEventBuffer(2048);
+  filesystem::MakeDirectory("_tmp");
 }
 
 // Runs the game.

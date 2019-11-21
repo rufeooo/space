@@ -1,6 +1,7 @@
 build/
 debug/
 logs/
+_tmp/
 
 EVENTS.bin
 *.swp

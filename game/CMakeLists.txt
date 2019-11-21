@@ -16,6 +16,7 @@ include_directories(${CMAKE_SOURCE_DIR}/third_party/googletest/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/googlemock/include)
 
 add_library(game_lib ${game_srcs})
+target_link_libraries(game_lib filesystem)
 
 add_executable(game_test ${game_test_srcs})
 target_link_libraries(game_test game_lib gtest)
