@@ -16,9 +16,6 @@
 [submodule "third_party/gflags"]
 	path = third_party/gflags
 	url = https://github.com/gflags/gflags.git
-[submodule "third_party/cppfs"]
-	path = third_party/cppfs
-	url = https://github.com/cginternals/cppfs.git
 [submodule "third_party/googletest"]
 	path = third_party/googletest
 	url = https://github.com/google/googletest.git
