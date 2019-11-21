@@ -2,5 +2,6 @@ build/
 debug/
 logs/
 
+EVENTS.bin
 *.swp
 *_generated.h

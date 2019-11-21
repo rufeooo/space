@@ -19,6 +19,15 @@ struct Transform {
   prev_position:Vec3;
 }
 
+enum Key : byte {
+  NONE  = 0,
+  W     = 1,
+  A     = 2,
+  S     = 4,
+  D     = 8,
+  SPACE = 16,
+}
+
 struct Input {
   input_mask:uint8;
   previous_input_mask:uint8;

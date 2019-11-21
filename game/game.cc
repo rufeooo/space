@@ -71,11 +71,13 @@ bool Run(uint64_t loop_count) {
     _OnEnd();
     return false;
   }
+
   auto previous = NowMS();
   std::chrono::milliseconds lag(0);
   kGameState.game_updates = 0;
   kGameState.game_time = std::chrono::milliseconds(0);
   std::chrono::milliseconds current, elapsed, endloop;
+  
   while (loop_count == 0 || kGameState.game_updates < loop_count) {
 
     if (kGameState.end) {

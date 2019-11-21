@@ -18,7 +18,8 @@ namespace asteroids {
 enum class Event {
   CREATE_PLAYER = 0,
   CREATE_ASTEROID = 1,
-  CREATE_PROJECTILE = 2
+  CREATE_PROJECTILE = 2,
+  PLAYER_INPUT = 3
 };
 
 //////// Ship Constants //////// 

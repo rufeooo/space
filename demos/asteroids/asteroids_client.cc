@@ -47,29 +47,39 @@ bool Initialize() {
 
 bool ProcessInput() {
   glfwPollEvents();
+  static asteroids::Input previous_player_input;
+  static asteroids::Input player_input;
+  previous_player_input = player_input;
   auto& opengl = asteroids::GlobalOpenGL();
-  auto& components = asteroids::GlobalGameState().components;
-  components.Enumerate<component::InputComponent>(
-      [&opengl](ecs::Entity ent, component::InputComponent& input) {
-    input.previous_input_mask = input.input_mask;
-    input.input_mask = 0;
-    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_W)) {
-      component::SetKeyDown(input.input_mask, component::KEYBOARD_W); 
-    }
-    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_A)) {
-      component::SetKeyDown(input.input_mask, component::KEYBOARD_A); 
-    }
-    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_S)) {
-      component::SetKeyDown(input.input_mask, component::KEYBOARD_S); 
-    }
-    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_D)) {
-      component::SetKeyDown(input.input_mask, component::KEYBOARD_D); 
-    }
-    if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
-      component::SetKeyDown(input.input_mask,
-                            component::KEYBOARD_SPACE); 
-    }
-  });
+  player_input.mutate_previous_input_mask(player_input.input_mask());
+  player_input.mutate_input_mask(0);
+  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_W)) {
+    player_input.mutate_input_mask(
+        player_input.input_mask() | asteroids::Key_W);
+  }
+  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_A)) {
+    player_input.mutate_input_mask(
+        player_input.input_mask() | asteroids::Key_A);
+  }
+  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_S)) {
+    player_input.mutate_input_mask(
+        player_input.input_mask() | asteroids::Key_S);
+  }
+  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_D)) {
+    player_input.mutate_input_mask(
+        player_input.input_mask() | asteroids::Key_D);
+  }
+  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
+    player_input.mutate_input_mask(
+        player_input.input_mask() | asteroids::Key_SPACE);
+  }
+  if (player_input.input_mask() !=
+          previous_player_input.input_mask() ||
+      player_input.previous_input_mask() !=
+          previous_player_input.previous_input_mask()) {
+    *game::CreateEvent<asteroids::Input>(
+        asteroids::Event::PLAYER_INPUT) = player_input;
+  }
   return true;
 }
 

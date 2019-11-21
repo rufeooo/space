@@ -5,7 +5,6 @@
 
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
-#include "components/network/server_authoritative_component.h"
 #include "ecs/ecs.h"
 #include "game/game.h"
 #include "game/event_buffer.h"
@@ -263,6 +262,9 @@ void HandleEvent(game::Event event) {
       break;
     case Event::CREATE_PROJECTILE:
       commands::Execute(*((CreateProjectile*)event.data));
+      break;
+    case Event::PLAYER_INPUT:
+      commands::Execute(*((Input*)event.data));
       break;
     default:
       assert("Event is unhandled.");

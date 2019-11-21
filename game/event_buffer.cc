@@ -3,6 +3,9 @@
 #include <cassert>
 #include <cstdint>
 #include <cstring>
+#include <ctime>
+#include <fstream>
+#include <iostream>
 
 namespace game {
 
@@ -52,6 +55,5 @@ void ResetEventBuffer() {
   kIdx = 0;
   kPollIdx = 0;
 }
-
 
 }

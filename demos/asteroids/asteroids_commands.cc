@@ -126,6 +126,15 @@ void Execute(asteroids::DeleteEntity& delete_entity) {
   components.Delete(delete_entity.entity_id());
 }
 
+void Execute(asteroids::Input& input) {
+  auto& components = GlobalGameState().components;
+  components.Enumerate<component::InputComponent>(
+      [&input](ecs::Entity entity, component::InputComponent& cinput) {
+    cinput.input_mask = input.input_mask();
+    cinput.previous_input_mask = input.previous_input_mask();
+  });
+}
+
 }
 
 }
