@@ -4,7 +4,6 @@
 #include <cstdint>
 #include <cstring>
 #include <ctime>
-#include <fstream>
 #include <iostream>
 
 namespace game {
