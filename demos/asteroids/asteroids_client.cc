@@ -24,13 +24,12 @@ bool Initialize() {
   asteroids::SetEntityStart(ecs::ENTITY_LAST_FREE);
   asteroids::SetEntityIncrement(-1);
 
-  // Add a single receipient for the server. Otherwise messages
-  // can not be added to the queue :(
-  //connection_component->outgoing_message_queue.AddRecipient(0);
   if (!asteroids::Initialize()) {
     std::cout << "Failed to initialize asteroids." << std::endl;
     return false;
   }
+
+  game::SaveEventsToFile();
 
   auto* create_player = game::CreateEvent<asteroids::CreatePlayer>(
       asteroids::Event::CREATE_PLAYER);

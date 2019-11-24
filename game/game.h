@@ -52,4 +52,10 @@ std::chrono::milliseconds Time();
 // Game update since game start.
 int Updates();
 
+// Save events to a file.
+void SaveEventsToFile();
+
+// Replay events from a given file.
+void LoadEventsFromFile(const char* filename);
+
 }

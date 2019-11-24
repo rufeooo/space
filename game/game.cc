@@ -1,5 +1,10 @@
 #include "game.h"
 
+#include <ctime>
+#include <fstream>
+#include <iomanip>
+#include <sstream>
+#include <string>
 #include <thread>
 
 #include "event_buffer.h"
@@ -28,6 +33,7 @@ struct State {
   bool sleep_on_loop_end = true;
   // Number of times the game has been updated.
   uint64_t game_updates = 0;
+  std::ofstream output_event_file;
 };
 
 static State kGameState;
@@ -45,6 +51,19 @@ inline std::chrono::milliseconds NowMS() {
       std::chrono::high_resolution_clock::now().time_since_epoch());
 }
 
+void OptionallyPumpEventsFromFile() {
+}
+
+void OptionallyWriteEventToFile(const Event& event) {
+  auto& file = kGameState.output_event_file;
+  if (!file.is_open()) return;
+  // Write game loop first then event.
+  file.write((char*)&kGameState.game_updates, sizeof(uint64_t));
+  file.write((char*)&event.size, sizeof(uint16_t));
+  file.write((char*)&event.metadata, sizeof(uint16_t));
+  file.write((char*)&event.data, event.size);
+}
+
 }
 
 void Setup(
@@ -53,7 +72,7 @@ void Setup(
     HandleEvent event_callback,
     Update update_callback,
     Render render_callback,
-    OnEnd endcallback) {
+    OnEnd end_callback) {
   // Reset game state.
   kGameState = State();
   _Initialize = init_callback;
@@ -61,10 +80,9 @@ void Setup(
   _HandleEvent = event_callback;
   _Update = update_callback;
   _Render = render_callback;
-  _OnEnd = endcallback;
+  _OnEnd = end_callback;
   // 2 kB event buffer.
   AllocateEventBuffer(2048);
-  filesystem::MakeDirectory("_tmp");
 }
 
 // Runs the game.
@@ -96,11 +114,16 @@ bool Run(uint64_t loop_count) {
 
     while (!kGameState.paused &&
            lag >= kGameState.ms_per_update) {
+      // Pump the event queue if a replay is coming from file.
+      OptionallyPumpEventsFromFile();
+
       // Dequeue and handle all events in event queue.
       Event event;
       while (PollEvent(&event)) {
+        OptionallyWriteEventToFile(event);
         _HandleEvent(event);
       }
+
       // Clears all memory in event buffer since they should
       // have all been handled by now.
       ResetEventBuffer();
@@ -157,6 +180,18 @@ std::chrono::milliseconds Time() {
 
 int Updates() {
   return kGameState.game_updates;
+}
+
+void SaveEventsToFile() {
+  filesystem::MakeDirectory("_tmp");
+  std::time_t time_now = std::time(nullptr);
+  std::stringstream ss;
+	ss << std::put_time(std::localtime(&time_now),
+                      "_tmp/EVENTS_%y-%m-%d_%OH-%OM-%OS");
+  kGameState.output_event_file.open(ss.str());
+}
+
+void LoadEventsFromFile(const char* filename) {
 }
 
 }
