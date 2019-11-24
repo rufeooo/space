@@ -161,6 +161,10 @@ bool ProjectileCollidesWithAsteroid(
       return true;
     }
   }
+  // Check if the point is in the polygon created by the asteroid.
+  if (math::PointInPolygon(projectile_end, asteroid_points)) {
+    return true;
+  }
   return false;
 }
 
@@ -187,18 +191,6 @@ bool ProjectileCollidesWithAsteroid(
       asteroid_transform->position, asteroid_transform->orientation)) {
     return true;
   }
-
-  // Also check the previous game updates asteroid location. This
-  // will solve the case where the asteroid and projectile are going
-  // in opposite directions and a line test will never actually
-  // intersect.
-  if (ProjectileCollidesWithAsteroid(
-      projectile_start, projectile_end, asteroid_shape->points,
-      asteroid_transform->prev_position,
-      asteroid_transform->orientation)) {
-    return true;
-  }
-
   return false;
 }
 
@@ -351,6 +343,9 @@ bool UpdateGame() {
            asteroids::Vec3(transform.prev_position.x(),
                            transform.prev_position.y(),
                            transform.prev_position.z());
+      // Unset input so two projectile will not shoot if the Update happens
+      // to be called more than once for this frame.
+      component::SetKeyUp(input.previous_input_mask, component::KEYBOARD_SPACE);
     }
     if (component::IsKeyDown(
         input.input_mask, component::KEYBOARD_A)) {
