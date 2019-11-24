@@ -10,7 +10,7 @@ struct Event {
   // meatadata used to hep determine the type.
   uint16_t metadata;
   // A pointer to the beginning of the event in the event_buffer.
-  uint8_t* data;
+  uint8_t* data = nullptr;
 };
 
 struct SavedEvent {

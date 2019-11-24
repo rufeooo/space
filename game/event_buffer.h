@@ -27,6 +27,12 @@ bool PollEvent(Event* event);
 // Memset all memory in the buffer to 0.
 void ResetEventBuffer();
 
+// When a custom event buffer is set running PollEvent
+// will poll from this buffer instead. ResentEventBuffer
+// will resent events in both this event buffer and
+// the default one.
+void SetCustomEventBuffer(EventBuffer* event_buffer);
+
 // Given a type and ID create an event. Typically ID is
 // some sort of enum that will later be used to determine type.
 template <class T, class ID>

@@ -3,6 +3,7 @@
 #include <ctime>
 #include <fstream>
 #include <iomanip>
+#include <iostream>
 #include <sstream>
 #include <string>
 #include <thread>
@@ -34,6 +35,8 @@ struct State {
   // Number of times the game has been updated.
   uint64_t game_updates = 0;
   std::ofstream output_event_file;
+  std::ifstream input_event_file;
+  EventBuffer event_buffer;
 };
 
 static State kGameState;
@@ -46,12 +49,53 @@ static Update _Update;
 static Render _Render;
 static OnEnd _OnEnd;
 
+constexpr int kEventBufferSize = 2048;
+
 inline std::chrono::milliseconds NowMS() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
       std::chrono::high_resolution_clock::now().time_since_epoch());
 }
 
 void OptionallyPumpEventsFromFile() {
+  auto& input = kGameState.input_event_file;
+  if (!input.is_open()) return;
+  // First 8 bytes of event file is the game loop.
+  while (1) {
+    if (input.eof()) return;
+    auto cur_pos = input.tellg();
+    uint64_t update = 0;
+    input.read((char*)&update, sizeof(uint64_t));
+    if (update != kGameState.game_updates) {
+      input.seekg(cur_pos);
+      return;
+    }
+    // Seek forward in file past game loop.
+    cur_pos += sizeof(uint64_t);
+    input.seekg(cur_pos);
+    // Get the size to copy the correct number of bytes into
+    // the event buffer.
+    uint16_t size = 0;
+    input.read((char*)&size, sizeof(uint16_t));
+    auto& event_buffer = kGameState.event_buffer;
+    input.seekg(cur_pos);
+    // Make sure the event buffer has memory allocated if it's
+    // being used.
+    assert(event_buffer.buffer != nullptr);
+    input.read((char*)&event_buffer.buffer[event_buffer.idx],
+               size + 4); // + 4 for the size and metadata
+    event_buffer.idx += size + 4;
+    cur_pos += size + 4;
+    input.seekg(cur_pos);
+  }
+}
+
+void OptionallyCloseEventsFile() {
+  auto& input = kGameState.input_event_file;
+  if (!input.is_open()) return;
+  if (!input.eof()) return;
+  std::cout << "CLOSING EVENT FILE." << std::endl;
+  input.close();
+  SetCustomEventBuffer(nullptr);
 }
 
 void OptionallyWriteEventToFile(const Event& event) {
@@ -61,7 +105,7 @@ void OptionallyWriteEventToFile(const Event& event) {
   file.write((char*)&kGameState.game_updates, sizeof(uint64_t));
   file.write((char*)&event.size, sizeof(uint16_t));
   file.write((char*)&event.metadata, sizeof(uint16_t));
-  file.write((char*)&event.data, event.size);
+  file.write((char*)&event.data[0], event.size);
 }
 
 }
@@ -82,7 +126,7 @@ void Setup(
   _Render = render_callback;
   _OnEnd = end_callback;
   // 2 kB event buffer.
-  AllocateEventBuffer(2048);
+  AllocateEventBuffer(kEventBufferSize);
 }
 
 // Runs the game.
@@ -127,6 +171,10 @@ bool Run(uint64_t loop_count) {
       // Clears all memory in event buffer since they should
       // have all been handled by now.
       ResetEventBuffer();
+
+      // If all events have been pumped from file close it
+      // and reset the regular event buffer.
+      OptionallyCloseEventsFile();
 
       // Give the user an update tick. The engine runs with
       // a fixed delta so no need to provide a delta time.
@@ -192,6 +240,18 @@ void SaveEventsToFile() {
 }
 
 void LoadEventsFromFile(const char* filename) {
+  // Setup the event buffer.
+  auto& event_buffer = kGameState.event_buffer;
+  if (!event_buffer.buffer) {
+    event_buffer.buffer =
+      (uint8_t*)calloc(kEventBufferSize, sizeof(uint8_t));
+  }
+  event_buffer.buffer_size = kEventBufferSize;
+  event_buffer.idx = 0;
+  event_buffer.poll_idx = 0;
+  // Now load the file.
+  kGameState.input_event_file.open(filename);
+  SetCustomEventBuffer(&event_buffer);
 }
 
 }

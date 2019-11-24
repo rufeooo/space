@@ -14,6 +14,7 @@ DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
               "the game singleplayer otherwise.");
 DEFINE_string(port, "9845", "Port for this application.");
+DEFINE_string(replay_file, "", "Run game from replay file.");
 
 bool IsSinglePlayer() { return FLAGS_hostname.empty(); }
 
@@ -39,6 +40,10 @@ bool Initialize() {
     asteroids::GlobalGameState().components
         .Assign<asteroids::GameStateComponent>(
             asteroids::GenerateFreeEntity());
+  }
+
+  if (!FLAGS_replay_file.empty()) {
+    game::LoadEventsFromFile(FLAGS_replay_file.c_str());
   }
 
   return true;

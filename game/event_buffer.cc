@@ -11,6 +11,7 @@ namespace game {
 namespace {
 
 static EventBuffer kDefaultEventBuffer;
+static EventBuffer* kCustomEventBuffer = nullptr;
 
 }
 
@@ -43,7 +44,9 @@ void* EnqueueEvent(uint16_t size, uint16_t metadata) {
 
 bool PollEvent(Event* event) {
   assert(event != nullptr);
-  auto& events = kDefaultEventBuffer; 
+  // Prefer polling events from a custom event buffer.
+  auto& events = kCustomEventBuffer != nullptr ?
+      *kCustomEventBuffer : kDefaultEventBuffer; 
   if (events.poll_idx >= events.idx) return false;
   event->size = *((uint16_t*)(events.buffer + events.poll_idx));
   events.poll_idx += 2;
@@ -59,6 +62,16 @@ void ResetEventBuffer() {
   memset(events.buffer, 0, events.idx);
   events.idx = 0;
   events.poll_idx = 0;
+  if (kCustomEventBuffer) {
+    auto& custom_events = *kCustomEventBuffer; 
+    memset(custom_events.buffer, 0, custom_events.idx);
+    custom_events.idx = 0;
+    custom_events.poll_idx = 0;
+  }
+}
+
+void SetCustomEventBuffer(EventBuffer* event_buffer) {
+  kCustomEventBuffer = event_buffer;
 }
 
 }
