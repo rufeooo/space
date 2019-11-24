@@ -10,49 +10,55 @@ namespace game {
 
 namespace {
 
-static uint8_t* kBuffer = nullptr;
-static int kBufferSize = 0;
-static int kIdx = 0;
-static int kPollIdx = 0;
+static EventBuffer kDefaultEventBuffer;
 
 }
 
 void AllocateEventBuffer(int size_bytes) {
-  if (kBuffer) DeallocateEventBuffer();
-  kBuffer = (uint8_t*)calloc(size_bytes, sizeof(uint8_t));
-  kBufferSize = size_bytes;
+  auto& events = kDefaultEventBuffer; 
+  if (events.buffer) DeallocateEventBuffer();
+  events.buffer = (uint8_t*)calloc(size_bytes, sizeof(uint8_t));
+  events.buffer_size = size_bytes;
 }
 
 void DeallocateEventBuffer() {
-  free(kBuffer);
-  kBufferSize = 0;
-  kIdx = 0;
-  kPollIdx = 0;
+  auto& events = kDefaultEventBuffer; 
+  free(events.buffer);
+  events.buffer_size = 0;
+  events.idx = 0;
+  events.poll_idx = 0;
 }
 
 void* EnqueueEvent(uint16_t size, uint16_t metadata) {
-  assert(kIdx + size < kBufferSize);
-  *((uint16_t*)(kBuffer + kIdx)) = size; kIdx += 2;
-  *((uint16_t*)(kBuffer + kIdx)) = metadata; kIdx += 2;
-  uint8_t* data = (kBuffer + kIdx);
-  kIdx += size;
+  auto& events = kDefaultEventBuffer; 
+  assert(events.idx + size < events.buffer_size);
+  *((uint16_t*)(events.buffer + events.idx)) = size;
+  events.idx += 2;
+  *((uint16_t*)(events.buffer + events.idx)) = metadata;
+  events.idx += 2;
+  uint8_t* data = (events.buffer + events.idx);
+  events.idx += size;
   return data;
 }
 
 bool PollEvent(Event* event) {
   assert(event != nullptr);
-  if (kPollIdx >= kIdx) return false;
-  event->size = *((uint16_t*)(kBuffer + kPollIdx)); kPollIdx += 2;
-  event->metadata = *((uint16_t*)(kBuffer + kPollIdx)); kPollIdx += 2;
-  event->data = (kBuffer + kPollIdx);
-  kPollIdx += event->size;
+  auto& events = kDefaultEventBuffer; 
+  if (events.poll_idx >= events.idx) return false;
+  event->size = *((uint16_t*)(events.buffer + events.poll_idx));
+  events.poll_idx += 2;
+  event->metadata = *((uint16_t*)(events.buffer + events.poll_idx));
+  events.poll_idx += 2;
+  event->data = (events.buffer + events.poll_idx);
+  events.poll_idx += event->size;
   return true;
 }
 
 void ResetEventBuffer() {
-  memset(kBuffer, 0, kIdx);
-  kIdx = 0;
-  kPollIdx = 0;
+  auto& events = kDefaultEventBuffer; 
+  memset(events.buffer, 0, events.idx);
+  events.idx = 0;
+  events.poll_idx = 0;
 }
 
 }

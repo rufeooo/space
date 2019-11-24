@@ -4,6 +4,13 @@
 
 namespace game {
 
+struct EventBuffer {
+  uint8_t* buffer = nullptr;
+  int buffer_size = 0;
+  int idx = 0;
+  int poll_idx = 0;
+};
+
 // Initialize an event buffer of size_bytes 
 void AllocateEventBuffer(int size_bytes);
 
