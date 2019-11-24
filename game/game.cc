@@ -63,6 +63,7 @@ void OptionallyPumpEventsFromFile() {
   while (1) {
     if (input.eof()) return;
     auto cur_pos = input.tellg();
+    if (cur_pos == -1) return;
     uint64_t update = 0;
     input.read((char*)&update, sizeof(uint64_t));
     if (update != kGameState.game_updates) {
@@ -92,8 +93,8 @@ void OptionallyPumpEventsFromFile() {
 void OptionallyCloseEventsFile() {
   auto& input = kGameState.input_event_file;
   if (!input.is_open()) return;
-  if (!input.eof()) return;
-  std::cout << "CLOSING EVENT FILE." << std::endl;
+  auto cur_pos = input.tellg();
+  if (cur_pos != -1) return;
   input.close();
   SetCustomEventBuffer(nullptr);
 }
