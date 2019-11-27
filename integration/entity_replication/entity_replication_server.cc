@@ -6,7 +6,6 @@
 #include "entity_replication.h"
 #include "network/server.h"
 #include "network/client.h"
-#include "network/message_queue.h"
 
 
 namespace integration {
@@ -15,8 +14,6 @@ namespace entity_replication {
 
 namespace {
 
-network::OutgoingMessageQueue kOutgoingMessageQueue;
-network::IncomingMessageQueue kIncomingMessageQueue;
 std::thread kNetworkThread;
 EntityReplication kEntityReplication;
 ReplicationType kReplicationType;
@@ -28,12 +25,8 @@ void Start(ReplicationType replication_type,
   kReplicationType = replication_type;
   switch (kReplicationType) {
     case ReplicationType::SERVER:
-      kNetworkThread = network::server::Create(
-          port, &kOutgoingMessageQueue, &kIncomingMessageQueue);
       break;
     case ReplicationType::CLIENT:
-      kNetworkThread = network::client::Create(
-          hostname, port, &kOutgoingMessageQueue, &kIncomingMessageQueue);
       break;
     default:
       assert("Unknown replication type.");
@@ -41,10 +34,6 @@ void Start(ReplicationType replication_type,
 }
 
 void Stop() {
-  if (kNetworkThread.joinable()) {
-    kIncomingMessageQueue.Stop();
-    kNetworkThread.join();
-  }
 }
 
 void CreateEntity(ecs::Entity entity, std::vector<uint8_t>&&

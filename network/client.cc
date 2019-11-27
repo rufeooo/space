@@ -10,9 +10,8 @@ namespace client {
 
 namespace {
 
-void StartClient(const char* hostname, const char* port,
-                 OutgoingMessageQueue* outgoing_message_queue,
-                 IncomingMessageQueue* incoming_message_queue) {
+void StartClient(const char* hostname, const char* port) {
+#if 0
   if (!SocketInit()) {
     printf("Failed to initialize...\n\n");
     return;
@@ -109,16 +108,14 @@ void StartClient(const char* hostname, const char* port,
       return;
     }
   }
+#endif
 }
 
 
 }  // anonymous
 
-std::thread Create(const char* hostname, const char* port,
-                   OutgoingMessageQueue* outgoing_message_queue,
-                   IncomingMessageQueue* incoming_message_queue) {
-  return std::thread(StartClient, hostname, port,
-                     outgoing_message_queue, incoming_message_queue);
+std::thread Create(const char* hostname, const char* port) {
+  return std::thread(StartClient, hostname, port);
 }
 
 }  // client

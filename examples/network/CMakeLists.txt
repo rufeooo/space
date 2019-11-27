@@ -11,6 +11,6 @@ include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(network_udp_client ${udp_client_srcs})
 target_link_libraries(network_udp_client network gflags flatbuffers 
-                      message_queue client)
+                      client)
 
 add_dependencies(network_udp_client fake_asteroids_packet_fbs)

@@ -24,8 +24,8 @@ constexpr int kMaxClients = 10;
 // ...
 constexpr int kMaxPacketSize = 1024;
 
-struct ClientConnection {
-  struct sockaddr_storage client_address = {};
+struct Connection {
+  sockaddr_storage client_address = {};
 
   socklen_t client_len = 0;
 
@@ -41,7 +41,7 @@ struct ServerState {
   std::atomic<bool> server_running = false;
 
   // ...
-  ClientConnection clients[kMaxClients]; 
+  Connection clients[kMaxClients]; 
 
   // ...
   int client_count;
@@ -140,7 +140,7 @@ bool RunServerLoop(timeval timeout, SOCKET max_socket) {
 
     if (id == -1) {
       // Save off client connections? When do we remove from this list?
-      ClientConnection connection;
+      Connection connection;
       connection.client_address = client_address;
       connection.client_len = client_len;
       strncpy(connection.address_buffer, address_buffer, kAddressSize);

@@ -18,13 +18,6 @@ build_flatbuffers(
 
 add_library(network ${network_srcs})
 
-set(message_queue_srcs
-    "message_queue.h"
-    "message_queue.cc")
-
-add_library(message_queue ${message_queue_srcs})
-target_link_libraries(message_queue flatbuffers)
-
 set(server_srcs
     "server.h"
     "server.cc")
@@ -44,7 +37,6 @@ set(client_srcs
     "client.cc")
 
 add_library(client ${client_srcs})
-target_link_libraries(client message_queue network)
 
 set(client_test_srcs
     "client_test.cc")

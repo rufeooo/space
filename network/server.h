@@ -3,7 +3,6 @@
 #include <thread>
 #include <array>
 
-#include "message_queue.h"
 #include "network.h"
 
 namespace network {

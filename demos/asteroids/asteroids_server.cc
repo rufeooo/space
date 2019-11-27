@@ -8,7 +8,6 @@
 #include "asteroids_state.h"
 #include "integration/entity_replication/entity_replication_server.h"
 #include "network/server.h"
-#include "network/message_queue.h"
 #include "protocol/asteroids_commands_generated.h"
 #include "game/game.h"
 

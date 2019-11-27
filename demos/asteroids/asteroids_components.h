@@ -4,7 +4,6 @@
 
 #include "math/vec.h"
 #include "network/client.h"
-#include "network/message_queue.h"
 
 namespace asteroids {
 
@@ -62,8 +61,6 @@ struct RandomNumberIntChoiceComponent {
 };
 
 struct ConnectionComponent {
-  network::OutgoingMessageQueue outgoing_message_queue;
-  network::IncomingMessageQueue incoming_message_queue;
   std::thread network_thread;
   bool is_client = false;
   bool is_server = false;
