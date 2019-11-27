@@ -5,41 +5,50 @@
 
 #include "server.h"
 
-SOCKET CreateSimpleClient(
-    const std::string& hostname, const std::string& port,
-    const std::string& msg) {
+struct Client {
+  SOCKET socket;
+  addrinfo* address;
+};
+
+Client CreateSimpleClient(
+    const std::string& hostname, const std::string& port) {
+  Client client;
   if (!network::SocketInit()) {
     printf("Failed to initialize...\n\n");
-    return INVALID_SOCKET;
+    return client;
   }
+
   struct addrinfo hints = {0};
   hints.ai_socktype = SOCK_DGRAM;  // UDP - use SOCK_STREAM for UDP
-  struct addrinfo* peer_address;
   if (getaddrinfo(hostname.c_str(), port.c_str(), &hints,
-                  &peer_address)) {
+                  &client.address)) {
     fprintf(stderr, "getaddrinfo() failed (%d)\n\n",
             network::SocketErrno());
-    return INVALID_SOCKET;
+    return client;
   }
 
   char address_buffer[100];
   char service_buffer[100];
-  getnameinfo(peer_address->ai_addr, peer_address->ai_addrlen,
+  getnameinfo(client.address->ai_addr, client.address->ai_addrlen,
               address_buffer, sizeof(address_buffer),
               service_buffer, sizeof(service_buffer), NI_NUMERICHOST);
-  SOCKET socket_peer;
-  socket_peer = socket(
-      peer_address->ai_family, peer_address->ai_socktype,
-      peer_address->ai_protocol);
-  if (!network::SocketIsValid(socket_peer)) {
+
+  client.socket = socket(
+      client.address->ai_family, client.address->ai_socktype,
+      client.address->ai_protocol);
+
+  if (!network::SocketIsValid(client.socket)) {
     fprintf(stderr, "socket() failed (%d)\n\n",
             network::SocketErrno());
-    return INVALID_SOCKET;
+    return client;
   }
-  int bytes_sent = sendto(socket_peer, msg.c_str(), msg.size(), 0,
-                          peer_address->ai_addr,
-                          peer_address->ai_addrlen);
-  return socket_peer;
+
+  return client;
+}
+
+int SendData(Client& client, const std::string& msg) {
+  return sendto(client.socket, msg.c_str(), msg.size(), 0,
+                client.address->ai_addr, client.address->ai_addrlen);
 }
 
 static int kStuffCalled = 0;
@@ -50,8 +59,8 @@ void OnClientConnected(int client_id) {
 }
 
 void OnMsgRecieved(int client_id, uint8_t* data, int size) {
-  ASSERT_EQ(size, 7);
-  ASSERT_EQ(strncmp((char*)data, "Connect", size), 0);
+  ASSERT_EQ(size, 5);
+  ASSERT_EQ(strncmp((char*)data, "hello", size), 0);
   ++kStuffCalled;
 }
 
@@ -61,9 +70,9 @@ TEST(Server, ServerHappyPath) {
   ASSERT_TRUE(network::server::Start("7890"));
   // Create a client connection which the server will respond to when
   // new events enter its message queue.
-  SOCKET client_socket
-      = CreateSimpleClient("127.0.0.1", "7890", "Connect");
-  ASSERT_TRUE(network::SocketIsValid(client_socket));
+  Client client = CreateSimpleClient("127.0.0.1", "7890");
+  SendData(client, "hello");
+  ASSERT_TRUE(network::SocketIsValid(client.socket));
   std::this_thread::sleep_for(2s);
   ASSERT_EQ(kStuffCalled, 2);
   network::server::Stop();
