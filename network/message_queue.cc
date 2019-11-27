@@ -1,96 +1,45 @@
 #include "message_queue.h"
 
+#include <cassert>
+
 namespace network {
 
-void IncomingMessageQueue::Enqueue(Message message) {
-  assert(message.size <= kMaxMessageSize);
+void MessageQueue::Enqueue(uint8_t* data, int size) {
+  assert(idx_ + size <= kBufferSize);
   std::lock_guard<std::mutex> lock(mutex_);
-  queue_.push(message);
+  memcpy(&buffer_[idx_], data, size);
+  Message msg;
+  msg.data = &buffer_[idx];
+  msg.size = size;
+  idx_ += size;
 }
 
-Message IncomingMessageQueue::Dequeue() {
+Message MessageQueue::Dequeue() {
   std::lock_guard<std::mutex> lock(mutex_);
   if (queue_.empty()) return Message();  // Empty message
   auto data = queue_.front();
-  assert(data.size <= kMaxMessageSize);
   queue_.pop();
   return data;
 }
 
-bool IncomingMessageQueue::Empty() const {
+void MessageQueue::Reset() {
+  queue_.clear();
+  memset(buffer_, 0, events.idx);
+}
+
+bool MessageQueue::Empty() const {
   std::lock_guard<std::mutex> lock(mutex_);
   return queue_.empty();
 }
 
-void IncomingMessageQueue::Stop() {
+void MessageQueue::Stop() {
   std::lock_guard<std::mutex> lock(mutex_);
   stop_ = true;
 }
 
-bool IncomingMessageQueue::IsStopped() const {
+bool MessageQueue::IsStopped() const {
   std::lock_guard<std::mutex> lock(mutex_);
   return stop_;
-}
-
-void OutgoingMessageQueue::Enqueue(
-    flatbuffers::DetachedBuffer&& message) {
-  assert(message.size() <= kMaxMessageSize);
-  // This might be a bit strange to have here but I'm not sure where
-  // else it should go. If the outgoing queue has no recipients then
-  // do not allow adding a message to the queue.
-  if (recipients_.empty()) return;
-  std::lock_guard<std::mutex> lock(mutex_);
-  queue_.push(std::move(message));
-}
-
-flatbuffers::DetachedBuffer OutgoingMessageQueue::Dequeue() {
-  std::lock_guard<std::mutex> lock(mutex_);
-  if (queue_.empty()) return flatbuffers::DetachedBuffer();
-  auto data = std::move(queue_.front());
-  assert(data.size() <= kMaxMessageSize);
-  queue_.pop();
-  return data;
-}
-
-bool OutgoingMessageQueue::Empty() const {
-  std::lock_guard<std::mutex> lock(mutex_);
-  return queue_.empty();
-}
-
-void OutgoingMessageQueue::Stop() {
-  std::lock_guard<std::mutex> lock(mutex_);
-  stop_ = true;
-}
-
-bool OutgoingMessageQueue::IsStopped() const {
-  std::lock_guard<std::mutex> lock(mutex_);
-  return stop_;
-}
-
-void OutgoingMessageQueue::AddRecipient(int client_id) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  recipients_.insert(client_id);
-  new_recipients_.insert(client_id);
-}
-
-void OutgoingMessageQueue::RemoveRecipient(int client_id) {
-  std::lock_guard<std::mutex> lock(mutex_);
-  auto found = recipients_.find(client_id);
-  if (found == recipients_.end()) return;
-  recipients_.erase(client_id);
-}
-
-std::vector<int> OutgoingMessageQueue::Recipients() const {
-  std::lock_guard<std::mutex> lock(mutex_);
-  return std::vector<int>(recipients_.begin(), recipients_.end());
-}
-
-std::vector<int> OutgoingMessageQueue::NewRecipients() {
-  std::lock_guard<std::mutex> lock(mutex_);
-  auto result = 
-      std::vector<int>(new_recipients_.begin(), new_recipients_.end());
-  new_recipients_.clear();
-  return result;
 }
 
 }

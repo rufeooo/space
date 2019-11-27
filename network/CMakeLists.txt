@@ -30,7 +30,7 @@ set(server_srcs
     "server.cc")
 
 add_library(server ${server_srcs})
-target_link_libraries(server message_queue network)
+target_link_libraries(server network)
 
 set(server_test_srcs
     "server_test.cc")

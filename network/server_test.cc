@@ -1,12 +1,9 @@
 #include "gtest/gtest.h"
 
 #include <iostream>
-
-#include <flatbuffers/flatbuffers.h>
+#include <thread>
 
 #include "server.h"
-#include "message_queue.h"
-#include "testdata/packet_generated.h"
 
 SOCKET CreateSimpleClient(
     const std::string& hostname, const std::string& port,
@@ -45,75 +42,31 @@ SOCKET CreateSimpleClient(
   return socket_peer;
 }
 
-char* ReadSocketData(SOCKET client_socket) {
-  char read[network::kMaxMessageSize];
-  memset(&read, 0, network::kMaxMessageSize);
-  int bytes_received = recvfrom(
-      client_socket, read, network::kMaxMessageSize, 0, nullptr,
-      nullptr);
-  std::cout << "Received " << bytes_received << " bytes of data."
-            << std::endl;
-  char* data = (char*)malloc(bytes_received);
-  memcpy(data, &read[0], bytes_received);
-  return data;
+static int kStuffCalled = 0;
+
+void OnClientConnected(int client_id) {
+  ASSERT_EQ(client_id, 0);
+  ++kStuffCalled;
+}
+
+void OnMsgRecieved(int client_id, uint8_t* data, int size) {
+  ASSERT_EQ(size, 7);
+  ASSERT_EQ(strncmp((char*)data, "Connect", size), 0);
+  ++kStuffCalled;
 }
 
 TEST(Server, ServerHappyPath) {
-  network::OutgoingMessageQueue outgoing_message_queue;            
-  network::IncomingMessageQueue incoming_message_queue;
-  std::thread server_thread
-      = network::server::Create("7890", &outgoing_message_queue,
-                                &incoming_message_queue);
+  using namespace std::chrono_literals;
+  network::server::Setup(&OnClientConnected, &OnMsgRecieved);
+  ASSERT_TRUE(network::server::Start("7890"));
   // Create a client connection which the server will respond to when
   // new events enter its message queue.
   SOCKET client_socket
       = CreateSimpleClient("127.0.0.1", "7890", "Connect");
   ASSERT_TRUE(network::SocketIsValid(client_socket));
-  // The server should now contain a "Connect" message from the
-  // connecting client.
-  network::Message msg;
-  // Constantly dequeue the incoming message queue until the message
-  // is received.
-  do {
-    msg = incoming_message_queue.Dequeue();
-  } while (msg.size == 0);
-  ASSERT_EQ(msg.size, 7);
-  ASSERT_EQ(strncmp((char*)msg.data, "Connect", msg.size), 0);
-  {
-    // Enqueue a flatbuffer with message 'hello'
-    flatbuffers::FlatBufferBuilder fbb;
-    auto data = fbb.CreateString("Hello!");
-    auto packet = testdata::CreatePacket(fbb, data);
-    fbb.Finish(packet);
-    outgoing_message_queue.Enqueue(fbb.Release());
-    char* socket_data = ReadSocketData(client_socket);
-    auto* received_packet = testdata::GetPacket(
-        (const void*)socket_data);
-    std::cout << received_packet->data()->c_str() << std::endl;
-    ASSERT_EQ(std::string(received_packet->data()->c_str()),
-              std::string("Hello!"));
-    free(socket_data);
-  }
-
-  {
-    // Enqueue a flatbuffer with message 'hello'
-    flatbuffers::FlatBufferBuilder fbb;
-    auto data = fbb.CreateString(
-        "The quick brown fox jumps over the lazy dog.");
-    auto packet = testdata::CreatePacket(fbb, data);
-    fbb.Finish(packet);
-    outgoing_message_queue.Enqueue(fbb.Release());
-    char* socket_data = ReadSocketData(client_socket);
-    auto* received_packet = testdata::GetPacket(
-        (const void*)socket_data);
-    std::cout << received_packet->data()->c_str() << std::endl;
-    ASSERT_EQ(std::string(received_packet->data()->c_str()),
-              std::string("The quick brown fox jumps over the lazy "
-                          "dog."));
-    free(socket_data);
-  }
-  incoming_message_queue.Stop();
-  server_thread.join();
+  std::this_thread::sleep_for(2s);
+  ASSERT_EQ(kStuffCalled, 2);
+  network::server::Stop();
 }
 
 int main(int argc, char** argv) {
