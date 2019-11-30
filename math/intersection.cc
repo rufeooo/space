@@ -11,18 +11,18 @@ namespace {
 
 float Signed2DTriArea(
     const math::Vec2f& a, const math::Vec2f& b, const math::Vec2f& c) {
-  return (a.x() - c.x()) * (b.y() - c.y()) - 
-         (a.y() - c.y()) * (b.x() - c.x());
+  return (a.x - c.x) * (b.y - c.y) - 
+         (a.y - c.y) * (b.x - c.x);
 }
 
 // Given three colinear points p, q, r, the function checks if 
 // point q lies on line segment 'pr' 
 bool OnSegment(const math::Vec2f& p, const math::Vec2f& q,
                const math::Vec2f& r) { 
-  if (q.x() <= std::max(p.x(), r.x()) && q.x() >=
-      std::min(p.x(), r.x()) && 
-      q.y() <= std::max(p.y(), r.y()) && q.y() >=
-      std::min(p.y(), r.y())) {
+  if (q.x <= std::max(p.x, r.x) && q.x >=
+      std::min(p.x, r.x) && 
+      q.y <= std::max(p.y, r.y) && q.y >=
+      std::min(p.y, r.y)) {
     return true; 
   }
   return false; 
@@ -35,8 +35,8 @@ bool OnSegment(const math::Vec2f& p, const math::Vec2f& q,
 // 2 --> Counterclockwise 
 int Orientation(const math::Vec2f& p, const math::Vec2f& q,
                 const math::Vec2f& r) { 
-  float val = (q.y() - p.y()) * (r.x() - q.x()) - 
-              (q.x() - p.x()) * (r.y() - q.y()); 
+  float val = (q.y - p.y) * (r.x - q.x) - 
+              (q.x - p.x) * (r.y - q.y); 
   if (IsNear(val, 0.f)) return 0;  // colinear 
   return (val > 0.f) ? 1 : 2; // clock or counterclock wise 
 } 
@@ -92,7 +92,7 @@ bool PointInPolygon(const math::Vec2f& point,
   // There must be at least 3 vertices in polygon[] 
   if (polygon.size() < 3)  return false; 
   // Create a point for line segment from p to infinite 
-  math::Vec2f extreme = {std::numeric_limits<float>::max(), point.y()}; 
+  math::Vec2f extreme(std::numeric_limits<float>::max(), point.y); 
   // Count intersections of the above line with sides of polygon 
   int count = 0, i = 0; 
   do

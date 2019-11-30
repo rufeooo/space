@@ -14,6 +14,7 @@ namespace asteroids {
 namespace commands {
 
 void Execute(asteroids::CreatePlayer& create_player) {
+  std::cout << "SIZE: " << sizeof(CreatePlayer) << std::endl;
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id());
   components.Assign<PolygonShape>(
@@ -43,8 +44,7 @@ void Execute(asteroids::CreateProjectile& create_projectile) {
                   create_projectile.transform().orientation().y(),
                   create_projectile.transform().orientation().z(),
                   create_projectile.transform().orientation().w());
-  auto dir = transform.orientation.Up();
-  dir.Normalize();
+  auto dir = math::Normalize(transform.orientation.Up());
   component::TransformComponent projectile_transform(transform);
   projectile_transform.position += (dir * .08f);
   components.Assign<component::TransformComponent>(
@@ -67,10 +67,11 @@ void Execute(asteroids::CreateProjectile& create_projectile) {
 
 void Execute(asteroids::CreateAsteroid& create_asteroid) {
   auto& components = GlobalGameState().components;
-  math::Vec3f dir(create_asteroid.direction().x(),
-                  create_asteroid.direction().y(),
-                  create_asteroid.direction().z());
-  dir.Normalize();
+  math::Vec3f dir =
+      math::Normalize(math::Vec3f(
+          create_asteroid.direction().x(),
+          create_asteroid.direction().y(),
+          create_asteroid.direction().z()));
   components.Assign<component::TransformComponent>(
       create_asteroid.entity_id());
   auto* transform = components.Get<component::TransformComponent>(

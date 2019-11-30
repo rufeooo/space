@@ -13,7 +13,6 @@ namespace math {
 template <typename T, size_t M, size_t N>
 class Mat {
  public:
-  virtual ~Mat() = default;
   Mat() = default;
   Mat(std::initializer_list<T> l) {
     assert(l.size() == M * N);
@@ -176,12 +175,12 @@ using Mat4d = Mat<double, 4, 4>;
 template <class T>
 Vec3f operator*(const Mat<T, 4, 4>& lhs, const Vec3f& rhs) {
   return Vec3f(
-    lhs(0, 0) * rhs.x() + lhs(0, 1) * rhs.y() +
-    lhs(0, 2) * rhs.z() + lhs(0, 3),
-    lhs(1, 0) * rhs.x() + lhs(1, 1) * rhs.y() +
-    lhs(1, 2) * rhs.z() + lhs(1, 3),
-    lhs(2, 0) * rhs.x() + lhs(2, 1) * rhs.y() +
-    lhs(2, 2) * rhs.z() + lhs(2, 3)
+    lhs(0, 0) * rhs.x + lhs(0, 1) * rhs.y +
+    lhs(0, 2) * rhs.z + lhs(0, 3),
+    lhs(1, 0) * rhs.x + lhs(1, 1) * rhs.y +
+    lhs(1, 2) * rhs.z + lhs(1, 3),
+    lhs(2, 0) * rhs.x + lhs(2, 1) * rhs.y +
+    lhs(2, 2) * rhs.z + lhs(2, 3)
   );
 }
 

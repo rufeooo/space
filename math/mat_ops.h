@@ -25,39 +25,35 @@ Mat<T, N, N> CreateIdentityMatrix() {
 template <class T>
 Mat<T, 4, 4> CreateTranslationMatrix(const Vec3<T>& translation) {
   Mat<T, 4, 4> m = CreateIdentityMatrix<T, 4>();
-  m[12] = translation.x();
-  m[13] = translation.y();
-  m[14] = translation.z();
+  m[12] = translation.x;
+  m[13] = translation.y;
+  m[14] = translation.z;
   return m;
 }
 
 template <class T>
 Mat<T, 4, 4> CreateScaleMatrix(const Vec3<T>& scale) {
   Mat<T, 4, 4> m = CreateIdentityMatrix<T, 4>();
-  m(0, 0) = scale.x();
-  m(1, 1) = scale.y();
-  m(2, 2) = scale.z();
+  m(0, 0) = scale.x;
+  m(1, 1) = scale.y;
+  m(2, 2) = scale.z;
   return m;
 }
 
 template <class T>
 Mat<T, 4, 4> CreateRotationMatrix(const Quat<T>& quat) {
   Mat<T, 4, 4> rotation;
-  auto w = quat.x();
-  auto x = quat.y();
-  auto y = quat.z();
-  auto z = quat.w();
-  rotation[0]  = 1.f - 2.f * y * y - 2.f * z * z;
-  rotation[1]  = 2.f * x * y - 2.f * w * z;
-  rotation[2]  = 2.f * x * z + 2 * w * y;
+  rotation[0]  = 1.f - 2.f * quat.y * quat.y - 2.f * quat.z * quat.z;
+  rotation[1]  = 2.f * quat.x * quat.y - 2.f * quat.w * quat.z;
+  rotation[2]  = 2.f * quat.x * quat.z + 2 * quat.w * quat.y;
   rotation[3]  = T(0);
-  rotation[4]  = 2.f * x * y + 2.f * w * z;
-  rotation[5]  = 1.f - 2.f * x * x - 2.f * z * z;
-  rotation[6]  = 2.f * y * z - 2.f * w * x;
+  rotation[4]  = 2.f * quat.x * quat.y + 2.f * quat.w * quat.z;
+  rotation[5]  = 1.f - 2.f * quat.x * quat.x - 2.f * quat.z * quat.z;
+  rotation[6]  = 2.f * quat.y * quat.z - 2.f * quat.w * quat.x;
   rotation[7]  = T(0);
-  rotation[8]  = 2.f * x * z - 2.f * w * y;
-  rotation[9]  = 2.f * y * z + 2.f * w * x;
-  rotation[10] = 1.f - 2.f * x * x - 2.f * y * y;
+  rotation[8]  = 2.f * quat.x * quat.z - 2.f * quat.w * quat.y;
+  rotation[9]  = 2.f * quat.y * quat.z + 2.f * quat.w * quat.x;
+  rotation[10] = 1.f - 2.f * quat.x * quat.x - 2.f * quat.y * quat.y;
   rotation[11] = T(0);
   rotation[12] = T(0);
   rotation[13] = T(0);
@@ -72,25 +68,21 @@ Mat<T, 4, 4> CreateViewMatrix(const Vec3<T>& translation,
   Mat<T, 4, 4> view;
   // A quat is really a versor [w,(x,y,z)]. So grab the variables out
   // with those names to make the view more clear.
-  auto w = quat.x(); // x Corresponds to w in the versor
-  auto x = quat.y(); // y Corresponds to y in the versor
-  auto y = quat.z(); // z Etc.
-  auto z = quat.w(); // w Etc.
-  view[0]  = 1.f - 2.f * y * y - 2.f * z * z;
-  view[1]  = 2.f * x * y - 2.f * w * z;
-  view[2]  = 2.f * x * z + 2 * w * y;
+  view[0]  = 1.f - 2.f * quat.y * quat.y - 2.f * quat.z * quat.z;
+  view[1]  = 2.f * quat.x * quat.y - 2.f * quat.w * quat.z;
+  view[2]  = 2.f * quat.x * quat.z + 2 * quat.w * quat.y;
   view[3]  = T(0);
-  view[4]  = 2.f * x * y + 2.f * w * z;
-  view[5]  = 1.f - 2.f * x * x - 2.f * z * z;
-  view[6]  = 2.f * y * z - 2.f * w * x;
+  view[4]  = 2.f * quat.x * quat.y + 2.f * quat.w * quat.z;
+  view[5]  = 1.f - 2.f * quat.x * quat.x - 2.f * quat.z * quat.z;
+  view[6]  = 2.f * quat.y * quat.z - 2.f * quat.w * quat.x;
   view[7]  = T(0);
-  view[8]  = 2.f * x * z - 2.f * w * y;
-  view[9]  = 2.f * y * z + 2.f * w * x;
-  view[10] = 1.f - 2.f * x * x - 2.f * y * y;
+  view[8]  = 2.f * quat.x * quat.z - 2.f * quat.w * quat.y;
+  view[9]  = 2.f * quat.y * quat.z + 2.f * quat.w * quat.x;
+  view[10] = 1.f - 2.f * quat.x * quat.x - 2.f * quat.y * quat.y;
   view[11] = T(0);
-  view[12] = -translation.x();
-  view[13] = -translation.y();
-  view[14] = -translation.z();
+  view[12] = -translation.x;
+  view[13] = -translation.y;
+  view[14] = -translation.z;
   view[15] = T(1);
   return view;
 }

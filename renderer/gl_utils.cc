@@ -101,8 +101,8 @@ uint32_t CreateGeometryVAO(const std::vector<math::Vec2f>& verts) {
   std::vector<GLfloat> vert_list;
   vert_list.reserve(verts.size() * 3);
   for (const auto& v : verts) {
-    vert_list.push_back(v.x());
-    vert_list.push_back(v.y());
+    vert_list.push_back(v.x);
+    vert_list.push_back(v.y);
     vert_list.push_back(0.f);  // TODO: Maybe consider removing this.
   }
   return CreateGeometryVAO(vert_list);

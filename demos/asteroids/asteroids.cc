@@ -121,8 +121,7 @@ void UpdatePhysics(PhysicsComponent& physics_component) {
     physics_component.velocity += physics_component.acceleration;
   } else if (math::LengthSquared(physics_component.velocity) > 0.f) {
     // Dampen velocity.
-    auto vdir = physics_component.velocity;
-    vdir.Normalize();
+    auto vdir = math::Normalize(physics_component.velocity);
     physics_component.velocity -= vdir * kDampenVelocity;
     if (velocity_squared < kShipAcceleration * kShipAcceleration) {
       physics_component.velocity = math::Vec3f(0.f, 0.f, 0.f);
@@ -144,17 +143,17 @@ bool ProjectileCollidesWithAsteroid(
   // Offset the points relative to the asteroids transform.
   for (auto& point : asteroid_points) {
     math::Vec3f p_3d_transformed =
-        asteroid_transform * math::Vec3f(point.x(), point.y(), 0.f);
-    point = math::Vec2(p_3d_transformed.x(), p_3d_transformed.y());
+        asteroid_transform * math::Vec3f(point.x, point.y, 0.f);
+    point = math::Vec2(p_3d_transformed.x, p_3d_transformed.y);
   }
   // Check if the line created by the moving projectile intersects
   // any line created by the points of the asteroid.
   for (int i = 0; i < asteroid_points.size(); ++i) {
-    math::Vec2f point_start(asteroid_points[i].x(),
-                            asteroid_points[i].y());
+    math::Vec2f point_start(asteroid_points[i].x,
+                            asteroid_points[i].y);
     int end_idx = (i + 1) % asteroid_points.size();
     math::Vec2f point_end(
-        asteroid_points[end_idx].x(), asteroid_points[end_idx].y());
+        asteroid_points[end_idx].x, asteroid_points[end_idx].y);
     if (math::LineSegmentsIntersect(projectile_start, projectile_end,
                                     point_start, point_end,
                                     nullptr, nullptr)) {
@@ -180,10 +179,10 @@ bool ProjectileCollidesWithAsteroid(
   assert(projectile_physics != nullptr);
   assert(asteroid_transform != nullptr);
   assert(asteroid_shape != nullptr);
-  math::Vec2f projectile_start(projectile_transform->prev_position.x(),
-                               projectile_transform->prev_position.y());
-  math::Vec2f projectile_end(projectile_transform->position.x(),
-                             projectile_transform->position.y());
+  math::Vec2f projectile_start(projectile_transform->prev_position.x,
+                               projectile_transform->prev_position.y);
+  math::Vec2f projectile_end(projectile_transform->position.x,
+                             projectile_transform->position.y);
   // Check if the line made by the projectile will intersect the
   // asteroid at its current position.
   if (ProjectileCollidesWithAsteroid(
@@ -331,18 +330,18 @@ bool UpdateGame() {
       create_projectile->mutate_entity_id(GenerateFreeEntity());
       auto& projectile_transform = create_projectile->mutable_transform();
       projectile_transform.mutable_position() =
-          asteroids::Vec3(transform.position.x(),
-                          transform.position.y(),
-                          transform.position.z());
+          asteroids::Vec3(transform.position.x,
+                          transform.position.y,
+                          transform.position.z);
       projectile_transform.mutable_orientation() =
-          asteroids::Vec4(transform.orientation.x(),
-                          transform.orientation.y(),
-                          transform.orientation.z(),
-                          transform.orientation.w());
+          asteroids::Vec4(transform.orientation.w,
+                          transform.orientation.x,
+                          transform.orientation.y,
+                          transform.orientation.z);
       projectile_transform.mutable_prev_position() =
-           asteroids::Vec3(transform.prev_position.x(),
-                           transform.prev_position.y(),
-                           transform.prev_position.z());
+           asteroids::Vec3(transform.prev_position.x,
+                           transform.prev_position.y,
+                           transform.prev_position.z);
       // Unset input so two projectile will not shoot if the Update happens
       // to be called more than once for this frame.
       component::SetKeyUp(input.previous_input_mask, component::KEYBOARD_SPACE);
@@ -384,37 +383,37 @@ bool UpdateGame() {
     for (int i = 0; i < shape.points.size(); ++i) {
       const auto& point = shape.points[i];
       math::Vec3f world_point = 
-        world_transform * math::Vec3f(point.x(), point.y(), 0.f);
-      if (world_point.x() < min_x) {
-        min_x = world_point.x();
+        world_transform * math::Vec3f(point.x, point.y, 0.f);
+      if (world_point.x < min_x) {
+        min_x = world_point.x;
         min_x_idx = i;
       }
-      if (world_point.x() > max_x) {
-        max_x = world_point.x();
+      if (world_point.x > max_x) {
+        max_x = world_point.x;
         max_x_idx = i;
       }
-      if (world_point.y() < min_y) {
-        min_y = world_point.y();
+      if (world_point.y < min_y) {
+        min_y = world_point.y;
         min_y_idx = i;
       }
-      if (world_point.y() > max_y) {
-        max_y = world_point.y();
+      if (world_point.y > max_y) {
+        max_y = world_point.y;
         max_y_idx = i;
       }
     }
     bool teleported = false;
     if (max_x <= -1.0f) {
-      transform.position.x() = .99f;
+      transform.position.x = .99f;
       teleported = true;
     } else if (min_x >= 1.0f) {
-      transform.position.x() = -0.99f;
+      transform.position.x = -0.99f;
       teleported = true;
     }
     if (max_y <= -1.0f) { 
-      transform.position.y() = 0.99f;
+      transform.position.y = 0.99f;
       teleported = true;
     } else if (min_y >= 1.0f) {
-      transform.position.y() = -0.99f;
+      transform.position.y = -0.99f;
       teleported = true;
     }
     if (teleported) {
