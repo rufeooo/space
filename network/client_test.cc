@@ -29,9 +29,12 @@ void OnClientMsgReceived(uint8_t* data, int size) {
 
 TEST(Server, ClientHappyPath) {
   using namespace std::chrono_literals;
+
   network::server::Setup(&OnClientConnected, &OnServerMsgReceived);
   ASSERT_TRUE(network::server::Start("7890"));
+
   std::this_thread::sleep_for(1s);
+
   network::client::Setup(&OnClientMsgReceived);
   ASSERT_TRUE(network::client::Start("127.0.0.1", "7890"));
 
