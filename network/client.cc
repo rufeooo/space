@@ -1,8 +1,8 @@
-#include "server.h"
+#include "client.h"
 
+#include <atomic>
+#include <iostream>
 #include <thread>
-
-#include "network.h"
 
 namespace network {
 
@@ -10,112 +10,163 @@ namespace client {
 
 namespace {
 
-void StartClient(const char* hostname, const char* port) {
-#if 0
-  if (!SocketInit()) {
-    printf("Failed to initialize...\n\n");
-    return;
-  }
+static OnMsgReceived _OnMsgReceived;
 
-  printf("Configuring remote address...\n\n");
-  struct addrinfo hints = {0};
-  hints.ai_socktype = SOCK_DGRAM;  // UDP - use SOCK_STREAM for UDP
-  struct addrinfo* host_address;
-  if (getaddrinfo(hostname, port, &hints, &host_address)) {
-    fprintf(stderr, "getaddrinfo() failed (%d)\n\n",
-            network::SocketErrno());
-    return;
-  }
+constexpr int kMaxPacketSize = 1024;
+
+struct ClientState {
+  // Thread that the client is running on.
+  std::thread client_thread;
+
+  std::atomic<bool> client_running = false;
+
+  addrinfo* host_address;
+
+  std::string hostname;
+
+  std::string port;
 
   char address_buffer[100];
+
   char service_buffer[100];
 
-  getnameinfo(host_address->ai_addr, host_address->ai_addrlen,
-              address_buffer, sizeof(address_buffer),
-              service_buffer, sizeof(service_buffer), NI_NUMERICHOST);
-  printf("Name info: %s %s...\n\n", address_buffer, service_buffer);
-  printf("Creating client socket...\n\n");
+  SOCKET client_socket;
 
-  SOCKET socket_host;
-  socket_host = socket(
+  fd_set master_fd;
+
+  char read_buffer[kMaxPacketSize];
+};
+
+static ClientState kClientState;
+
+bool SetupHostAddressInfo() {
+  struct addrinfo hints = {0};
+  hints.ai_socktype = SOCK_DGRAM;  // UDP - use SOCK_STREAM for UDP
+  auto& host_address = kClientState.host_address;
+  if (getaddrinfo(kClientState.hostname.c_str(),
+                  kClientState.port.c_str(),
+                  &hints, &host_address)) {
+    std::cout << "getaddrinfo() failed: "
+              << network::SocketErrno() << std::endl;
+    return false;
+  }
+
+  if (getnameinfo(host_address->ai_addr, host_address->ai_addrlen,
+              kClientState.address_buffer,
+              sizeof(kClientState.address_buffer),
+              kClientState.service_buffer,
+              sizeof(kClientState.service_buffer), NI_NUMERICHOST)) {
+    std::cout << "getnameinfo() failed: "
+              << network::SocketErrno() << std::endl;
+    return false;
+  }
+
+  return true;
+}
+
+bool SetupClientSocket() {
+  auto& client_socket = kClientState.client_socket;
+  auto& host_address = kClientState.host_address;
+
+  client_socket = socket(
       host_address->ai_family, host_address->ai_socktype,
       host_address->ai_protocol);
 
-  if (!network::SocketIsValid(socket_host)) {
-    fprintf(stderr, "socket() failed (%d)\n\n",
-            network::SocketErrno());
-    return;
+  if (!network::SocketIsValid(client_socket)) {
+    std::cout << "socket() failed: "
+              << network::SocketErrno() << std::endl;
+    return false;
   }
 
+  return true;
+}
 
-  char read[kMaxMessageSize];
+
+bool RunClientLoop(timeval timeout, SOCKET max_socket) {
+  fd_set reads;
+  reads = kClientState.master_fd;
+
+  if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
+    std::cout << "select() failed: " << network::SocketErrno() << std::endl;
+    return false;
+  }
+
+  auto& client_socket = kClientState.client_socket;
+  if (FD_ISSET(client_socket, &reads)) {
+    int bytes_received = recvfrom(
+        client_socket, kClientState.read_buffer, kMaxPacketSize,
+        0, nullptr, nullptr);
+
+    assert(bytes_received < kMaxPacketSize);
+    if (bytes_received < 1) {
+      std::cout << "connection closed." << std::endl;
+      return false;
+    }
+
+    _OnMsgReceived((uint8_t*)&kClientState.read_buffer[0], bytes_received);
+  }
+
+  return true;
+}
+
+void RunClient() {
+  FD_ZERO(&kClientState.master_fd);
+  FD_SET(kClientState.client_socket, &kClientState.master_fd);
+  SOCKET max_socket = kClientState.client_socket;
+
   struct timeval timeout = {};
   timeout.tv_sec = 0; 
   timeout.tv_usec = 5000;
 
-  while (1) {
-    fd_set reads;
-    FD_ZERO(&reads);
-    FD_SET(socket_host, &reads);
-    // TODO: This timeout doesn't seem to consistently work? Benchmark
-    // and consider using a cross platform poll() instead.
-        //printf("select()\n\n");
-    if (select(socket_host + 1, &reads, 0, 0, &timeout) < 0) {
-      fprintf(stderr, "select() failed (%d)\n\n",
-              network::SocketErrno());
-      return;
-    }
-
-    //printf("select()\n\n");
-
-    bool fd_isset = FD_ISSET(socket_host, &reads);
-    bool queue_has_items = !outgoing_message_queue->Empty();
-
-    if (fd_isset) {
-      // Enqueue incoming messages from server.
-      memset(&read[0], 0, kMaxMessageSize);
-      int bytes_received = recvfrom(
-          socket_host, read, kMaxMessageSize, 0, nullptr, nullptr);
-      if (bytes_received < 1) {
-        fprintf(stderr, "connection closed. (%d)\n\n",
-                network::SocketErrno());
-        continue;
-      }
-      //printf("Message from host data: %.*s bytes: %i\n\n",
-      //       bytes_received, read, bytes_received);
-      Message msg;
-      msg.data = (uint8_t*)malloc(bytes_received);
-      memcpy(msg.data, &read[0], bytes_received);
-      msg.size = bytes_received;
-      incoming_message_queue->Enqueue(msg);
-    }
-
-    if (queue_has_items) {
-      flatbuffers::DetachedBuffer msg
-          = outgoing_message_queue->Dequeue();
-      do {
-        //printf("Sending msg size: %zu\n\n", msg.size());
-        // Send outgoing messages to server.
-        sendto(socket_host, (const char*)msg.data(), msg.size(), 0,
-               host_address->ai_addr, host_address->ai_addrlen);
-        //free(msg.data);
-        msg = outgoing_message_queue->Dequeue();
-      } while(msg.size() != 0);
-    }
-
-    // If the client is supposed to stop, stop it.
-    if (outgoing_message_queue->IsStopped()) {
-      return;
+  while (kClientState.client_running) {
+    if (!RunClientLoop(timeout, max_socket)) {
+      break;
     }
   }
-#endif
 }
-
 
 }  // anonymous
 
-std::thread Create(const char* hostname, const char* port) {
-  return std::thread(StartClient, hostname, port);
+void Setup(OnMsgReceived on_msg_received_callback) {
+  _OnMsgReceived = on_msg_received_callback;
+}
+
+// Start client and begin receiving messages from the hostname.
+bool Start(const char* hostname, const char* port) {
+  if (!SocketInit()) {
+    std::cout << "Failed to initialize." << std::endl;
+    return false;
+  }
+
+  kClientState.hostname = hostname;
+  kClientState.port = port;
+
+  if (!SetupHostAddressInfo()) {
+    return false;
+  }
+
+  if (!SetupClientSocket()) {
+    return false;
+  }
+
+  kClientState.client_thread = std::thread(RunClient);
+  kClientState.client_running = true;
+
+  return true;
+}
+
+void Stop() {
+  auto& client_thread = kClientState.client_thread;
+  if (!client_thread.joinable()) return;
+  kClientState.client_running = false;
+  client_thread.join();
+}
+
+void Send(uint8_t* buffer, int size) {
+  sendto(kClientState.client_socket,
+         (const char*)buffer, size, 0,
+         kClientState.host_address->ai_addr,
+         kClientState.host_address->ai_addrlen);
 }
 
 }  // client

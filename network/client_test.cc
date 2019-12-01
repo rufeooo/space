@@ -1,75 +1,54 @@
 #include "gtest/gtest.h"
 
 #include <chrono>
+#include <iostream>
 #include <thread>
-
-#include <flatbuffers/flatbuffers.h>
 
 #include "server.h"
 #include "client.h"
-#include "message_queue.h"
-#include "testdata/packet_generated.h"
+
+static int kCallbacksCalled = 0;
+
+void OnClientConnected(int client_id) {
+  std::cout << "Client " << client_id << " connected..." << std::endl;
+  ASSERT_EQ(client_id, 0);
+  ++kCallbacksCalled;
+}
+
+void OnServerMsgReceived(int client_id, uint8_t* data, int size) {
+  std::cout << "Client " << client_id << " sent msg..." << std::endl;
+  ASSERT_EQ(size, 5);
+  ASSERT_EQ(strncmp((char*)data, "hello", size), 0);
+  ++kCallbacksCalled;
+}
+
+void OnClientMsgReceived(uint8_t* data, int size) {
+  std::cout << "Server sent msg..." << std::endl;
+  ++kCallbacksCalled;
+}
 
 TEST(Server, ClientHappyPath) {
   using namespace std::chrono_literals;
-  network::OutgoingMessageQueue server_outgoing_message_queue;
-  network::IncomingMessageQueue server_incoming_message_queue;
-  std::thread server_thread
-      = network::server::Create("7890",
-                                &server_outgoing_message_queue,
-                                &server_incoming_message_queue);
-  // Give the server a little time to spin  up
-  std::cout << "waiting for server to start..."
-            << std::endl << std::endl;
-  std::this_thread::sleep_for(10s);
-  network::OutgoingMessageQueue client_outgoing_message_queue;
-  network::IncomingMessageQueue client_incoming_message_queue;
-  std::thread client_thread
-      = network::client::Create("127.0.0.1", "7890",
-                                &client_outgoing_message_queue,
-                                &client_incoming_message_queue);
-  std::cout << "waiting for client to start..."
-            << std::endl << std::endl;
+  network::server::Setup(&OnClientConnected, &OnServerMsgReceived);
+  ASSERT_TRUE(network::server::Start("7890"));
   std::this_thread::sleep_for(1s);
-  // In order for clients to start receiving messages from server they
-  // need to first send them a message.
-  {
-    flatbuffers::FlatBufferBuilder fbb;
-    auto data = fbb.CreateString("Hello!");
-    auto packet = testdata::CreatePacket(fbb, data);
-    fbb.Finish(packet);
-    client_outgoing_message_queue.Enqueue(fbb.Release());
-    network::Message server_incoming_msg;
-    do {
-      server_incoming_msg = server_incoming_message_queue.Dequeue();
-    } while  (server_incoming_msg.size == 0);
-    auto* received_packet = testdata::GetPacket(
-        (const void*)server_incoming_msg.data);
-    ASSERT_EQ(std::string(received_packet->data()->c_str()),
-              std::string("Hello!"));
-    free(server_incoming_msg.data);
-  }
-  {
-    flatbuffers::FlatBufferBuilder fbb;
-    auto data = fbb.CreateString("Hello Back!");
-    auto packet = testdata::CreatePacket(fbb, data);
-    fbb.Finish(packet);
-    server_outgoing_message_queue.Enqueue(fbb.Release());
-    network::Message client_incoming_msg;
-    do {
-      client_incoming_msg = client_incoming_message_queue.Dequeue();
-    } while  (client_incoming_msg.size == 0);
-    auto* received_packet = testdata::GetPacket(
-        (const void*)client_incoming_msg.data);
-    ASSERT_EQ(std::string(received_packet->data()->c_str()),
-              std::string("Hello Back!"));
-    free(client_incoming_msg.data);
-  }
-  server_incoming_message_queue.Stop();
-  client_outgoing_message_queue.Stop();
+  network::client::Setup(&OnClientMsgReceived);
+  ASSERT_TRUE(network::client::Start("127.0.0.1", "7890"));
 
-  server_thread.join();
-  client_thread.join();
+  char msg[6] = "hello";
+
+  // Client says hi to server!
+  network::client::Send((uint8_t*)&msg[0], 5);
+  std::this_thread::sleep_for(1s);
+
+  // Server says hi to client!
+  network::server::Send(0, (uint8_t*)&msg[0], 5);
+  std::this_thread::sleep_for(1s);
+
+  ASSERT_EQ(kCallbacksCalled, 3);
+
+  network::server::Stop();
+  network::client::Stop();
 }
 
 int main(int argc, char** argv) {

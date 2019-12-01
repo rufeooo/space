@@ -9,12 +9,8 @@ else (WIN32)
 endif (WIN32)
 
 include_directories(${CMAKE_SOURCE_DIR})
-include_directories(${CMAKE_SOURCE_DIR}/third_party/flatbuffers/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/googletest/include)
 include_directories(${CMAKE_SOURCE_DIR}/third_party/googlemock/include)
-
-build_flatbuffers(
-    "testdata/packet.fbs" "" testdata_packet_fbs "" "testdata/" "" "")
 
 add_library(network ${network_srcs})
 
@@ -30,7 +26,6 @@ set(server_test_srcs
 
 add_executable(server_test ${server_test_srcs})
 target_link_libraries(server_test server gtest)
-add_dependencies(server_test testdata_packet_fbs)
 
 set(client_srcs
     "client.h"
@@ -43,4 +38,3 @@ set(client_test_srcs
 
 add_executable(client_test ${client_test_srcs})
 target_link_libraries(client_test server client gtest)
-add_dependencies(client_test testdata_packet_fbs)

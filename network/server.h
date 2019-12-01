@@ -1,8 +1,5 @@
 #pragma once
 
-#include <thread>
-#include <array>
-
 #include "network.h"
 
 namespace network {
@@ -15,11 +12,11 @@ namespace server {
 typedef void (*OnClientConnected)(int);
 
 // Called when a message is received from a client_id.
-typedef void (*OnMsgRecieved)(int, uint8_t*, int);
+typedef void (*OnMsgReceived)(int, uint8_t*, int);
 
 void Setup(
     OnClientConnected on_client_connected_callback,
-    OnMsgRecieved on_msg_received_callback);
+    OnMsgReceived on_msg_received_callback);
 
 // Start the server and bind it
 bool Start(const char* port);

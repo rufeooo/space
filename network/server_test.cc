@@ -58,7 +58,7 @@ void OnClientConnected(int client_id) {
   ++kStuffCalled;
 }
 
-void OnMsgRecieved(int client_id, uint8_t* data, int size) {
+void OnMsgReceived(int client_id, uint8_t* data, int size) {
   ASSERT_EQ(size, 5);
   ASSERT_EQ(strncmp((char*)data, "hello", size), 0);
   ++kStuffCalled;
@@ -66,7 +66,7 @@ void OnMsgRecieved(int client_id, uint8_t* data, int size) {
 
 TEST(Server, ServerHappyPath) {
   using namespace std::chrono_literals;
-  network::server::Setup(&OnClientConnected, &OnMsgRecieved);
+  network::server::Setup(&OnClientConnected, &OnMsgReceived);
   ASSERT_TRUE(network::server::Start("7890"));
   // Create a client connection which the server will respond to when
   // new events enter its message queue.

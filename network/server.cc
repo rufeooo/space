@@ -1,10 +1,8 @@
 #include "server.h"
 
-#include <iostream>
 #include <atomic>
+#include <iostream>
 #include <thread>
-
-#include "network.h"
 
 namespace network {
 
@@ -13,7 +11,7 @@ namespace server {
 namespace {
 
 static OnClientConnected _OnClientConnected;
-static OnMsgRecieved _OnMsgReceived;
+static OnMsgReceived _OnMsgReceived;
 
 // ...
 constexpr int kAddressSize = 256;
@@ -47,7 +45,7 @@ struct ServerState {
   int client_count;
 
   // ...
-  SOCKET listen_socket;
+  SOCKET server_socket;
 
   // ...
   addrinfo* bind_address;
@@ -73,28 +71,28 @@ int GetClientId(char* address) {
   return -1;
 }
 
-void SetupBindAddressInfo(const char* port) {
+void SetupBindAddressInfo() {
   addrinfo hints = {0};
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_DGRAM;  // UDP - use SOCK_STREAM for UDP
   hints.ai_flags = AI_PASSIVE;
   auto& bind_address = kServerState.bind_address;
-  getaddrinfo(0, port, &hints, &bind_address);
+  getaddrinfo(0, kServerState.port.c_str(), &hints, &bind_address);
 }
 
 bool SetupListenSocket() {
-  auto& listen_socket = kServerState.listen_socket;
+  auto& server_socket = kServerState.server_socket;
   auto& bind_address = kServerState.bind_address;
-  listen_socket =
+  server_socket =
       socket(bind_address->ai_family, bind_address->ai_socktype,
              bind_address->ai_protocol);
 
-  if (!SocketIsValid(listen_socket)) {
+  if (!SocketIsValid(server_socket)) {
     std::cout << "socket() failed: " << network::SocketErrno() << std::endl;
     return false;
   }
 
-  if (bind(listen_socket, bind_address->ai_addr,
+  if (bind(server_socket, bind_address->ai_addr,
            bind_address->ai_addrlen)) {
     std::cout << "bind() failed: " << network::SocketErrno() << std::endl;
     return false;
@@ -107,8 +105,6 @@ bool RunServerLoop(timeval timeout, SOCKET max_socket) {
   fd_set reads;
   reads = kServerState.master_fd;
 
-  // TODO: This timeout doesn't seem to consistently work? Benchmark
-  // and consider using a cross platform poll() instead.
   if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
     std::cout << "select() failed: " << network::SocketErrno() << std::endl;
     return false;
@@ -116,7 +112,7 @@ bool RunServerLoop(timeval timeout, SOCKET max_socket) {
 
   // If there is data to read from the socket, read it and cache
   // off the client address.    
-  auto& socket_listen = kServerState.listen_socket; 
+  auto& socket_listen = kServerState.server_socket; 
   if (FD_ISSET(socket_listen, &reads)) {
     sockaddr_storage client_address;
     socklen_t client_len = sizeof(client_address);
@@ -158,8 +154,8 @@ bool RunServerLoop(timeval timeout, SOCKET max_socket) {
 
 void RunServer() {
   FD_ZERO(&kServerState.master_fd);
-  FD_SET(kServerState.listen_socket, &kServerState.master_fd);
-  SOCKET max_socket = kServerState.listen_socket;
+  FD_SET(kServerState.server_socket, &kServerState.master_fd);
+  SOCKET max_socket = kServerState.server_socket;
 
   // Timeout that is used in select() called.
   timeval timeout = {};
@@ -178,7 +174,7 @@ void RunServer() {
 
 void Setup(
     OnClientConnected on_client_connected_callback,
-    OnMsgRecieved on_msg_received_callback) {
+    OnMsgReceived on_msg_received_callback) {
   _OnClientConnected = on_client_connected_callback;
   _OnMsgReceived = on_msg_received_callback;
 }
@@ -189,14 +185,15 @@ bool Start(const char* port) {
     return false;
   }
 
-  SetupBindAddressInfo(port);
+  kServerState.port = port;
+
+  SetupBindAddressInfo();
 
   if (!SetupListenSocket()) {
     std::cout << "Failed setting up listen socket." << std::endl;
     return false;
   }
 
-  kServerState.port = port;
   kServerState.server_thread = std::thread(RunServer);
   kServerState.server_running = true;
 
@@ -211,7 +208,7 @@ void Stop() {
 }
 
 void Send(int client_id, uint8_t* buffer, int size) {
-  sendto(kServerState.listen_socket, (char*)buffer, size, 0,
+  sendto(kServerState.server_socket, (char*)buffer, size, 0,
          (sockaddr*)&kServerState.clients[client_id].client_address,
          kServerState.clients[client_id].client_len);
 }
