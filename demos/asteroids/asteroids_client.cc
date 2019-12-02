@@ -16,9 +16,20 @@ DEFINE_string(hostname, "",
 DEFINE_string(port, "9845", "Port for this application.");
 DEFINE_string(replay_file, "", "Run game from replay file.");
 
+void OnServerMsgReceived(uint8_t* msg, int size) {
+}
+
 bool IsSinglePlayer() { return FLAGS_hostname.empty(); }
 
 bool Initialize() {
+  if (!FLAGS_hostname.empty()) {
+    network::client::Setup(&OnServerMsgReceived);
+    if (!network::client::Start(
+        FLAGS_hostname.c_str(), FLAGS_port.c_str())) {
+      std::cout << "Unable to start client." << std::endl;
+      return false;
+    }
+  }
   // Clients entities start at max free entity and then decrement.
   // These are largely ephemeral and will be deleted when the server
   // replicates client created entities.
@@ -35,6 +46,10 @@ bool Initialize() {
   auto* create_player = game::CreateEvent<asteroids::CreatePlayer>(
       asteroids::Event::CREATE_PLAYER);
   create_player->mutate_entity_id(asteroids::GenerateFreeEntity());
+
+  // Inform the server of this player joining.
+  network::client::Send(
+      ((uint8_t*)create_player - 4), sizeof(asteroids::CreatePlayer) + 4);
  
   if (IsSinglePlayer()) {
     asteroids::GlobalGameState().components
@@ -88,6 +103,7 @@ bool ProcessInput() {
 }
 
 void OnEnd() {
+  network::client::Stop();
 }
 
 int main(int argc, char** argv) {

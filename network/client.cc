@@ -163,6 +163,7 @@ void Stop() {
 }
 
 void Send(uint8_t* buffer, int size) {
+  if (!kClientState.client_running) return;
   sendto(kClientState.client_socket,
          (const char*)buffer, size, 0,
          kClientState.host_address->ai_addr,

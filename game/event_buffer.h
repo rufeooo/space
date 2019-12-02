@@ -21,6 +21,10 @@ void DeallocateEventBuffer();
 // casted to the desired type.
 void* EnqueueEvent(uint16_t size, uint16_t metadata);
 
+// Enqueue an event by copying from the given buffer. This
+// function is thread safe.
+void EnqueueEvent(uint8_t* event, int size);
+
 // Poll the event buffer until it's empty.
 bool PollEvent(Event* event);
 

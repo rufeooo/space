@@ -6,14 +6,26 @@
 #include "asteroids.h"
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
-#include "network/server.h"
-#include "protocol/asteroids_commands_generated.h"
+#include "game/event_buffer.h"
 #include "game/game.h"
+#include "protocol/asteroids_commands_generated.h"
+#include "network/server.h"
 
 DEFINE_string(port, "9845", "Port for this application.");
 
+void OnClientConnected(int client_id) {
+  std::cout << "Client: " << client_id << " connected." << std::endl;
+}
+
+void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
+  // Directly enqueue the clients message for now...
+  game::EnqueueEvent(msg, size);
+}
+
 bool Initialize() {
   assert(!FLAGS_port.empty());
+
+  network::server::Setup(&OnClientConnected, &OnClientMsgReceived);
 
   if (!network::server::Start(FLAGS_port.c_str())) {
     std::cout << "Unable to start server." << std::endl;
@@ -57,6 +69,7 @@ int main(int argc, char** argv) {
               &Update,
               &Render,
               &OnEnd);
+
   if (!game::Run()) {
     std::cerr << "Encountered error running game..." << std::endl;
   }

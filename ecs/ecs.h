@@ -174,7 +174,6 @@ class ComponentStorage {
       components_;
   std::unordered_map<ecs::Entity, std::vector<std::function<void()>>>
       deletion_;
-
 };
 
 

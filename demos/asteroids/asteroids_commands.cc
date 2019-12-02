@@ -14,7 +14,6 @@ namespace asteroids {
 namespace commands {
 
 void Execute(asteroids::CreatePlayer& create_player) {
-  std::cout << "SIZE: " << sizeof(CreatePlayer) << std::endl;
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id());
   components.Assign<PolygonShape>(

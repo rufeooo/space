@@ -32,6 +32,7 @@ set(client_srcs
     "client.cc")
 
 add_library(client ${client_srcs})
+target_link_libraries(client network)
 
 set(client_test_srcs
     "client_test.cc")

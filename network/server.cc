@@ -208,6 +208,7 @@ void Stop() {
 }
 
 void Send(int client_id, uint8_t* buffer, int size) {
+  if (!kServerState.server_running) return;
   sendto(kServerState.server_socket, (char*)buffer, size, 0,
          (sockaddr*)&kServerState.clients[client_id].client_address,
          kServerState.clients[client_id].client_len);
