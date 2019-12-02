@@ -8,9 +8,6 @@ source run_constants.sh
 make ecs_test
 ./ecs/ecs_test
 
-make system_test
-./ecs/system_test
-
 make search_test
 ./search/search_test
 

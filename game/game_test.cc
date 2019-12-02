@@ -13,6 +13,9 @@ bool DumbProcessInput() {
   return true;
 }
 
+void DumbHandleEvent(game::Event event) {
+}
+
 bool DumbUpdate() {
   return true;
 }
@@ -31,6 +34,7 @@ TEST(Game, HappyPathGameTest) {
   game::Setup(
       &DumbInitialize,
       &DumbProcessInput,
+      &DumbHandleEvent,
       &DumbUpdate,
       &DumbRender,
       &DumbEnd);
