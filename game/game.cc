@@ -84,10 +84,11 @@ void OptionallyPumpEventsFromFile() {
     // Make sure the event buffer has memory allocated if it's
     // being used.
     assert(event_buffer.buffer != nullptr);
+    int size_with_header = size + kEventHeaderSize;
     input.read((char*)&event_buffer.buffer[event_buffer.idx],
-               size + 4); // + 4 for the size and metadata
-    event_buffer.idx += size + 4;
-    cur_pos += size + 4;
+               size_with_header);
+    event_buffer.idx += size_with_header;
+    cur_pos += size_with_header;
     input.seekg(cur_pos);
   }
 }
@@ -105,9 +106,10 @@ void OptionallyWriteEventToFile(const Event& event) {
   auto& file = kGameState.output_event_file;
   if (!file.is_open()) return;
   // Write game loop first then event.
-  file.write((char*)&kGameState.game_updates, sizeof(uint64_t));
-  file.write((char*)&event.size, sizeof(uint16_t));
-  file.write((char*)&event.metadata, sizeof(uint16_t));
+  file.write((char*)&kGameState.game_updates,
+             sizeof(kGameState.game_updates));
+  file.write((char*)&event.size, sizeof(event.size));
+  file.write((char*)&event.metadata, sizeof(event.metadata));
   file.write((char*)&event.data[0], event.size);
 }
 

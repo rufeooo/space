@@ -13,6 +13,9 @@ struct Event {
   uint8_t* data = nullptr;
 };
 
+constexpr int kEventHeaderSize
+    = sizeof(Event::size) + sizeof(Event::metadata);
+
 struct SavedEvent {
   // The game loop the event was run on.
   uint64_t game_loop;

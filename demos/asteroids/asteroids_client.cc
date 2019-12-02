@@ -49,7 +49,8 @@ bool Initialize() {
 
   // Inform the server of this player joining.
   network::client::Send(
-      ((uint8_t*)create_player - 4), sizeof(asteroids::CreatePlayer) + 4);
+      ((uint8_t*)create_player - game::kEventHeaderSize),
+      sizeof(asteroids::CreatePlayer) + game::kEventHeaderSize);
  
   if (IsSinglePlayer()) {
     asteroids::GlobalGameState().components

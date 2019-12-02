@@ -34,9 +34,9 @@ void* EnqueueEvent(uint16_t size, uint16_t metadata) {
   auto& events = kDefaultEventBuffer; 
   assert(events.idx + size < events.buffer_size);
   *((uint16_t*)(events.buffer + events.idx)) = size;
-  events.idx += 2;
+  events.idx += sizeof(size);
   *((uint16_t*)(events.buffer + events.idx)) = metadata;
-  events.idx += 2;
+  events.idx += sizeof(metadata);
   uint8_t* data = (events.buffer + events.idx);
   events.idx += size;
   return data;
@@ -59,9 +59,9 @@ bool PollEvent(Event* event) {
   if (events.poll_idx >= events.idx) return false;
   std::lock_guard<std::mutex> guard(kMutex);
   event->size = *((uint16_t*)(events.buffer + events.poll_idx));
-  events.poll_idx += 2;
+  events.poll_idx += sizeof(event->size);
   event->metadata = *((uint16_t*)(events.buffer + events.poll_idx));
-  events.poll_idx += 2;
+  events.poll_idx += sizeof(event->metadata);
   event->data = (events.buffer + events.poll_idx);
   events.poll_idx += event->size;
   return true;
