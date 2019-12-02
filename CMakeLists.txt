@@ -51,7 +51,6 @@ include(${CMAKE_SOURCE_DIR}/third_party/flatbuffers/CMake/BuildFlatBuffers.cmake
 # Our stuff.
 add_subdirectory(types)
 add_subdirectory(math)
-add_subdirectory(observer)
 add_subdirectory(search)
 add_subdirectory(network)
 add_subdirectory(platform)
