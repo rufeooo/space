@@ -6,25 +6,25 @@
 #include "asteroids.h"
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
-#include "integration/entity_replication/entity_replication_server.h"
 #include "network/server.h"
 #include "protocol/asteroids_commands_generated.h"
 #include "game/game.h"
 
 DEFINE_string(port, "9845", "Port for this application.");
-// TODO: Reimplement.
-DEFINE_bool(headless, true, "Set to false to render game. Should be "
-                            "used for debug only");
 
 bool Initialize() {
   assert(!FLAGS_port.empty());
-  integration::entity_replication::Start(
-      integration::entity_replication::ReplicationType::SERVER,
-      FLAGS_port.c_str());
+
+  if (!network::server::Start(FLAGS_port.c_str())) {
+    std::cout << "Unable to start server." << std::endl;
+    return 0;
+  }
+
   if (!asteroids::Initialize()) {
     std::cout << "Failed to initialize asteroids." << std::endl;
     return false;
   }
+
   asteroids::GlobalGameState().components
       .Assign<asteroids::GameStateComponent>(
           asteroids::GenerateFreeEntity());
@@ -46,12 +46,17 @@ bool Render() {
 }
 
 void OnEnd() {
-  integration::entity_replication::Stop();
+  network::server::Stop();
 }
 
 int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  game::Setup(&Initialize, &ProcessInput, &Update, &Render, &OnEnd);
+  game::Setup(&Initialize,
+              &ProcessInput,
+              &asteroids::HandleEvent,
+              &Update,
+              &Render,
+              &OnEnd);
   if (!game::Run()) {
     std::cerr << "Encountered error running game..." << std::endl;
   }

@@ -60,10 +60,4 @@ struct RandomNumberIntChoiceComponent {
   uint8_t random_number;
 };
 
-struct ConnectionComponent {
-  std::thread network_thread;
-  bool is_client = false;
-  bool is_server = false;
-};
-
 }

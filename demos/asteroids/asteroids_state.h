@@ -86,8 +86,6 @@ struct GameState {
     RandomNumberIntChoiceComponent,
     component::ServerAuthoritativeComponent,
     component::ClientAuthoritativeComponent> components;
-  ecs::SingletonComponentStorage<ConnectionComponent>
-    singleton_components; 
 };
 
 GameState& GlobalGameState();

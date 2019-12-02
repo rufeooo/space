@@ -14,7 +14,7 @@ target_link_libraries(asteroids_lib glfw_renderer math_lib flatbuffers)
 target_link_libraries(asteroids_client asteroids_lib game_lib
                       glfw_renderer client gflags)
 target_link_libraries(asteroids_server asteroids_lib game_lib
-                      glfw_renderer server gflags entity_replication)
+                      glfw_renderer server gflags)
 
 add_dependencies(asteroids_lib asteroids_command_fbs)
 
