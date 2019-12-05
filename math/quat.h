@@ -10,7 +10,6 @@ namespace math {
 
 template <typename T>
 struct Quat {
- public:
   // TODO: This should probably normalize itself because it needs to
   // be a unit vector. Maybe do it before converting to rotation
   // matrix so it's only done when it needs to be.

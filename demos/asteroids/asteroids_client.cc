@@ -3,6 +3,7 @@
 #include <gflags/gflags.h>
 
 #include "asteroids.h"
+#include "asteroids_commands.h"
 #include "asteroids_state.h"
 #include "components/common/transform_component.h"
 #include "components/common/input_component.h"
@@ -45,7 +46,7 @@ bool Initialize() {
 
   auto* create_player = game::CreateEvent<asteroids::CreatePlayer>(
       asteroids::Event::CREATE_PLAYER);
-  create_player->mutate_entity_id(asteroids::GenerateFreeEntity());
+  create_player->entity_id = asteroids::GenerateFreeEntity();
 
   // Inform the server of this player joining.
   network::client::Send(
@@ -71,32 +72,32 @@ bool ProcessInput() {
   static asteroids::Input player_input;
   previous_player_input = player_input;
   auto& opengl = asteroids::GlobalOpenGL();
-  player_input.mutate_previous_input_mask(player_input.input_mask());
-  player_input.mutate_input_mask(0);
+  player_input.previous_input_mask = player_input.input_mask;
+  player_input.input_mask = 0;
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_W)) {
-    player_input.mutate_input_mask(
-        player_input.input_mask() | asteroids::Key_W);
+    player_input.input_mask =
+        player_input.input_mask | (uint8_t)asteroids::InputKey::W;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_A)) {
-    player_input.mutate_input_mask(
-        player_input.input_mask() | asteroids::Key_A);
+    player_input.input_mask =
+        player_input.input_mask | (uint8_t)asteroids::InputKey::A;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_S)) {
-    player_input.mutate_input_mask(
-        player_input.input_mask() | asteroids::Key_S);
+    player_input.input_mask =
+        player_input.input_mask | (uint8_t)asteroids::InputKey::S;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_D)) {
-    player_input.mutate_input_mask(
-        player_input.input_mask() | asteroids::Key_D);
+    player_input.input_mask =
+        player_input.input_mask | (uint8_t)asteroids::InputKey::D;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
-    player_input.mutate_input_mask(
-        player_input.input_mask() | asteroids::Key_SPACE);
+    player_input.input_mask =
+        player_input.input_mask | (uint8_t)asteroids::InputKey::SPACE;
   }
-  if (player_input.input_mask() !=
-          previous_player_input.input_mask() ||
-      player_input.previous_input_mask() !=
-          previous_player_input.previous_input_mask()) {
+  if (player_input.input_mask !=
+          previous_player_input.input_mask ||
+      player_input.previous_input_mask !=
+          previous_player_input.previous_input_mask) {
     *game::CreateEvent<asteroids::Input>(
         asteroids::Event::PLAYER_INPUT) = player_input;
   }

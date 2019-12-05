@@ -176,5 +176,4 @@ class ComponentStorage {
       deletion_;
 };
 
-
 }  // namespace ecs

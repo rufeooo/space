@@ -327,21 +327,9 @@ bool UpdateGame() {
           input.input_mask, component::KEYBOARD_SPACE)) {
       auto* create_projectile = game::CreateEvent<asteroids::CreateProjectile>(
           Event::CREATE_PROJECTILE);
-      create_projectile->mutate_entity_id(GenerateFreeEntity());
-      auto& projectile_transform = create_projectile->mutable_transform();
-      projectile_transform.mutable_position() =
-          asteroids::Vec3(transform.position.x,
-                          transform.position.y,
-                          transform.position.z);
-      projectile_transform.mutable_orientation() =
-          asteroids::Vec4(transform.orientation.w,
-                          transform.orientation.x,
-                          transform.orientation.y,
-                          transform.orientation.z);
-      projectile_transform.mutable_prev_position() =
-           asteroids::Vec3(transform.prev_position.x,
-                           transform.prev_position.y,
-                           transform.prev_position.z);
+      create_projectile->entity_id = GenerateFreeEntity();
+      auto& projectile_transform = create_projectile->transform;
+      projectile_transform = transform;
       // Unset input so two projectile will not shoot if the Update happens
       // to be called more than once for this frame.
       component::SetKeyUp(input.previous_input_mask, component::KEYBOARD_SPACE);
@@ -437,13 +425,11 @@ bool UpdateGame() {
           disr(-10000.0, 10000.0);
       auto* create_asteroid = game::CreateEvent<CreateAsteroid>(
           Event::CREATE_ASTEROID);
-      create_asteroid->mutate_entity_id(GenerateFreeEntity());
-      create_asteroid->mutable_position() =
-          asteroids::Vec3(disr(gen), disr(gen), 0.f);
-      create_asteroid->mutable_direction() =
-          asteroids::Vec3(disr(gen), disr(gen), 0.f);
-      create_asteroid->mutate_angle(disr(gen));
-      create_asteroid->mutate_random_number(0);
+      create_asteroid->entity_id = GenerateFreeEntity();
+      create_asteroid->position = math::Vec3f(disr(gen), disr(gen), 0.f);
+      create_asteroid->direction = math::Vec3f(disr(gen), disr(gen), 0.f);
+      create_asteroid->angle = disr(gen);
+      create_asteroid->random_number = 0;
       game_state.seconds_since_last_asteroid_spawn = 0.f;
       game_state.asteroid_count++;
     }

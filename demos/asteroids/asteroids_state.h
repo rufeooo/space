@@ -13,7 +13,6 @@
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
 #include "math/vec.h"
-#include "protocol/asteroids_commands_generated.h"
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
@@ -58,21 +57,15 @@ struct EntityGeometry {
 EntityGeometry& GlobalEntityGeometry();
 
 struct ProjectileEntityData {
-  ProjectileEntityData(
-      const ecs::Entity& entity,
-      const CreateProjectile& create_projectile) :
-    entity(entity), create_projectile(create_projectile) {}
+  ProjectileEntityData(const ecs::Entity& entity) :
+    entity(entity) {}
   ecs::Entity entity;
-  CreateProjectile create_projectile;
 };
 
 struct AsteroidEntityData {
-  AsteroidEntityData(
-      const ecs::Entity& entity,
-      const CreateAsteroid& create_asteroid) :
-    entity(entity), create_asteroid(create_asteroid) {}
+  AsteroidEntityData(const ecs::Entity& entity) :
+    entity(entity) {}
   ecs::Entity entity;
-  CreateAsteroid create_asteroid;
 };
 
 struct GameState {
