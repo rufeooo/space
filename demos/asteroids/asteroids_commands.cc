@@ -13,7 +13,7 @@ namespace asteroids {
 
 namespace commands {
 
-void Execute(asteroids::CreatePlayer& create_player) {
+void Execute(CreatePlayer& create_player) {
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id);
   components.Assign<PolygonShape>(
@@ -31,7 +31,7 @@ void Execute(asteroids::CreatePlayer& create_player) {
       create_player.entity_id);
 }
 
-void Execute(asteroids::CreateProjectile& create_projectile) {
+void Execute(CreateProjectile& create_projectile) {
   auto& components = GlobalGameState().components;
   auto dir = math::Normalize(
       create_projectile.transform.orientation.Up());
@@ -56,7 +56,7 @@ void Execute(asteroids::CreateProjectile& create_projectile) {
       {create_projectile.entity_id});
 }
 
-void Execute(asteroids::CreateAsteroid& create_asteroid) {
+void Execute(CreateAsteroid& create_asteroid) {
   auto& components = GlobalGameState().components;
   math::Vec3f dir = math::Normalize(create_asteroid.direction);
   components.Assign<component::TransformComponent>(
@@ -100,13 +100,13 @@ void Execute(asteroids::CreateAsteroid& create_asteroid) {
       GlobalOpenGLGameReferences().program_reference,
       GlobalEntityGeometry()
           .asteroid_geometry[random_number - 1].size());
-  asteroids::CreateAsteroid create_command(create_asteroid);
+  CreateAsteroid create_command(create_asteroid);
   create_command.random_number = random_number;
   GlobalGameState().asteroid_entities.push_back(
       create_asteroid.entity_id);
 }
 
-void Execute(asteroids::Input& input) {
+void Execute(Input& input) {
   auto& components = GlobalGameState().components;
   components.Enumerate<component::InputComponent>(
       [&input](ecs::Entity entity, component::InputComponent& cinput) {

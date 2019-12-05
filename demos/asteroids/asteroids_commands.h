@@ -8,6 +8,8 @@
 
 namespace asteroids {
 
+namespace commands {
+
 struct CreatePlayer {
   uint64_t entity_id;
   math::Vec3f position;
@@ -40,12 +42,10 @@ struct Input {
   uint8_t previous_input_mask;
 };
 
-namespace commands {
-
-void Execute(asteroids::CreatePlayer& create_player);
-void Execute(asteroids::CreateProjectile& create_projectile);
-void Execute(asteroids::CreateAsteroid& create_asteroid);
-void Execute(asteroids::Input& input);
+void Execute(CreatePlayer& create_player);
+void Execute(CreateProjectile& create_projectile);
+void Execute(CreateAsteroid& create_asteroid);
+void Execute(Input& input);
 
 }
 

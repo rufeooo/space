@@ -44,14 +44,15 @@ bool Initialize() {
 
   game::SaveEventsToFile();
 
-  auto* create_player = game::CreateEvent<asteroids::CreatePlayer>(
-      asteroids::Event::CREATE_PLAYER);
+  auto* create_player =
+      game::CreateEvent<asteroids::commands::CreatePlayer>(
+          asteroids::Event::CREATE_PLAYER);
   create_player->entity_id = asteroids::GenerateFreeEntity();
 
   // Inform the server of this player joining.
   network::client::Send(
       ((uint8_t*)create_player - game::kEventHeaderSize),
-      sizeof(asteroids::CreatePlayer) + game::kEventHeaderSize);
+      sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
  
   if (IsSinglePlayer()) {
     asteroids::GlobalGameState().components
@@ -68,37 +69,42 @@ bool Initialize() {
 
 bool ProcessInput() {
   glfwPollEvents();
-  static asteroids::Input previous_player_input;
-  static asteroids::Input player_input;
+  static asteroids::commands::Input previous_player_input;
+  static asteroids::commands::Input player_input;
   previous_player_input = player_input;
   auto& opengl = asteroids::GlobalOpenGL();
   player_input.previous_input_mask = player_input.input_mask;
   player_input.input_mask = 0;
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_W)) {
     player_input.input_mask =
-        player_input.input_mask | (uint8_t)asteroids::InputKey::W;
+        player_input.input_mask |
+        (uint8_t)asteroids::commands::InputKey::W;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_A)) {
     player_input.input_mask =
-        player_input.input_mask | (uint8_t)asteroids::InputKey::A;
+        player_input.input_mask |
+        (uint8_t)asteroids::commands::InputKey::A;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_S)) {
     player_input.input_mask =
-        player_input.input_mask | (uint8_t)asteroids::InputKey::S;
+        player_input.input_mask |
+        (uint8_t)asteroids::commands::InputKey::S;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_D)) {
     player_input.input_mask =
-        player_input.input_mask | (uint8_t)asteroids::InputKey::D;
+        player_input.input_mask |
+        (uint8_t)asteroids::commands::InputKey::D;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
     player_input.input_mask =
-        player_input.input_mask | (uint8_t)asteroids::InputKey::SPACE;
+        player_input.input_mask |
+        (uint8_t)asteroids::commands::InputKey::SPACE;
   }
   if (player_input.input_mask !=
           previous_player_input.input_mask ||
       player_input.previous_input_mask !=
           previous_player_input.previous_input_mask) {
-    *game::CreateEvent<asteroids::Input>(
+    *game::CreateEvent<asteroids::commands::Input>(
         asteroids::Event::PLAYER_INPUT) = player_input;
   }
   return true;

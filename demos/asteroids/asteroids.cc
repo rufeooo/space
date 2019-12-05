@@ -246,16 +246,16 @@ bool Initialize() {
 void HandleEvent(game::Event event) {
   switch ((Event)event.metadata) {
     case Event::CREATE_PLAYER:
-      commands::Execute(*((CreatePlayer*)event.data));
+      commands::Execute(*((commands::CreatePlayer*)event.data));
       break;
     case Event::CREATE_ASTEROID:
-      commands::Execute(*((CreateAsteroid*)event.data));
+      commands::Execute(*((commands::CreateAsteroid*)event.data));
       break;
     case Event::CREATE_PROJECTILE:
-      commands::Execute(*((CreateProjectile*)event.data));
+      commands::Execute(*((commands::CreateProjectile*)event.data));
       break;
     case Event::PLAYER_INPUT:
-      commands::Execute(*((Input*)event.data));
+      commands::Execute(*((commands::Input*)event.data));
       break;
     default:
       assert("Event is unhandled.");
@@ -325,14 +325,15 @@ bool UpdateGame() {
           input.previous_input_mask, component::KEYBOARD_SPACE) &&
         component::IsKeyUp(
           input.input_mask, component::KEYBOARD_SPACE)) {
-      auto* create_projectile = game::CreateEvent<asteroids::CreateProjectile>(
+      auto* create_projectile = game::CreateEvent<commands::CreateProjectile>(
           Event::CREATE_PROJECTILE);
       create_projectile->entity_id = GenerateFreeEntity();
       auto& projectile_transform = create_projectile->transform;
       projectile_transform = transform;
       // Unset input so two projectile will not shoot if the Update happens
       // to be called more than once for this frame.
-      component::SetKeyUp(input.previous_input_mask, component::KEYBOARD_SPACE);
+      component::SetKeyUp(input.previous_input_mask,
+                          component::KEYBOARD_SPACE);
     }
     if (component::IsKeyDown(
         input.input_mask, component::KEYBOARD_A)) {
@@ -423,7 +424,7 @@ bool UpdateGame() {
       static std::mt19937 gen(rd());
       static std::uniform_real_distribution<>
           disr(-10000.0, 10000.0);
-      auto* create_asteroid = game::CreateEvent<CreateAsteroid>(
+      auto* create_asteroid = game::CreateEvent<commands::CreateAsteroid>(
           Event::CREATE_ASTEROID);
       create_asteroid->entity_id = GenerateFreeEntity();
       create_asteroid->position = math::Vec3f(disr(gen), disr(gen), 0.f);
