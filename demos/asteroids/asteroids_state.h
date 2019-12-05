@@ -56,27 +56,12 @@ struct EntityGeometry {
 
 EntityGeometry& GlobalEntityGeometry();
 
-struct ProjectileEntityData {
-  ProjectileEntityData(const ecs::Entity& entity) :
-    entity(entity) {}
-  ecs::Entity entity;
-};
-
-struct AsteroidEntityData {
-  AsteroidEntityData(const ecs::Entity& entity) :
-    entity(entity) {}
-  ecs::Entity entity;
-};
-
 struct GameState {
-  // ordered_set for determinism when calculating collision.
-  std::vector<ProjectileEntityData> projectile_entities;
-  std::vector<AsteroidEntityData> asteroid_entities;
   ecs::ComponentStorage<
     component::ViewComponent, PhysicsComponent, PolygonShape,
     component::TransformComponent, component::InputComponent,
     GameStateComponent, component::RenderingComponent, TTLComponent,
-    RandomNumberIntChoiceComponent,
+    AsteroidComponent, ProjectileComponent, RandomNumberIntChoiceComponent,
     component::ServerAuthoritativeComponent,
     component::ClientAuthoritativeComponent> components;
 };

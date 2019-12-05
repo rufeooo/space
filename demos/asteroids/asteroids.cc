@@ -264,53 +264,43 @@ void HandleEvent(game::Event event) {
 
 bool UpdateGame() {
   auto& components = GlobalGameState().components;
-  std::set<ecs::Entity> asteroids_to_kill;
-  std::set<ecs::Entity> projectiles_to_kill;
+  std::vector<ecs::Entity> asteroids;
+  std::vector<ecs::Entity> projectiles;
+
+  components.Enumerate<AsteroidComponent>([&asteroids]
+      (ecs::Entity entity, AsteroidComponent&) {
+    asteroids.push_back(entity);
+  });
+
+  components.Enumerate<ProjectileComponent>([&projectiles]
+      (ecs::Entity entity, ProjectileComponent&) {
+    projectiles.push_back(entity);
+  });
+
+  std::vector<ecs::Entity> entities_to_kill;
+
   // Do collision at the top of the loop so the player has seen the
   // most recent positions collision detection is calculating
   // against. Otherwise it seems like collision is happening a frame
   // in the future.
-  for (const auto& projectile : GlobalGameState().projectile_entities) {
-    for (const auto& asteroid : GlobalGameState().asteroid_entities) {
-      if (ProjectileCollidesWithAsteroid(
-          projectile.entity, asteroid.entity)) {
-        asteroids_to_kill.insert(asteroid.entity);
-        projectiles_to_kill.insert(projectile.entity);
+  for (const auto& projectile : projectiles) {
+    for (const auto& asteroid : asteroids) {
+      if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
+        entities_to_kill.push_back(asteroid);
+        entities_to_kill.push_back(projectile);
         break;
       }
     }
   }
 
-  components.Enumerate<TTLComponent>([&projectiles_to_kill](
+  components.Enumerate<TTLComponent>([&entities_to_kill](
       ecs::Entity ent, TTLComponent& ttl) {
     --ttl.updates_to_live;
-    if (!ttl.updates_to_live) projectiles_to_kill.insert(ent);
+    if (!ttl.updates_to_live) entities_to_kill.push_back(ent);
   });
 
-  for (const auto& e : projectiles_to_kill) {
+  for (const auto& e : entities_to_kill) {
     components.Delete(e);
-    for (int i = 0;
-         i < GlobalGameState().projectile_entities.size(); ++i) {
-      auto& projectile_data = GlobalGameState().projectile_entities[i];
-      if (projectile_data.entity == e) {
-        GlobalGameState().projectile_entities.erase(
-          GlobalGameState().projectile_entities.begin() + i);
-        break;
-      }
-    }
-  }
-
-  for (const auto& e : asteroids_to_kill) {
-    components.Delete(e);
-    for (int i = 0;
-         i < GlobalGameState().asteroid_entities.size(); ++i) {
-      auto& asteroid_data = GlobalGameState().asteroid_entities[i];
-      if (asteroid_data.entity == e) {
-        GlobalGameState().asteroid_entities.erase(
-          GlobalGameState().asteroid_entities.begin() + i);
-        break;
-      }
-    }
   }
 
   // Provide ship control to the entity with Input (the player.)

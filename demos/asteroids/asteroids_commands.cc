@@ -52,8 +52,7 @@ void Execute(CreateProjectile& create_projectile) {
       GlobalOpenGLGameReferences().projectile_vao_reference,
       GlobalOpenGLGameReferences().program_reference,
       GlobalEntityGeometry().projectile_geometry.size());
-  GlobalGameState().projectile_entities.push_back(
-      {create_projectile.entity_id});
+  components.Assign<ProjectileComponent>(create_projectile.entity_id);
 }
 
 void Execute(CreateAsteroid& create_asteroid) {
@@ -100,10 +99,9 @@ void Execute(CreateAsteroid& create_asteroid) {
       GlobalOpenGLGameReferences().program_reference,
       GlobalEntityGeometry()
           .asteroid_geometry[random_number - 1].size());
+  components.Assign<AsteroidComponent>(create_asteroid.entity_id);
   CreateAsteroid create_command(create_asteroid);
   create_command.random_number = random_number;
-  GlobalGameState().asteroid_entities.push_back(
-      create_asteroid.entity_id);
 }
 
 void Execute(Input& input) {

@@ -60,4 +60,7 @@ struct RandomNumberIntChoiceComponent {
   uint8_t random_number;
 };
 
+struct AsteroidComponent {};
+struct ProjectileComponent {};
+
 }
