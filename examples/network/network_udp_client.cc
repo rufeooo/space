@@ -4,7 +4,6 @@
 #include <gflags/gflags.h>
 
 #include "network/client.h"
-#include "protocol/asteroids_packet_generated.h"
 
 DEFINE_string(hostname, "127.0.0.1",
               "If provided will connect to a game server. Will play "
