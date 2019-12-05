@@ -26,21 +26,12 @@ add_subdirectory(third_party/Catch2)
 add_subdirectory(third_party/gflags)
 add_subdirectory(third_party/glad)
 add_subdirectory(third_party/googletest)
-add_subdirectory(third_party/plog)
 add_subdirectory(third_party/glfw)
 
 # Move third party targets into their own folders for Visual Studio
 set_target_properties(gflags_nothreads_static PROPERTIES FOLDER ThirdParty/gflags)
 set_target_properties(glad PROPERTIES FOLDER ThirdParty/glad)
 set_target_properties(glad-generate-files PROPERTIES FOLDER ThirdParty/glad)
-#set_target_properties(pack PROPERTIES FOLDER ThirdParty/cppfs)
-#set_target_properties(pack-cppfs PROPERTIES FOLDER ThirdParty/cppfs)
-#set_target_properties(check-cppfs PROPERTIES FOLDER ThirdParty/cppfs)
-#set_target_properties(component_install PROPERTIES FOLDER ThirdParty/cppfs)
-#set_target_properties(check-all PROPERTIES FOLDER ThirdParty/cppfs)
-#set_target_properties(cppfs PROPERTIES FOLDER ThirdParty/cppfs)
-#set_target_properties(check-template PROPERTIES FOLDER CMakePredefinedTargets)
-#set_target_properties(test PROPERTIES FOLDER ThirdParty/cppfs)
 
 # Our stuff.
 add_subdirectory(math)
