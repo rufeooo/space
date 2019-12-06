@@ -365,25 +365,18 @@ bool UpdateGame() {
         max_y_idx = i;
       }
     }
-    bool teleported = false;
     if (max_x <= -1.0f) {
       transform.position.x = .99f;
-      teleported = true;
+      transform.prev_position = transform.position;
     } else if (min_x >= 1.0f) {
       transform.position.x = -0.99f;
-      teleported = true;
+      transform.prev_position = transform.position;
     }
     if (max_y <= -1.0f) { 
       transform.position.y = 0.99f;
-      teleported = true;
+      transform.prev_position = transform.position;
     } else if (min_y >= 1.0f) {
       transform.position.y = -0.99f;
-      teleported = true;
-    }
-    if (teleported) {
-      // Teleporting across the screen causes collision detection to draw
-      // a line across the screen when detecting hits. Force the prev position
-      // to be something more reasonable if the entity teleports.
       transform.prev_position = transform.position;
     }
   });
