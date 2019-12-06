@@ -264,34 +264,19 @@ void HandleEvent(game::Event event) {
 
 bool UpdateGame() {
   auto& components = GlobalGameState().components;
-  std::vector<ecs::Entity> asteroids;
-  std::vector<ecs::Entity> projectiles;
-
-  components.Enumerate<AsteroidComponent>([&asteroids]
-      (ecs::Entity entity, AsteroidComponent&) {
-    asteroids.push_back(entity);
-  });
-
-  components.Enumerate<ProjectileComponent>([&projectiles]
-      (ecs::Entity entity, ProjectileComponent&) {
-    projectiles.push_back(entity);
-  });
-
   std::vector<ecs::Entity> entities_to_kill;
 
-  // Do collision at the top of the loop so the player has seen the
-  // most recent positions collision detection is calculating
-  // against. Otherwise it seems like collision is happening a frame
-  // in the future.
-  for (const auto& projectile : projectiles) {
-    for (const auto& asteroid : asteroids) {
-      if (ProjectileCollidesWithAsteroid(projectile, asteroid)) {
-        entities_to_kill.push_back(asteroid);
-        entities_to_kill.push_back(projectile);
-        break;
+  components.Enumerate<AsteroidComponent>([&]
+      (ecs::Entity asteroid_entity, AsteroidComponent&) {
+    components.Enumerate<ProjectileComponent>([&]
+        (ecs::Entity projectile_entity, ProjectileComponent&) {
+      if (ProjectileCollidesWithAsteroid(
+              projectile_entity, asteroid_entity)) {
+        entities_to_kill.push_back(projectile_entity);
+        entities_to_kill.push_back(asteroid_entity);
       }
-    }
-  }
+    });
+  });
 
   components.Enumerate<TTLComponent>([&entities_to_kill](
       ecs::Entity ent, TTLComponent& ttl) {
