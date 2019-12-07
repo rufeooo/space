@@ -6,6 +6,9 @@ namespace network {
 
 namespace server {
 
+// ...
+constexpr int kMaxClients = 10;
+
 // The following callbacks are called on a seperate thread.
 
 // Called when a client connects with a client_id.

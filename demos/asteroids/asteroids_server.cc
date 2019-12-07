@@ -10,7 +10,11 @@
 #include "game/game.h"
 #include "network/server.h"
 
+namespace {
+
 DEFINE_string(port, "9845", "Port for this application.");
+
+static uint64_t kClientPlayers[network::server::kMaxClients];
 
 void OnClientConnected(int client_id) {
   std::cout << "Client: " << client_id << " connected." << std::endl;
@@ -54,10 +58,17 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
 
       // Send message back to client.
       network::server::Send(client_id, (uint8_t*)&data[0], size);
+
+      // Save off client_id -> ship entity_id mapping.
+      kClientPlayers[client_id] = create_player->entity_id;
       break;
     }
+    case asteroids::commands::PLAYER_INPUT: {
+      // TODO: Do not directly enqueue client inputs.
+      game::EnqueueEvent(msg, size);
+    }
     default:
-      std::cout << "Invalid client message: " << e.metadata << std::endl;
+      std::cout << "Unhandled client message: " << e.metadata << std::endl;
   }
 }
 
@@ -98,6 +109,8 @@ bool Render() {
 
 void OnEnd() {
   network::server::Stop();
+}
+
 }
 
 int main(int argc, char** argv) {

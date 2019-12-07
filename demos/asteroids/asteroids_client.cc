@@ -11,6 +11,8 @@
 #include "game/event_buffer.h"
 #include "game/game.h"
 
+namespace {
+
 DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
               "the game singleplayer otherwise.");
@@ -105,14 +107,22 @@ bool ProcessInput() {
           previous_player_input.input_mask ||
       player_input.previous_input_mask !=
           previous_player_input.previous_input_mask) {
-    *game::CreateEvent<asteroids::commands::Input>(
-        asteroids::commands::PLAYER_INPUT) = player_input;
+    auto* input_event = game::CreateEvent<asteroids::commands::Input>(
+        asteroids::commands::PLAYER_INPUT);
+    *input_event = player_input;
+
+    // Send player input to the server.
+    network::client::Send(
+        ((uint8_t*)input_event - game::kEventHeaderSize),
+        sizeof(asteroids::commands::Input) + game::kEventHeaderSize);
   }
   return true;
 }
 
 void OnEnd() {
   network::client::Stop();
+}
+
 }
 
 int main(int argc, char** argv) {
