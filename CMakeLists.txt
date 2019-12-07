@@ -21,8 +21,6 @@ set(FLATBUFFERS_BUILD_TESTS  OFF CACHE BOOL "" FORCE)
 set(GFLAGS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
 # Third party libraries.
-add_subdirectory(third_party/Catch2)
-#add_subdirectory(third_party/cppfs)
 add_subdirectory(third_party/gflags)
 add_subdirectory(third_party/glad)
 add_subdirectory(third_party/googletest)
