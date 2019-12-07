@@ -244,18 +244,21 @@ bool Initialize() {
 }
 
 void HandleEvent(game::Event event) {
-  switch ((Event)event.metadata) {
-    case Event::CREATE_PLAYER:
+  switch ((commands::Event)event.metadata) {
+    case commands::CREATE_PLAYER:
       commands::Execute(*((commands::CreatePlayer*)event.data));
       break;
-    case Event::CREATE_ASTEROID:
+    case commands::CREATE_ASTEROID:
       commands::Execute(*((commands::CreateAsteroid*)event.data));
       break;
-    case Event::CREATE_PROJECTILE:
+    case commands::CREATE_PROJECTILE:
       commands::Execute(*((commands::CreateProjectile*)event.data));
       break;
-    case Event::PLAYER_INPUT:
+    case commands::PLAYER_INPUT:
       commands::Execute(*((commands::Input*)event.data));
+      break;
+    case commands::DELETE_ENTITY:
+      commands::Execute(*((commands::DeleteEntity*)event.data));
       break;
     default:
       assert("Event is unhandled.");
@@ -301,7 +304,7 @@ bool UpdateGame() {
         component::IsKeyUp(
           input.input_mask, component::KEYBOARD_SPACE)) {
       auto* create_projectile = game::CreateEvent<commands::CreateProjectile>(
-          Event::CREATE_PROJECTILE);
+          commands::CREATE_PROJECTILE);
       create_projectile->entity_id = GenerateFreeEntity();
       auto& projectile_transform = create_projectile->transform;
       projectile_transform = transform;
@@ -393,7 +396,7 @@ bool UpdateGame() {
       static std::uniform_real_distribution<>
           disr(-10000.0, 10000.0);
       auto* create_asteroid = game::CreateEvent<commands::CreateAsteroid>(
-          Event::CREATE_ASTEROID);
+          commands::CREATE_ASTEROID);
       create_asteroid->entity_id = GenerateFreeEntity();
       create_asteroid->position = math::Vec3f(disr(gen), disr(gen), 0.f);
       create_asteroid->direction = math::Vec3f(disr(gen), disr(gen), 0.f);

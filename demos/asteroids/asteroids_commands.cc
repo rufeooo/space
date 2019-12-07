@@ -14,6 +14,7 @@ namespace asteroids {
 namespace commands {
 
 void Execute(CreatePlayer& create_player) {
+  std::cout << "Creating Player: " << create_player.entity_id << std::endl;
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id);
   components.Assign<PolygonShape>(
@@ -114,6 +115,7 @@ void Execute(Input& input) {
 }
 
 void Execute(DeleteEntity& delete_entity) {
+  std::cout << "Deleting: " << delete_entity.entity_id << std::endl;
   GlobalGameState().components.Delete(delete_entity.entity_id);
 }
 

@@ -18,6 +18,7 @@ DEFINE_string(port, "9845", "Port for this application.");
 DEFINE_string(replay_file, "", "Run game from replay file.");
 
 void OnServerMsgReceived(uint8_t* msg, int size) {
+  game::EnqueueEvent(msg, size);
 }
 
 bool IsSinglePlayer() { return FLAGS_hostname.empty(); }
@@ -46,7 +47,7 @@ bool Initialize() {
 
   auto* create_player =
       game::CreateEvent<asteroids::commands::CreatePlayer>(
-          asteroids::Event::CREATE_PLAYER);
+          asteroids::commands::CREATE_PLAYER);
   create_player->entity_id = asteroids::GenerateFreeEntity();
 
   // Inform the server of this player joining.
@@ -105,7 +106,7 @@ bool ProcessInput() {
       player_input.previous_input_mask !=
           previous_player_input.previous_input_mask) {
     *game::CreateEvent<asteroids::commands::Input>(
-        asteroids::Event::PLAYER_INPUT) = player_input;
+        asteroids::commands::PLAYER_INPUT) = player_input;
   }
   return true;
 }

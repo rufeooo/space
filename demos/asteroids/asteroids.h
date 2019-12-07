@@ -15,13 +15,6 @@
 
 namespace asteroids {
 
-enum class Event {
-  CREATE_PLAYER = 0,
-  CREATE_ASTEROID = 1,
-  CREATE_PROJECTILE = 2,
-  PLAYER_INPUT = 3
-};
-
 //////// Ship Constants //////// 
 // Seconds until the ship reaches max speed.
 static float kSecsToMaxSpeed = 3.f;

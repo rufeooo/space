@@ -10,6 +10,14 @@ namespace asteroids {
 
 namespace commands {
 
+enum Event {
+  CREATE_PLAYER = 0,
+  CREATE_ASTEROID = 1,
+  CREATE_PROJECTILE = 2,
+  PLAYER_INPUT = 3,
+  DELETE_ENTITY = 4,
+};
+
 struct CreatePlayer {
   uint64_t entity_id;
   math::Vec3f position;

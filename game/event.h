@@ -27,4 +27,8 @@ struct SavedEvent {
 // forward to next event.
 Event Decode(uint8_t* msg);
 
+// Copy data into msg given the size and metadata.
+void Encode(uint16_t size, uint16_t metadata,
+            const uint8_t* data, uint8_t* msg);
+
 }
