@@ -23,4 +23,8 @@ struct SavedEvent {
   Event event;
 };
 
+// Converts buffer and size to Event struct. And moves msg
+// forward to next event.
+Event Decode(uint8_t* msg);
+
 }

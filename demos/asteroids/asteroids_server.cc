@@ -15,7 +15,6 @@ DEFINE_string(port, "9845", "Port for this application.");
 
 void OnClientConnected(int client_id) {
   std::cout << "Client: " << client_id << " connected." << std::endl;
-  // Send them the state of the game.
 }
 
 void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {

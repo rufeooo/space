@@ -5,6 +5,8 @@
 #include <cstring>
 #include <mutex>
 
+#include "event.h"
+
 namespace game {
 
 namespace {
@@ -58,12 +60,10 @@ bool PollEvent(Event* event) {
       *kCustomEventBuffer : kDefaultEventBuffer; 
   if (events.poll_idx >= events.idx) return false;
   std::lock_guard<std::mutex> guard(kMutex);
-  event->size = *((uint16_t*)(events.buffer + events.poll_idx));
-  events.poll_idx += sizeof(event->size);
-  event->metadata = *((uint16_t*)(events.buffer + events.poll_idx));
-  events.poll_idx += sizeof(event->metadata);
-  event->data = (events.buffer + events.poll_idx);
-  events.poll_idx += event->size;
+  *event = Decode(&events.buffer[events.poll_idx]);
+  events.poll_idx += sizeof(event->size)
+                     + sizeof(event->metadata)
+                     + event->size;
   return true;
 }
 

@@ -6,6 +6,7 @@ set(event_buffer_test_srcs
 
 set(game_srcs
     "event.h"
+    "event.cc"
     "event_buffer.h"
     "event_buffer.cc"
     "game.h"

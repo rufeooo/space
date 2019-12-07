@@ -42,10 +42,15 @@ struct Input {
   uint8_t previous_input_mask;
 };
 
+struct DeleteEntity {
+  uint64_t entity_id;
+};
+
 void Execute(CreatePlayer& create_player);
 void Execute(CreateProjectile& create_projectile);
 void Execute(CreateAsteroid& create_asteroid);
 void Execute(Input& input);
+void Execute(DeleteEntity& delete_entity);
 
 }
 

@@ -113,6 +113,10 @@ void Execute(Input& input) {
   });
 }
 
+void Execute(DeleteEntity& delete_entity) {
+  GlobalGameState().components.Delete(delete_entity.entity_id);
+}
+
 }
 
 }
