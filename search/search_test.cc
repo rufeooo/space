@@ -1,11 +1,9 @@
-#define CATCH_CONFIG_MAIN  // Make Catch provide main.
-
 #include <iostream>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
 
-#include <catch2/catch.hpp>
+#include "gtest/gtest.h"
 
 #include "search.h"
 
@@ -57,7 +55,7 @@ class SimpleGraph {
   std::unordered_map<char, std::vector<Edge>> edges_;
 };
 
-TEST_CASE("Path exists using bfs.", "[search - bfs]") {
+TEST(SearchTest, PathExistsBFS) {
   //   I   K
   //   B   J
   // D A C G H
@@ -75,7 +73,7 @@ TEST_CASE("Path exists using bfs.", "[search - bfs]") {
   sg.Add('J', 'K');
   sg.Add('B', 'I');
   // Find H
-  SECTION("Path to H.") {
+  {
     std::unordered_set<char> explored;
     auto expand = [&explored, &sg](char from) {
       explored.insert(from);
@@ -85,12 +83,13 @@ TEST_CASE("Path exists using bfs.", "[search - bfs]") {
       return sg.Neighbors(from);
     };
     search::BreadthFirst('A', 3, expand);
-    REQUIRE(explored.find('H') != explored.end());
+    ASSERT_TRUE(explored.find('H') != explored.end());
     explored.clear();
     search::BreadthFirst('A', 2, expand);
-    REQUIRE(explored.find('H') == explored.end());
+    ASSERT_TRUE(explored.find('H') == explored.end());
   }
-  SECTION("Path to K.") {
+
+  {
     std::unordered_set<char> explored;
     auto expand = [&explored, &sg](char from) {
       explored.insert(from);
@@ -100,28 +99,24 @@ TEST_CASE("Path exists using bfs.", "[search - bfs]") {
       return sg.Neighbors(from);
     };
     search::BreadthFirst('A', 4, expand);
-    REQUIRE(explored.find('K') != explored.end());
+    ASSERT_TRUE(explored.find('K') != explored.end());
     explored.clear();
     search::BreadthFirst('A', 3, expand);
-    REQUIRE(explored.find('K') == explored.end());
+    ASSERT_TRUE(explored.find('K') == explored.end());
   }
 }
 
-TEST_CASE("Path exists using dfs.", "[search - dfs]") {
-  REQUIRE(true == true);
-}
-
-TEST_CASE("Path exists using A*.", "[search - A*]") {
-  // Example graph found at -
-  // https://en.wikipedia.org/wiki/A*_search_algorithm
-  SimpleGraph sg;
-  auto expand_func = [&sg](char start) {
-    return sg.Neighbors(start);
-  };
-  auto cost_func = [&sg](char a, char b) {
-    return sg.Weight(a, b);
-  };
-  SECTION("Path {0, d, e, f}") {
+TEST(SearchTest, PathExistsAStar) {
+  {
+    // Example graph found at -
+    // https://en.wikipedia.org/wiki/A*_search_algorithm
+    SimpleGraph sg;
+    auto expand_func = [&sg](char start) {
+      return sg.Neighbors(start);
+    };
+    auto cost_func = [&sg](char a, char b) {
+      return sg.Weight(a, b);
+    };
     sg.Add('0', 'a', 15);
     sg.Add('0', 'd', 20);
     sg.Add('a', 'b', 20);
@@ -132,9 +127,17 @@ TEST_CASE("Path exists using A*.", "[search - A*]") {
     sg.Add('e', 'f', 20);
     std::vector<char> path = search::PathTo(
       '0', 'f', expand_func, cost_func, cost_func);
-    REQUIRE(path == std::vector<char>({'0', 'd', 'e', 'f'}));
+    ASSERT_TRUE(path == std::vector<char>({'0', 'd', 'e', 'f'}));
   }
-  SECTION("Path {0, a, b, c, f}") {
+
+  {
+    SimpleGraph sg;
+    auto expand_func = [&sg](char start) {
+      return sg.Neighbors(start);
+    };
+    auto cost_func = [&sg](char a, char b) {
+      return sg.Weight(a, b);
+    };
     sg.Add('0', 'a', 15);
     sg.Add('0', 'd', 20);
     sg.Add('a', 'b', 20);
@@ -144,11 +147,11 @@ TEST_CASE("Path exists using A*.", "[search - A*]") {
     sg.Add('e', 'f', 20);
     std::vector<char> path = search::PathTo(
       '0', 'f', expand_func, cost_func, cost_func);
-    REQUIRE(path == std::vector<char>({'0', 'a', 'b', 'c', 'f'}));
+    ASSERT_EQ(path, std::vector<char>({'0', 'a', 'b', 'c', 'f'}));
   }
 }
 
-TEST_CASE("Shortest path number on line", "[search - A*]") {
+TEST(SearchTest, ShortestPathNumberOfLines) {
   int start = 0, end = 10;
   auto expand_func = [](int start) {
     return std::vector<int>({start + 1, start - 1});
@@ -160,6 +163,11 @@ TEST_CASE("Shortest path number on line", "[search - A*]") {
   std::vector<int> path = search::PathTo(
       start, end, expand_func, cost_func, heuristic_func);
   // Shortest pat from 0 to 10 on a number line is 0 to 10.
-  REQUIRE(path ==
+  ASSERT_TRUE(path ==
       std::vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+}
+
+int main(int argc, char** argv) {
+  ::testing::InitGoogleTest(&argc, argv);
+  return RUN_ALL_TESTS();
 }
