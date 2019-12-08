@@ -83,13 +83,14 @@ bool SetupClientSocket() {
 }
 
 
-bool RunClientLoop(timeval timeout, SOCKET max_socket) {
+void RunClientLoop(timeval timeout, SOCKET max_socket) {
   fd_set reads;
   reads = kClientState.master_fd;
 
   if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
     std::cout << "select() failed: " << network::SocketErrno() << std::endl;
-    return false;
+    kClientState.client_running = false;
+    return;
   }
 
   auto& client_socket = kClientState.client_socket;
@@ -101,13 +102,12 @@ bool RunClientLoop(timeval timeout, SOCKET max_socket) {
     assert(bytes_received < kMaxPacketSize);
     if (bytes_received < 1) {
       std::cout << "connection closed." << std::endl;
-      return false;
+      kClientState.client_running = false;
+      return;
     }
 
     _OnMsgReceived((uint8_t*)&kClientState.read_buffer[0], bytes_received);
   }
-
-  return true;
 }
 
 void RunClient() {
@@ -120,9 +120,7 @@ void RunClient() {
   timeout.tv_usec = 5000;
 
   while (kClientState.client_running) {
-    if (!RunClientLoop(timeout, max_socket)) {
-      break;
-    }
+    RunClientLoop(timeout, max_socket);
   }
 }
 
