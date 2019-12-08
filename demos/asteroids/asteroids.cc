@@ -263,6 +263,12 @@ void HandleEvent(game::Event event) {
     case commands::PLAYER_ID_MUTATION:
       commands::Execute(*((commands::PlayerIdMutation*)event.data));
       break;
+    case commands::UPDATE_TRANSFORM:
+      commands::Execute(*((commands::UpdateTransform*)event.data));
+      break;
+    case commands::UPDATE_PHYSICS:
+      commands::Execute(*((commands::UpdatePhysics*)event.data));
+      break;
     default:
       assert("Event is unhandled.");
   }

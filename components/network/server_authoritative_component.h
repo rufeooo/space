@@ -5,6 +5,7 @@
 namespace component {
 
 struct ServerAuthoritativeComponent {
+  uint8_t bitmask;
 };
 
 }

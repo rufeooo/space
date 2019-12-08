@@ -26,8 +26,9 @@ void Execute(CreatePlayer& create_player) {
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<component::InputComponent>(
       create_player.entity_id);
-  components.Assign<component::ServerAuthoritativeComponent>(
+  auto* auth = components.Assign<component::ServerAuthoritativeComponent>(
       create_player.entity_id);
+  auth->bitmask = TRANSFORM | PHYSICS; 
 }
 
 void Execute(CreateProjectile& create_projectile) {
@@ -121,6 +122,23 @@ void Execute(DeleteEntity& delete_entity) {
 
 void Execute(PlayerIdMutation& change_player_id) {
   GlobalGameState().player_id = change_player_id.entity_id;
+}
+
+void Execute(UpdateTransform& update_transform) {
+  auto& components = GlobalGameState().components;
+  auto* transform = components.Get<component::TransformComponent>(
+      update_transform.entity_id);
+  if (!transform) return;
+  *transform = update_transform.transform;
+}
+
+void Execute(UpdatePhysics& update_physics) {
+  auto& components = GlobalGameState().components;
+  auto* physics = components.Get<PhysicsComponent>(
+      update_physics.entity_id);
+  if (!physics) return;
+  *physics = update_physics.physics;
+
 }
 
 }

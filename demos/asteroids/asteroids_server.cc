@@ -106,6 +106,44 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
   }
 }
 
+void SyncAuthoritativeComponents() {
+  auto& components = asteroids::GlobalGameState().components;
+  components.Enumerate<component::ServerAuthoritativeComponent>(
+      [&](ecs::Entity entity, component::ServerAuthoritativeComponent& a) {
+    if ((a.bitmask & asteroids::commands::TRANSFORM) != 0) {
+      auto* t = components.Get<component::TransformComponent>(entity);
+      if (t) {
+        constexpr int size = sizeof(asteroids::commands::UpdateTransform)
+                             + game::kEventHeaderSize;
+        static uint8_t data[size];
+        asteroids::commands::UpdateTransform u;
+        u.entity_id = entity;
+        u.transform = *t;
+        game::Encode(sizeof(asteroids::commands::UpdateTransform),
+                     asteroids::commands::UPDATE_TRANSFORM,
+                     (uint8_t*)(&u), &data[0]);
+        network::server::Send(0, &data[0], size);
+      }
+    }
+
+    if ((a.bitmask & asteroids::commands::PHYSICS) != 0) {
+      auto* p = components.Get<asteroids::PhysicsComponent>(entity);
+      if (p) {
+        constexpr int size = sizeof(asteroids::commands::UpdatePhysics)
+                             + game::kEventHeaderSize;
+        static uint8_t data[size];
+        asteroids::commands::UpdatePhysics u;
+        u.entity_id = entity;
+        u.physics = *p;
+        game::Encode(sizeof(asteroids::commands::UpdatePhysics),
+                     asteroids::commands::UPDATE_PHYSICS,
+                     (uint8_t*)(&u), &data[0]);
+        network::server::Send(0, &data[0], size);
+      }
+    }
+  });
+}
+
 bool Initialize() {
   assert(!FLAGS_port.empty());
 
@@ -133,6 +171,7 @@ bool ProcessInput() {
 }
 
 bool Update() {
+  SyncAuthoritativeComponents();
   asteroids::UpdateGame();
   return true;
 }

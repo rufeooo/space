@@ -3,6 +3,7 @@
 #include <cassert>
 #include <functional>
 
+#include "asteroids_components.h"
 #include "components/common/transform_component.h"
 #include "math/vec.h"
 
@@ -10,18 +11,28 @@ namespace asteroids {
 
 namespace commands {
 
+enum AuthorityBitmask {
+  NONE      = 0x00,
+  TRANSFORM = 0x01,
+  PHYSICS   = 0x02,
+};
+
 enum Event {
-  CREATE_PLAYER = 0,
-  CREATE_ASTEROID = 1,
-  CREATE_PROJECTILE = 2,
-  PLAYER_INPUT = 3,
-  DELETE_ENTITY = 4,
+  CREATE_PLAYER      = 0,
+  CREATE_ASTEROID    = 1,
+  CREATE_PROJECTILE  = 2,
+  PLAYER_INPUT       = 3,
+  DELETE_ENTITY      = 4,
   PLAYER_ID_MUTATION = 5,
+
   // These two events are not explicitly handled in the event
   // buffer but instead used to inform the server that the client
   // has created or deleted entities the server is responsible for updating.
   CLIENT_CREATE_AUTHORITATIVE = 6,
   CLIENT_DELETE_AUTHORITATIVE = 7,
+
+  UPDATE_TRANSFORM = 8,
+  UPDATE_PHYSICS   = 9,
 };
 
 struct CreatePlayer {
@@ -74,12 +85,24 @@ struct ClientDeleteAuthoritative {
   uint64_t entity_id;
 };
 
+struct UpdateTransform {
+  uint64_t entity_id;
+  component::TransformComponent transform;
+};
+
+struct UpdatePhysics {
+  uint64_t entity_id;
+  PhysicsComponent physics;
+};
+
 void Execute(CreatePlayer& create_player);
 void Execute(CreateProjectile& create_projectile);
 void Execute(CreateAsteroid& create_asteroid);
 void Execute(Input& input);
 void Execute(DeleteEntity& delete_entity);
 void Execute(PlayerIdMutation& change_player_id);
+void Execute(UpdateTransform& update_transform);
+void Execute(UpdatePhysics& update_physics);
 
 }
 
