@@ -15,9 +15,6 @@ static OnClientConnected _OnClientConnected;
 static OnMsgReceived _OnMsgReceived;
 
 // ...
-constexpr int kAddressSize = 256;
-
-// ...
 constexpr int kMaxPacketSize = 1024;
 
 struct Connection {
