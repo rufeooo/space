@@ -23,30 +23,43 @@ void OnServerMsgReceived(uint8_t* msg, int size) {
   game::EnqueueEvent(msg, size);
 }
 
-bool IsSinglePlayer() { return FLAGS_hostname.empty(); }
+bool SetupClientConnection() {
+  if (FLAGS_hostname.empty()) return true;
 
-bool Initialize() {
-  if (!FLAGS_hostname.empty()) {
-    network::client::Setup(&OnServerMsgReceived);
-    if (!network::client::Start(
-        FLAGS_hostname.c_str(), FLAGS_port.c_str())) {
-      std::cout << "Unable to start client." << std::endl;
-      return false;
-    }
+  network::client::Setup(&OnServerMsgReceived);
+  if (!network::client::Start(
+      FLAGS_hostname.c_str(), FLAGS_port.c_str())) {
+    std::cout << "Unable to start client." << std::endl;
+    return false;
   }
+
+  return true;
+}
+
+void SetupClientConfiguration() {
   // Clients entities start at max free entity and then decrement.
   // These are largely ephemeral and will be deleted when the server
   // replicates client created entities.
   asteroids::SetEntityStart(ecs::ENTITY_LAST_FREE);
   asteroids::SetEntityIncrement(-1);
 
-  if (!asteroids::Initialize()) {
-    std::cout << "Failed to initialize asteroids." << std::endl;
-    return false;
-  }
-
+  // Writes all events to file in _tmp/<timestamp>. That way a session
+  // can be replayed using the --replay_file flag.
   game::SaveEventsToFile();
 
+  if (!FLAGS_replay_file.empty()) {
+    game::LoadEventsFromFile(FLAGS_replay_file.c_str());
+  }
+
+  if (FLAGS_hostname.empty()) return;
+
+  // Only the server has a game state component in a networked game.
+  asteroids::GlobalGameState().components
+      .Assign<asteroids::GameStateComponent>(
+          asteroids::GenerateFreeEntity());
+}
+
+void SetupClientPlayer() {
   // Create the player.
   auto* create_player =
       game::CreateEvent<asteroids::commands::CreatePlayer>(
@@ -59,20 +72,27 @@ bool Initialize() {
           asteroids::commands::PLAYER_ID_MUTATION);
   change_id->entity_id = create_player->entity_id;
 
+  if (FLAGS_hostname.empty()) return;
+
   // Inform the server of this player joining.
   network::client::Send(
       ((uint8_t*)create_player - game::kEventHeaderSize),
       sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
- 
-  if (IsSinglePlayer()) {
-    asteroids::GlobalGameState().components
-        .Assign<asteroids::GameStateComponent>(
-            asteroids::GenerateFreeEntity());
+}
+
+bool Initialize() {
+  if (!asteroids::Initialize()) {
+    std::cout << "Failed to initialize asteroids." << std::endl;
+    return false;
   }
 
-  if (!FLAGS_replay_file.empty()) {
-    game::LoadEventsFromFile(FLAGS_replay_file.c_str());
+  if (!SetupClientConnection()) {
+    return false;
   }
+
+  SetupClientConfiguration();
+
+  SetupClientPlayer();
 
   return true;
 }
