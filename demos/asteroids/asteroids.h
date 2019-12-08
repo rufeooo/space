@@ -38,7 +38,7 @@ static float kRotationSpeed =
 // TODO: Convert this to seconds for projectile to live.
 static int kProjectileUpdatesToLive = 266;
 // Initial / max speed of projectile.
-static float kProjectileSpeed = 0.005;
+static float kProjectileSpeed = 0.005f;
 
 //////// Game Constants //////// 
 static float kSecsToSpawnAsteroid = 2.3f;

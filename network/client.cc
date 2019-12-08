@@ -1,6 +1,7 @@
 #include "client.h"
 
 #include <atomic>
+#include <cassert>
 #include <iostream>
 #include <thread>
 

@@ -1,5 +1,6 @@
 #include "game.h"
 
+#include <cassert>
 #include <ctime>
 #include <fstream>
 #include <iomanip>

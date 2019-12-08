@@ -1,6 +1,7 @@
 #include "server.h"
 
 #include <atomic>
+#include <cassert>
 #include <iostream>
 #include <thread>
 

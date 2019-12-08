@@ -1,11 +1,11 @@
 #include "filesystem.h"
 
-#include <cassert>
+#include <Windows.h>
 
 namespace filesystem {
 
 bool MakeDirectory(const char* name) {
-  assert("Implement this.");
+    return CreateDirectory(name, nullptr);
 }
 
 }

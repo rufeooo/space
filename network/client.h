@@ -2,6 +2,8 @@
 
 #include "network.h"
 
+#include "stdint.h"
+
 namespace network {
 
 namespace client {

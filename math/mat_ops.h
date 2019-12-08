@@ -89,16 +89,16 @@ Mat<T, 4, 4> CreateViewMatrix(const Vec3<T>& translation,
 
 template <class T>
 Mat<T, 4, 4> CreatePerspectiveMatrix(int width, int height) {
-  float near = 0.1f; // clipping plane
-  float far = 100.0f; // clipping plane
+  float near_clip = 0.1f; // clipping plane
+  float far_clip = 100.0f; // clipping plane
   float fov = 67.0f * ONE_DEG_IN_RAD; // convert 67 degrees to radians
   float aspect = (float)width / (float)height; // aspect ratio
   // matrix components
-  float range = tan(fov * 0.5f) * near;
-  float Sx = (2.0f * near) / (range * aspect + range * aspect);
-  float Sy = near / range;
-  float Sz = -(far + near) / (far - near);
-  float Pz = -(2.0f * far * near) / (far - near);
+  float range = tan(fov * 0.5f) * near_clip;
+  float Sx = (2.0f * near_clip) / (range * aspect + range * aspect);
+  float Sy = near_clip / range;
+  float Sz = -(far_clip + near_clip) / (far_clip - near_clip);
+  float Pz = -(2.0f * far_clip * near_clip) / (far_clip - near_clip);
   return Mat<T, 4, 4> {
       Sx, 0.0f, 0.0f, 0.0f,
       0.0f, Sy, 0.0f, 0.0f,
