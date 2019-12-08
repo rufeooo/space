@@ -28,6 +28,15 @@ class ComponentStorage {
     assign_callback.second(entity);
   }
 
+  template <typename T>
+  void OptionallyDispatchRemoveCallback(ecs::Entity entity) {
+    auto& remove_callback =
+        std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
+            remove_callbacks_);
+    if (!remove_callback.second) return;
+    remove_callback.second(entity);
+  }
+
  public:
   // Given an entity retrieves a pointer to the component specified
   // by the templated argument. For example -
@@ -68,6 +77,15 @@ class ComponentStorage {
         (*found).first == entity) {
       components.erase(found);
     }
+    OptionallyDispatchRemoveCallback<T>(entity);
+  }
+
+  template <typename T>
+  void RemoveCallback(const std::function<void(ecs::Entity)>& func) {
+    auto& remove_callback =
+        std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
+            remove_callbacks_);
+    remove_callback.second = func;
   }
 
   // Given a entity id and a constructor list will create a new component
@@ -198,6 +216,9 @@ class ComponentStorage {
   // out with.
   std::tuple<std::pair<COMPONENTS, std::function<void(ecs::Entity)>>...>
       assign_callbacks_;
+  std::tuple<std::pair<COMPONENTS, std::function<void(ecs::Entity)>>...>
+      remove_callbacks_;
+
 };
 
 }  // namespace ecs

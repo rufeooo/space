@@ -36,6 +36,18 @@ void OnServerAuthorityCreated(ecs::Entity entity) {
   network::client::Send(&data[0], size);
 }
 
+void OnServerAuthorityRemoved(ecs::Entity entity) {
+  constexpr int size = sizeof(asteroids::commands::ClientDeleteAuthoritative)
+                       + game::kEventHeaderSize;
+  static uint8_t data[size];
+  asteroids::commands::ClientDeleteAuthoritative create;
+  create.entity_id = entity;
+  game::Encode(sizeof(asteroids::commands::ClientDeleteAuthoritative),
+               asteroids::commands::CLIENT_DELETE_AUTHORITATIVE,
+               (uint8_t*)(&create), &data[0]);
+  network::client::Send(&data[0], size);
+}
+
 bool SetupClientConnection() {
   if (FLAGS_hostname.empty()) return true;
 
@@ -69,6 +81,10 @@ void SetupClientConfiguration() {
   if (!FLAGS_hostname.empty()) {
     components.AssignCallback<component::ServerAuthoritativeComponent>(
         &OnServerAuthorityCreated);
+
+    components.RemoveCallback<component::ServerAuthoritativeComponent>(
+        &OnServerAuthorityRemoved);
+
     return;
   }
 
