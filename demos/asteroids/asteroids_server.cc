@@ -83,6 +83,7 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
       // This is ok but probably worth forcing the msg to have the right
       // player id given the client. But no cheaterz yet.
       game::EnqueueEvent(msg, size);
+      break;
     }
     default:
       std::cout << "Unhandled client message: " << e.metadata << std::endl;

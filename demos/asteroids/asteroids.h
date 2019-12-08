@@ -41,7 +41,7 @@ static int kProjectileUpdatesToLive = 266;
 static float kProjectileSpeed = 0.005f;
 
 //////// Game Constants //////// 
-static float kSecsToSpawnAsteroid = 2.3f;
+static float kSecsToSpawnAsteroid = 500.f;
 static uint64_t kMaxAsteroidCount = 100;
 
 bool Initialize();
