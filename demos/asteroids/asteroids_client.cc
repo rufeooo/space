@@ -4,8 +4,10 @@
 
 #include "asteroids.h"
 #include "asteroids_commands.h"
-#include "asteroids_state.h" #include "components/common/transform_component.h"
+#include "asteroids_state.h"
+#include "components/common/transform_component.h"
 #include "components/common/input_component.h"
+#include "components/network/server_authoritative_component.h"
 #include "ecs/internal.h"
 #include "game/event_buffer.h"
 #include "game/game.h"
@@ -20,6 +22,18 @@ DEFINE_string(replay_file, "", "Run game from replay file.");
 
 void OnServerMsgReceived(uint8_t* msg, int size) {
   game::EnqueueEvent(msg, size);
+}
+
+void OnServerAuthorityCreated(ecs::Entity entity) {
+  constexpr int size = sizeof(asteroids::commands::ClientCreateAuthoritative)
+                       + game::kEventHeaderSize;
+  static uint8_t data[size];
+  asteroids::commands::ClientCreateAuthoritative create;
+  create.entity_id = entity;
+  game::Encode(sizeof(asteroids::commands::ClientCreateAuthoritative),
+               asteroids::commands::CLIENT_CREATE_AUTHORITATIVE,
+               (uint8_t*)(&create), &data[0]);
+  network::client::Send(&data[0], size);
 }
 
 bool SetupClientConnection() {
@@ -50,12 +64,18 @@ void SetupClientConfiguration() {
     game::LoadEventsFromFile(FLAGS_replay_file.c_str());
   }
 
-  if (FLAGS_hostname.empty()) return;
+  auto& components = asteroids::GlobalGameState().components;
+
+  if (!FLAGS_hostname.empty()) {
+    components.AssignCallback<component::ServerAuthoritativeComponent>(
+        &OnServerAuthorityCreated);
+    return;
+  }
 
   // Only the server has a game state component in a networked game.
-  asteroids::GlobalGameState().components
-      .Assign<asteroids::GameStateComponent>(
-          asteroids::GenerateFreeEntity());
+  components.Assign<asteroids::GameStateComponent>(
+      asteroids::GenerateFreeEntity());
+
 }
 
 void SetupClientPlayer() {

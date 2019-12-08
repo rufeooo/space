@@ -8,7 +8,6 @@
 #include "components/common/input_component.h"
 #include "components/common/transform_component.h"
 #include "components/network/server_authoritative_component.h"
-#include "components/network/client_authoritative_component.h"
 #include "components/rendering/rendering_component.h"
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
@@ -62,8 +61,7 @@ struct GameState {
     component::TransformComponent, component::InputComponent,
     GameStateComponent, component::RenderingComponent, TTLComponent,
     AsteroidComponent, ProjectileComponent, RandomNumberIntChoiceComponent,
-    component::ServerAuthoritativeComponent,
-    component::ClientAuthoritativeComponent> components;
+    component::ServerAuthoritativeComponent> components;
   ecs::Entity player_id = -1;
 };
 

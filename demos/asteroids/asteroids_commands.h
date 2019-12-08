@@ -17,6 +17,11 @@ enum Event {
   PLAYER_INPUT = 3,
   DELETE_ENTITY = 4,
   PLAYER_ID_MUTATION = 5,
+  // These two events are not explicitly handled in the event
+  // buffer but instead used to inform the server that the client
+  // has created or deleted entities the server is responsible for updating.
+  CLIENT_CREATE_AUTHORITATIVE = 6,
+  CLIENT_DELETE_AUTHORITATIVE = 7,
 };
 
 struct CreatePlayer {
@@ -57,6 +62,15 @@ struct DeleteEntity {
 };
 
 struct PlayerIdMutation {
+  uint64_t entity_id;
+};
+
+// TODO: Where should these go?
+struct ClientCreateAuthoritative {
+  uint64_t entity_id;
+};
+
+struct ClientDeleteAuthoritative {
   uint64_t entity_id;
 };
 

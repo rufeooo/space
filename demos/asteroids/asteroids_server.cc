@@ -16,12 +16,6 @@ DEFINE_string(port, "9845", "Port for this application.");
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
 
-struct Client {
-  int client_id;
-};
-
-static std::vector<int> kConnectedClients
-
 void OnClientConnected(int client_id) {
   std::cout << "Client: " << client_id << " connected." << std::endl;
 }
@@ -89,6 +83,22 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
       // This is ok but probably worth forcing the msg to have the right
       // player id given the client. But no cheaterz yet.
       game::EnqueueEvent(msg, size);
+      break;
+    }
+    case asteroids::commands::CLIENT_CREATE_AUTHORITATIVE: {
+      game::Event e = game::Decode(msg);
+      asteroids::commands::ClientCreateAuthoritative* c =
+          (asteroids::commands::ClientCreateAuthoritative*)(e.data);
+      std::cout << "CLIENT CREATE CLIENT_CREATE_AUTHORITATIVE("
+                << c->entity_id << ")" << std::endl;
+      break;
+    }
+    case asteroids::commands::CLIENT_DELETE_AUTHORITATIVE: {
+      game::Event e = game::Decode(msg);
+      asteroids::commands::ClientDeleteAuthoritative* c =
+          (asteroids::commands::ClientDeleteAuthoritative*)(e.data);
+      std::cout << "CLIENT CREATE CLIENT_DELETE_AUTHORITATIVE("
+                << c->entity_id << ")" << std::endl;
       break;
     }
     default:

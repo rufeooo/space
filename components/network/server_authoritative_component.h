@@ -5,7 +5,6 @@
 namespace component {
 
 struct ServerAuthoritativeComponent {
-  std::vector<int> typeids;
 };
 
 }
