@@ -260,6 +260,9 @@ void HandleEvent(game::Event event) {
     case commands::DELETE_ENTITY:
       commands::Execute(*((commands::DeleteEntity*)event.data));
       break;
+    case commands::PLAYER_ID_MUTATION:
+      commands::Execute(*((commands::PlayerIdMutation*)event.data));
+      break;
     default:
       assert("Event is unhandled.");
   }

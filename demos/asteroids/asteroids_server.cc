@@ -34,10 +34,18 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
       // Send the client a delete and create to synchronize entity id.
       constexpr int size = sizeof(asteroids::commands::DeleteEntity) +
                            sizeof(asteroids::commands::CreatePlayer) +
-                           2 * game::kEventHeaderSize;
+                           sizeof(asteroids::commands::PlayerIdMutation) +
+                           3 * game::kEventHeaderSize;
+
       constexpr int create_idx = sizeof(asteroids::commands::DeleteEntity)
                                  + game::kEventHeaderSize;
-      uint8_t data[size];
+
+      constexpr int player_id_idx = 
+        sizeof(asteroids::commands::DeleteEntity) +
+        sizeof(asteroids::commands::CreatePlayer) +
+        2 * game::kEventHeaderSize;
+
+      static uint8_t data[size];
 
       // Decode incoming message to create player.
       game::Event e = game::Decode(msg);
@@ -55,16 +63,25 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
                    asteroids::commands::CREATE_PLAYER,
                    (uint8_t*)(&create_player[0]),
                    (uint8_t*)(&data[create_idx]));
+      asteroids::commands::PlayerIdMutation id_mutate;
+      id_mutate.entity_id = create_player->entity_id;
+      // Make sure the client updates its player id idx.
+      game::Encode(sizeof(asteroids::commands::PlayerIdMutation),
+                   asteroids::commands::PLAYER_ID_MUTATION,
+                   (uint8_t*)(&id_mutate),
+                   (uint8_t*)(&data[player_id_idx]));
 
       // Send message back to client.
       network::server::Send(client_id, (uint8_t*)&data[0], size);
 
       // Save off client_id -> ship entity_id mapping.
       kClientPlayers[client_id] = create_player->entity_id;
+
       break;
     }
     case asteroids::commands::PLAYER_INPUT: {
-      // TODO: Do not directly enqueue client inputs.
+      // This is ok but probably worth forcing the msg to have the right
+      // player id given the client. But no cheaterz yet.
       game::EnqueueEvent(msg, size);
     }
     default:

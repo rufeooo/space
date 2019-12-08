@@ -18,5 +18,4 @@ void Encode(uint16_t size, uint16_t metadata,
   memcpy(&msg[kEventHeaderSize], &data[0], size);
 }
 
-
 }

@@ -47,10 +47,17 @@ bool Initialize() {
 
   game::SaveEventsToFile();
 
+  // Create the player.
   auto* create_player =
       game::CreateEvent<asteroids::commands::CreatePlayer>(
           asteroids::commands::CREATE_PLAYER);
   create_player->entity_id = asteroids::GenerateFreeEntity();
+
+  // Set this clients player id to the right player id.
+  auto* change_id = 
+      game::CreateEvent<asteroids::commands::PlayerIdMutation>(
+          asteroids::commands::PLAYER_ID_MUTATION);
+  change_id->entity_id = create_player->entity_id;
 
   // Inform the server of this player joining.
   network::client::Send(
@@ -110,6 +117,7 @@ bool ProcessInput() {
     auto* input_event = game::CreateEvent<asteroids::commands::Input>(
         asteroids::commands::PLAYER_INPUT);
     *input_event = player_input;
+    input_event->entity_id = asteroids::GlobalGameState().player_id;
 
     // Send player input to the server.
     network::client::Send(

@@ -14,7 +14,6 @@ namespace asteroids {
 namespace commands {
 
 void Execute(CreatePlayer& create_player) {
-  std::cout << "Creating Player: " << create_player.entity_id << std::endl;
   auto& components = GlobalGameState().components;
   components.Assign<PhysicsComponent>(create_player.entity_id);
   components.Assign<PolygonShape>(
@@ -107,16 +106,18 @@ void Execute(CreateAsteroid& create_asteroid) {
 
 void Execute(Input& input) {
   auto& components = GlobalGameState().components;
-  components.Enumerate<component::InputComponent>(
-      [&input](ecs::Entity entity, component::InputComponent& cinput) {
-    cinput.input_mask = input.input_mask;
-    cinput.previous_input_mask = input.previous_input_mask;
-  });
+  auto* cinput = components.Get<component::InputComponent>(input.entity_id);
+  if (!cinput) return;
+  cinput->input_mask = input.input_mask;
+  cinput->previous_input_mask = input.previous_input_mask;
 }
 
 void Execute(DeleteEntity& delete_entity) {
-  std::cout << "Deleting: " << delete_entity.entity_id << std::endl;
   GlobalGameState().components.Delete(delete_entity.entity_id);
+}
+
+void Execute(PlayerIdMutation& change_player_id) {
+  GlobalGameState().player_id = change_player_id.entity_id;
 }
 
 }

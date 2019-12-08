@@ -64,6 +64,7 @@ struct GameState {
     AsteroidComponent, ProjectileComponent, RandomNumberIntChoiceComponent,
     component::ServerAuthoritativeComponent,
     component::ClientAuthoritativeComponent> components;
+  ecs::Entity player_id = -1;
 };
 
 GameState& GlobalGameState();

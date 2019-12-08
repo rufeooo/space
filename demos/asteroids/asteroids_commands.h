@@ -16,6 +16,7 @@ enum Event {
   CREATE_PROJECTILE = 2,
   PLAYER_INPUT = 3,
   DELETE_ENTITY = 4,
+  PLAYER_ID_MUTATION = 5,
 };
 
 struct CreatePlayer {
@@ -46,6 +47,7 @@ enum class InputKey {
 };
 
 struct Input {
+  uint64_t entity_id;
   uint8_t input_mask;
   uint8_t previous_input_mask;
 };
@@ -54,11 +56,16 @@ struct DeleteEntity {
   uint64_t entity_id;
 };
 
+struct PlayerIdMutation {
+  uint64_t entity_id;
+};
+
 void Execute(CreatePlayer& create_player);
 void Execute(CreateProjectile& create_projectile);
 void Execute(CreateAsteroid& create_asteroid);
 void Execute(Input& input);
 void Execute(DeleteEntity& delete_entity);
+void Execute(PlayerIdMutation& change_player_id);
 
 }
 
