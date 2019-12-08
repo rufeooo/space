@@ -99,13 +99,14 @@ bool SetupListenSocket() {
   return true;
 }
 
-bool RunServerLoop(timeval timeout, SOCKET max_socket) {
+void RunServerLoop(timeval timeout, SOCKET max_socket) {
   fd_set reads;
   reads = kServerState.master_fd;
 
   if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
     std::cout << "select() failed: " << network::SocketErrno() << std::endl;
-    return false;
+    kServerState.server_running = false;
+    return;
   }
 
   // If there is data to read from the socket, read it and cache
@@ -122,7 +123,8 @@ bool RunServerLoop(timeval timeout, SOCKET max_socket) {
     if (bytes_received < 1) {
       fprintf(stderr, "connection closed. (%d)\n\n",
               network::SocketErrno());
-      return true;
+      kServerState.server_running = false;
+      return;
     }
 
     static char address_buffer[kAddressSize];
@@ -146,8 +148,6 @@ bool RunServerLoop(timeval timeout, SOCKET max_socket) {
 
     _OnMsgReceived(id, (uint8_t*)&kServerState.read_buffer[0], bytes_received);
   }
-
-  return true;
 }
 
 void RunServer() {
@@ -162,9 +162,7 @@ void RunServer() {
 
   while (kServerState.server_running) {
     // Run the server loop until it returns false.
-    if (!RunServerLoop(timeout, max_socket)) {
-      break;
-    }
+    RunServerLoop(timeout, max_socket);
   }
 }
 
