@@ -24,8 +24,6 @@ struct Connection {
   sockaddr_storage client_address = {};
 
   socklen_t client_len = 0;
-
-  char address_buffer[kAddressSize] = {};
 };
 
 struct ServerState {
@@ -60,9 +58,10 @@ struct ServerState {
 
 static ServerState kServerState;
 
-int GetClientId(char* address) {
+int GetClientId(const sockaddr_storage& client_address) {
   for (int i = 0; i < kMaxClients; ++i) {
-    if (strcmp(kServerState.clients[i].address_buffer, address) == 0) {
+    if (memcmp(&kServerState.clients[i].client_address,
+               &client_address, sizeof(sockaddr_storage)) == 0) {
       return i;
     }
   }
@@ -127,19 +126,13 @@ void RunServerLoop(timeval timeout, SOCKET max_socket) {
       return;
     }
 
-    static char address_buffer[kAddressSize];
-    memset(&address_buffer[0], 0, kAddressSize);
-    getnameinfo((sockaddr*)&client_address, client_len,
-                address_buffer, kAddressSize, 0, 0, NI_NUMERICHOST);
-
-    int id = GetClientId(address_buffer);
+    int id = GetClientId(client_address);
 
     if (id == -1) {
       // Save off client connections? When do we remove from this list?
       Connection connection;
       connection.client_address = client_address;
       connection.client_len = client_len;
-      strncpy(connection.address_buffer, address_buffer, kAddressSize);
       id = kServerState.client_count;
       kServerState.clients[kServerState.client_count++] = connection;
       std::cout << "Client connected: " << id << std::endl;
