@@ -22,6 +22,7 @@ constexpr int kMaxPacketSize = 1024;
 
 struct Connection {
   sockaddr_storage client_address = {};
+
   socklen_t client_len = 0;
 };
 
@@ -60,7 +61,7 @@ static ServerState kServerState;
 int GetClientId(const sockaddr_storage& client_address) {
   for (int i = 0; i < kMaxClients; ++i) {
     if (memcmp(&kServerState.clients[i].client_address,
-               &client_address, kServerState.clients[i].client_len) == 0) {
+               &client_address, sizeof(client_address)) == 0) {
       return i;
     }
   }
