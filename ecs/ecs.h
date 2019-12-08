@@ -18,6 +18,16 @@ namespace ecs {
 
 template <typename... COMPONENTS>
 class ComponentStorage {
+ private:
+  template <typename T>
+  void OptionallyDispatchAssignCallback(ecs::Entity entity) {
+    auto& assign_callback =
+        std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
+            assign_callbacks_);
+    if (!assign_callback.second) return;
+    assign_callback.second(entity);
+  }
+
  public:
   // Given an entity retrieves a pointer to the component specified
   // by the templated argument. For example -
@@ -91,6 +101,7 @@ class ComponentStorage {
     // insert a new entity in sorted order.
     if ((*found).first == entity) {
       (*found).second = T(std::forward<Args>(args)...);
+      OptionallyDispatchAssignCallback<T>(entity);
       return &(*found).second;
     } else {
       auto inserted = components.insert(
@@ -99,8 +110,17 @@ class ComponentStorage {
       deletion_[entity].push_back([this, entity]() {
         Remove<T>(entity);
       });
+      OptionallyDispatchAssignCallback<T>(entity);
       return &inserted->second;
     }
+  }
+
+  template <typename T>
+  void AssignCallback(const std::function<void(ecs::Entity)>& func) {
+    auto& assign_callback =
+        std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
+            assign_callbacks_);
+    assign_callback.second = func;
   }
 
   // This function is used to implement systems. It will intersect all
@@ -174,6 +194,10 @@ class ComponentStorage {
       components_;
   std::unordered_map<ecs::Entity, std::vector<std::function<void()>>>
       deletion_;
+  // Default initialization insures there are no listeners to start
+  // out with.
+  std::tuple<std::pair<COMPONENTS, std::function<void(ecs::Entity)>>...>
+      assign_callbacks_;
 };
 
 }  // namespace ecs

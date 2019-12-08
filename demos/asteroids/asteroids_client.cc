@@ -4,8 +4,7 @@
 
 #include "asteroids.h"
 #include "asteroids_commands.h"
-#include "asteroids_state.h"
-#include "components/common/transform_component.h"
+#include "asteroids_state.h" #include "components/common/transform_component.h"
 #include "components/common/input_component.h"
 #include "ecs/internal.h"
 #include "game/event_buffer.h"

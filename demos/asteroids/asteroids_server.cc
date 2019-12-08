@@ -16,6 +16,12 @@ DEFINE_string(port, "9845", "Port for this application.");
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
 
+struct Client {
+  int client_id;
+};
+
+static std::vector<int> kConnectedClients
+
 void OnClientConnected(int client_id) {
   std::cout << "Client: " << client_id << " connected." << std::endl;
 }

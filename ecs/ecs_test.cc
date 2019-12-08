@@ -236,6 +236,18 @@ TEST(ECS, DeleteEntity) {
       std::vector<ecs::Entity>({1, 4, 7}));
 }
 
+TEST(ECS, AssignCallbackToPosition) {
+  ecs::ComponentStorage<PositionComponent, VelocityComponent> storage;
+  bool callback_called = false;
+  storage.AssignCallback<PositionComponent>([&callback_called]
+      (ecs::Entity ent) {
+    ASSERT_EQ(ent, 7);
+    callback_called = true;
+  });
+  storage.Assign<PositionComponent>(7);
+  ASSERT_TRUE(callback_called);
+}
+
 int main(int argc, char** argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
