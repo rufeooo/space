@@ -21,6 +21,7 @@ DEFINE_string(port, "9845", "Port for this application.");
 DEFINE_string(replay_file, "", "Run game from replay file.");
 
 void OnServerMsgReceived(uint8_t* msg, int size) {
+  assert(size != 0);
   game::EnqueueEvent(msg, size);
 }
 

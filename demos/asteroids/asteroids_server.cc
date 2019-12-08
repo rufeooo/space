@@ -115,14 +115,14 @@ void SyncAuthoritativeComponents() {
       if (t) {
         constexpr int size = sizeof(asteroids::commands::UpdateTransform)
                              + game::kEventHeaderSize;
-        static uint8_t data[size];
+        static uint8_t data_transform[size];
         asteroids::commands::UpdateTransform u;
         u.entity_id = entity;
         u.transform = *t;
         game::Encode(sizeof(asteroids::commands::UpdateTransform),
                      asteroids::commands::UPDATE_TRANSFORM,
-                     (uint8_t*)(&u), &data[0]);
-        network::server::Send(0, &data[0], size);
+                     (uint8_t*)(&u), &data_transform[0]);
+        network::server::Send(0, &data_transform[0], size);
       }
     }
 
@@ -131,14 +131,14 @@ void SyncAuthoritativeComponents() {
       if (p) {
         constexpr int size = sizeof(asteroids::commands::UpdatePhysics)
                              + game::kEventHeaderSize;
-        static uint8_t data[size];
+        static uint8_t data_physics[size];
         asteroids::commands::UpdatePhysics u;
         u.entity_id = entity;
         u.physics = *p;
         game::Encode(sizeof(asteroids::commands::UpdatePhysics),
                      asteroids::commands::UPDATE_PHYSICS,
-                     (uint8_t*)(&u), &data[0]);
-        network::server::Send(0, &data[0], size);
+                     (uint8_t*)(&u), &data_physics[0]);
+        network::server::Send(0, &data_physics[0], size);
       }
     }
   });

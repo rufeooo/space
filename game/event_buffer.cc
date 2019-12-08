@@ -33,6 +33,8 @@ void DeallocateEventBuffer() {
 }
 
 void* EnqueueEvent(uint16_t size, uint16_t metadata) {
+  std::lock_guard<std::mutex> guard(kMutex);
+  assert(size != 0);
   auto& events = kDefaultEventBuffer; 
   assert(events.idx + size < events.buffer_size);
   *((uint16_t*)(events.buffer + events.idx)) = size;
@@ -45,22 +47,26 @@ void* EnqueueEvent(uint16_t size, uint16_t metadata) {
 }
 
 void EnqueueEvent(uint8_t* event, int size) {
+  std::lock_guard<std::mutex> guard(kMutex);
+  assert(size != 0);
   auto& events = kDefaultEventBuffer; 
   assert(events.idx + size < events.buffer_size);
-  std::lock_guard<std::mutex> guard(kMutex);
   memcpy(&events.buffer[events.idx], event, size);
   events.idx += size;
 }
 
 
 bool PollEvent(Event* event) {
+  std::lock_guard<std::mutex> guard(kMutex);
   assert(event != nullptr);
   // Prefer polling events from a custom event buffer.
   auto& events = kCustomEventBuffer != nullptr ?
       *kCustomEventBuffer : kDefaultEventBuffer; 
   if (events.poll_idx >= events.idx) return false;
-  std::lock_guard<std::mutex> guard(kMutex);
   *event = Decode(&events.buffer[events.poll_idx]);
+  // This is bad. A message of 0 size should never make its
+  // way in or out of an event queue.
+  assert(event->size != 0);
   events.poll_idx += sizeof(event->size)
                      + sizeof(event->metadata)
                      + event->size;
@@ -68,6 +74,7 @@ bool PollEvent(Event* event) {
 }
 
 void ResetEventBuffer() {
+  std::lock_guard<std::mutex> guard(kMutex);
   auto& events = kDefaultEventBuffer; 
   memset(events.buffer, 0, events.idx);
   events.idx = 0;
@@ -81,6 +88,7 @@ void ResetEventBuffer() {
 }
 
 void SetCustomEventBuffer(EventBuffer* event_buffer) {
+  std::lock_guard<std::mutex> guard(kMutex);
   kCustomEventBuffer = event_buffer;
 }
 
