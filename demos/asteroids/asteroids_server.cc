@@ -228,7 +228,7 @@ void SynchClientStateToServer(
                         builder.idx + 1);
 }
 
-void SendCreateAsteroid(game::Event event) {
+void ForwardEventToClients(game::Event event) {
   std::lock_guard<std::mutex> guard(kMutex);
   for (int client_id : kConnectedClients) {
     network::server::Send(client_id, event.data - game::kEventHeaderSize,
@@ -243,8 +243,9 @@ void HandleEvent(game::Event event) {
       SynchClientStateToServer(
           *((asteroids::commands::ServerPlayerJoin*)event.data));
       break;
+    case asteroids::commands::CREATE_PLAYER:
     case asteroids::commands::CREATE_ASTEROID:
-      SendCreateAsteroid(event);
+      ForwardEventToClients(event);
       // Fall through so the server creates the asteroid.
     default:
       asteroids::HandleEvent(event); // Default to games HandleEvent
