@@ -55,8 +55,10 @@ void Execute(CreateProjectile& create_projectile) {
       GlobalOpenGLGameReferences().program_reference,
       GlobalEntityGeometry().projectile_geometry.size());
   components.Assign<ProjectileComponent>(create_projectile.entity_id);
-  components.Assign<component::ServerAuthoritativeComponent>(
+  auto* auth = components.Assign<component::ServerAuthoritativeComponent>(
       create_projectile.entity_id);
+  auth->bitmask = TRANSFORM; 
+
 }
 
 void Execute(CreateAsteroid& create_asteroid) {
@@ -106,6 +108,10 @@ void Execute(CreateAsteroid& create_asteroid) {
   components.Assign<AsteroidComponent>(create_asteroid.entity_id);
   components.Assign<component::ServerAuthoritativeComponent>(
       create_asteroid.entity_id);
+  auto* auth = components.Assign<component::ServerAuthoritativeComponent>(
+      create_asteroid.entity_id);
+  // Only need transform on asteroids. Physics unneeded.
+  auth->bitmask = TRANSFORM; 
 }
 
 void Execute(Input& input) {

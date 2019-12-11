@@ -1,6 +1,8 @@
 #include <array>
 #include <thread>
 #include <gflags/gflags.h>
+#include <mutex>
+#include <vector>
 #include <cassert>
 
 #include "asteroids.h"
@@ -15,6 +17,8 @@ namespace {
 DEFINE_string(port, "9845", "Port for this application.");
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
+static std::vector<int> kConnectedClients;
+static std::mutex kMutex;
 
 void OnClientConnected(int client_id) {
   // Server state needs to be sent to the client on the game thread
@@ -28,6 +32,8 @@ void OnClientConnected(int client_id) {
                asteroids::commands::SERVER_PLAYER_JOIN,
                (const uint8_t*)(&join), &raw_event[0]);
   game::EnqueueEvent(&raw_event[0], size);
+  std::lock_guard<std::mutex> guard(kMutex);
+  kConnectedClients.push_back(client_id);
 }
 
 void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
@@ -114,8 +120,11 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
 
 void SyncAuthoritativeComponents() {
   auto& components = asteroids::GlobalGameState().components;
+  std::lock_guard<std::mutex> guard(kMutex);
+  if (kConnectedClients.empty()) return;
   components.Enumerate<component::ServerAuthoritativeComponent>(
       [&](ecs::Entity entity, component::ServerAuthoritativeComponent& a) {
+    // TODO: Change this to EventBuilder.
     if ((a.bitmask & asteroids::commands::TRANSFORM) != 0) {
       auto* t = components.Get<component::TransformComponent>(entity);
       if (t) {
@@ -128,7 +137,9 @@ void SyncAuthoritativeComponents() {
         game::Encode(sizeof(asteroids::commands::UpdateTransform),
                      asteroids::commands::UPDATE_TRANSFORM,
                      (uint8_t*)(&u), &data_transform[0]);
-        network::server::Send(0, &data_transform[0], size);
+        for (int client_id : kConnectedClients) {
+          network::server::Send(client_id, &data_transform[0], size);
+        }
       }
     }
 
@@ -144,7 +155,9 @@ void SyncAuthoritativeComponents() {
         game::Encode(sizeof(asteroids::commands::UpdatePhysics),
                      asteroids::commands::UPDATE_PHYSICS,
                      (uint8_t*)(&u), &data_physics[0]);
-        network::server::Send(0, &data_physics[0], size);
+        for (int client_id : kConnectedClients) {
+          network::server::Send(client_id, &data_physics[0], size);
+        }
       }
     }
   });
@@ -213,7 +226,14 @@ void SynchClientStateToServer(
 
   network::server::Send(server_player_join.client_id, builder.data,
                         builder.idx + 1);
+}
 
+void SendCreateAsteroid(game::Event event) {
+  std::lock_guard<std::mutex> guard(kMutex);
+  for (int client_id : kConnectedClients) {
+    network::server::Send(client_id, event.data - game::kEventHeaderSize,
+                          event.size + game::kEventHeaderSize);
+  }
 }
 
 void HandleEvent(game::Event event) {
@@ -223,6 +243,9 @@ void HandleEvent(game::Event event) {
       SynchClientStateToServer(
           *((asteroids::commands::ServerPlayerJoin*)event.data));
       break;
+    case asteroids::commands::CREATE_ASTEROID:
+      SendCreateAsteroid(event);
+      // Fall through so the server creates the asteroid.
     default:
       asteroids::HandleEvent(event); // Default to games HandleEvent
   };

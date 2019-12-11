@@ -50,9 +50,10 @@ static Update _Update;
 static Render _Render;
 static OnEnd _OnEnd;
 
-// 1 KiB should be plenty. It'd be unusual for the event
-// queue to surpass 1KiB in a given frame.
-constexpr int kEventBufferSize = 1024;
+// Temporarily increase event buffer to 20KiB. This is because
+// when a client joins this event buffer can actually get quite big.
+// TODO: Come up with a better solution for that.
+constexpr int kEventBufferSize = 20 * 1024;
 
 inline std::chrono::milliseconds NowMS() {
   return std::chrono::duration_cast<std::chrono::milliseconds>(
