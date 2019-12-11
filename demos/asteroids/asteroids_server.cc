@@ -17,7 +17,17 @@ DEFINE_string(port, "9845", "Port for this application.");
 static uint64_t kClientPlayers[network::server::kMaxClients];
 
 void OnClientConnected(int client_id) {
-  std::cout << "Client: " << client_id << " connected." << std::endl;
+  // Server state needs to be sent to the client on the game thread
+  // so enqueue a message informing the game server to do so.
+  constexpr int size = sizeof(asteroids::commands::ServerPlayerJoin)
+                       + game::kEventHeaderSize;
+  uint8_t raw_event[size];
+  asteroids::commands::ServerPlayerJoin join;
+  join.client_id = client_id;
+  game::Encode(sizeof(asteroids::commands::ServerPlayerJoin),
+               asteroids::commands::SERVER_PLAYER_JOIN,
+               (const uint8_t*)(&join), &raw_event[0]);
+  game::EnqueueEvent(&raw_event[0], size);
 }
 
 void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
@@ -37,15 +47,11 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
                            sizeof(asteroids::commands::PlayerIdMutation) +
                            3 * game::kEventHeaderSize;
 
-      constexpr int create_idx = sizeof(asteroids::commands::DeleteEntity)
-                                 + game::kEventHeaderSize;
-
-      constexpr int player_id_idx = 
-        sizeof(asteroids::commands::DeleteEntity) +
-        sizeof(asteroids::commands::CreatePlayer) +
-        2 * game::kEventHeaderSize;
-
       static uint8_t data[size];
+      game::EventBuilder builder;
+      builder.data = data;
+      builder.size = size;
+      builder.idx = 0;
 
       // Decode incoming message to create player.
       game::Event e = game::Decode(msg);
@@ -55,24 +61,24 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
       // Setup responding message to delete that entity.
       asteroids::commands::DeleteEntity delete_entity;
       delete_entity.entity_id = c->entity_id;
-      game::Encode(sizeof(asteroids::commands::DeleteEntity),
+      game::Build(sizeof(asteroids::commands::DeleteEntity),
                    asteroids::commands::DELETE_ENTITY,
                    (uint8_t*)(&delete_entity),
-                   (uint8_t*)(&data[0]));
-      game::Encode(sizeof(asteroids::commands::CreatePlayer),
+                   &builder);
+      game::Build(sizeof(asteroids::commands::CreatePlayer),
                    asteroids::commands::CREATE_PLAYER,
                    (uint8_t*)(&create_player[0]),
-                   (uint8_t*)(&data[create_idx]));
+                   &builder);
       asteroids::commands::PlayerIdMutation id_mutate;
       id_mutate.entity_id = create_player->entity_id;
       // Make sure the client updates its player id idx.
-      game::Encode(sizeof(asteroids::commands::PlayerIdMutation),
+      game::Build(sizeof(asteroids::commands::PlayerIdMutation),
                    asteroids::commands::PLAYER_ID_MUTATION,
                    (uint8_t*)(&id_mutate),
-                   (uint8_t*)(&data[player_id_idx]));
+                   &builder);
 
       // Send message back to client.
-      network::server::Send(client_id, (uint8_t*)&data[0], size);
+      network::server::Send(client_id, builder.data, builder.size);
 
       // Save off client_id -> ship entity_id mapping.
       kClientPlayers[client_id] = create_player->entity_id;
@@ -144,6 +150,84 @@ void SyncAuthoritativeComponents() {
   });
 }
 
+void OptionallySendPacket(int client_id, game::EventBuilder* builder) {
+  if (builder->idx < 900) return;
+  network::server::Send(client_id, builder->data, builder->idx + 1);
+  builder->idx = 0;
+}
+
+void SynchClientStateToServer(
+    const asteroids::commands::ServerPlayerJoin& server_player_join) {
+  std::cout << "Syncing client: " << server_player_join.client_id << std::endl;
+  auto& components = asteroids::GlobalGameState().components;
+
+  static uint8_t data[1024];
+  game::EventBuilder builder;
+  builder.data = data;
+  builder.size = 1024;
+  builder.idx = 0;
+
+  components.Enumerate<asteroids::AsteroidComponent,
+                       component::TransformComponent,
+                       asteroids::RandomNumberIntChoiceComponent>(
+      [&](ecs::Entity ent, asteroids::AsteroidComponent&,
+          component::TransformComponent& transform,
+          asteroids::RandomNumberIntChoiceComponent& random_num_comp) {
+    asteroids::commands::CreateAsteroid create;
+    create.entity_id = ent;
+    create.position = transform.position;
+    create.direction = math::Normalize(transform.orientation.Up());
+    create.angle = transform.orientation.angle_degrees;
+    create.random_number = random_num_comp.random_number;
+    game::Build(sizeof(asteroids::commands::CreateAsteroid),
+                asteroids::commands::CREATE_ASTEROID,
+                (const uint8_t*)&create, &builder);
+    OptionallySendPacket(server_player_join.client_id, &builder);
+  });
+
+  components.Enumerate<asteroids::ProjectileComponent,
+                       component::TransformComponent>(
+      [&](ecs::Entity ent, asteroids::ProjectileComponent&,
+          component::TransformComponent& transform) {
+    asteroids::commands::CreateProjectile create;
+    create.entity_id = ent;
+    create.transform = transform;
+    game::Build(sizeof(asteroids::commands::CreateProjectile),
+                asteroids::commands::CREATE_PROJECTILE,
+                (const uint8_t*)&create, &builder);
+    OptionallySendPacket(server_player_join.client_id, &builder);
+  });
+
+  components.Enumerate<asteroids::PlayerComponent,
+                       component::TransformComponent>(
+      [&](ecs::Entity ent, asteroids::PlayerComponent,
+          component::TransformComponent& transform) {
+    asteroids::commands::CreatePlayer create;
+    create.entity_id = ent;
+    create.position = transform.position;
+    game::Build(sizeof(asteroids::commands::CreatePlayer),
+                asteroids::commands::CREATE_PLAYER,
+                (const uint8_t*)&create, &builder);
+    OptionallySendPacket(server_player_join.client_id, &builder);
+  });
+
+  network::server::Send(server_player_join.client_id, builder.data,
+                        builder.idx + 1);
+
+}
+
+void HandleEvent(game::Event event) {
+  // Server adds events related to syncing client state.
+  switch ((asteroids::commands::Event)event.metadata) {
+    case asteroids::commands::SERVER_PLAYER_JOIN:
+      SynchClientStateToServer(
+          *((asteroids::commands::ServerPlayerJoin*)event.data));
+      break;
+    default:
+      asteroids::HandleEvent(event); // Default to games HandleEvent
+  };
+}
+
 bool Initialize() {
   assert(!FLAGS_port.empty());
 
@@ -190,7 +274,7 @@ int main(int argc, char** argv) {
   gflags::ParseCommandLineFlags(&argc, &argv, true);
   game::Setup(&Initialize,
               &ProcessInput,
-              &asteroids::HandleEvent,
+              &HandleEvent,
               &Update,
               &Render,
               &OnEnd);

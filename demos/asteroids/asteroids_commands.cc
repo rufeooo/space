@@ -6,6 +6,7 @@
 #include "asteroids_state.h"
 #include "components/common/input_component.h"
 #include "components/network/server_authoritative_component.h"
+#include "game/event.h"
 #include "integration/entity_replication/entity_replication_server.h"
 
 namespace asteroids {
@@ -26,6 +27,7 @@ void Execute(CreatePlayer& create_player) {
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<component::InputComponent>(
       create_player.entity_id);
+  components.Assign<PlayerComponent>(create_player.entity_id);
   auto* auth = components.Assign<component::ServerAuthoritativeComponent>(
       create_player.entity_id);
   auth->bitmask = TRANSFORM | PHYSICS; 
@@ -102,8 +104,6 @@ void Execute(CreateAsteroid& create_asteroid) {
       GlobalEntityGeometry()
           .asteroid_geometry[random_number - 1].size());
   components.Assign<AsteroidComponent>(create_asteroid.entity_id);
-  CreateAsteroid create_command(create_asteroid);
-  create_command.random_number = random_number;
   components.Assign<component::ServerAuthoritativeComponent>(
       create_asteroid.entity_id);
 }
@@ -138,7 +138,6 @@ void Execute(UpdatePhysics& update_physics) {
       update_physics.entity_id);
   if (!physics) return;
   *physics = update_physics.physics;
-
 }
 
 }

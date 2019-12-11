@@ -1,5 +1,4 @@
 #pragma once
-
 #include <set>
 #include <vector>
 
@@ -60,7 +59,8 @@ struct GameState {
     component::ViewComponent, PhysicsComponent, PolygonShape,
     component::TransformComponent, component::InputComponent,
     GameStateComponent, component::RenderingComponent, TTLComponent,
-    AsteroidComponent, ProjectileComponent, RandomNumberIntChoiceComponent,
+    AsteroidComponent, PlayerComponent, ProjectileComponent,
+    RandomNumberIntChoiceComponent,
     component::ServerAuthoritativeComponent> components;
   ecs::Entity player_id = -1;
 };

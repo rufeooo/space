@@ -23,6 +23,16 @@ struct SavedEvent {
   Event event;
 };
 
+// Used to encode multiple events into a data stream.
+struct EventBuilder {
+  // Max size of buffer. Builder will assert if this value is surpassed.
+  int size;
+  // Current index into the data stream.
+  int idx;
+  // Byte stream containing all events.
+  uint8_t* data = nullptr;
+};
+
 // Converts buffer and size to Event struct. And moves msg
 // forward to next event.
 Event Decode(uint8_t* msg);
@@ -30,5 +40,9 @@ Event Decode(uint8_t* msg);
 // Copy data into msg given the size and metadata.
 void Encode(uint16_t size, uint16_t metadata,
             const uint8_t* data, uint8_t* msg);
+
+// Incrementally builds events into an EventBuilder struct.
+void Build(uint16_t size, uint16_t metadata,
+           const uint8_t* data, EventBuilder* builder);
 
 }

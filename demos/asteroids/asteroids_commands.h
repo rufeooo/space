@@ -33,6 +33,8 @@ enum Event {
 
   UPDATE_TRANSFORM = 8,
   UPDATE_PHYSICS   = 9,
+
+  SERVER_PLAYER_JOIN = 10,
 };
 
 struct CreatePlayer {
@@ -95,6 +97,10 @@ struct UpdatePhysics {
   PhysicsComponent physics;
 };
 
+struct ServerPlayerJoin {
+  int client_id;
+};
+
 void Execute(CreatePlayer& create_player);
 void Execute(CreateProjectile& create_projectile);
 void Execute(CreateAsteroid& create_asteroid);
@@ -103,6 +109,7 @@ void Execute(DeleteEntity& delete_entity);
 void Execute(PlayerIdMutation& change_player_id);
 void Execute(UpdateTransform& update_transform);
 void Execute(UpdatePhysics& update_physics);
+void Execute(ServerPlayerJoin& server_player_join);
 
 }
 
