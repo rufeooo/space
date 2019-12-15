@@ -2,7 +2,9 @@
 
 #include <iostream>
 
+#include "ecs.h"
 #include "math/vec.h"
+#include "math/mat_ops.h"
 #include "renderer/gl_utils.h"
 #include "renderer/gl_shader_cache.h"
 
@@ -89,8 +91,8 @@ bool Initialize() {
   // Triangle.
   kOpenGL.triangle_vao_reference = renderer::CreateGeometryVAO({
       math::Vec2f( 0.0f , 0.25f),
-      math::Vec2f( 0.25f, 0.0f ),
-      math::Vec2f(-0.25f, 0.0f )});
+      math::Vec2f( 0.125f, 0.0f ),
+      math::Vec2f(-0.125f, 0.0f )});
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
   kOpenGL.rectangle_vao_reference = renderer::CreateGeometryVAO({
@@ -107,8 +109,20 @@ void PollEvents() {
 }
 
 bool Render() {
-  glfwSwapBuffers(kOpenGL.glfw);
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+  // Draw all tirangles
+  glUseProgram(kOpenGL.program_reference);
+  glBindVertexArray(kOpenGL.triangle_vao_reference);
+  // Assume 1 triangle and just orient at origin.
+  math::Mat4f matrix = math::CreateIdentityMatrix<float, 4>();
+  kECS.Enumerate<TransformComponent, TriangleComponent>(
+      [&](ecs::Entity entity,
+         TransformComponent& transform, TriangleComponent& triangle) {
+    glUniformMatrix4fv(kOpenGL.matrix_uniform, 1, GL_FALSE, &matrix[0]);
+    glDrawArrays(GL_LINE_LOOP, 0, 3);
+  });
+  glfwSwapBuffers(kOpenGL.glfw);
   return !glfwWindowShouldClose(kOpenGL.glfw);
 }
 
