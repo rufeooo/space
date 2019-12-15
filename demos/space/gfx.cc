@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "math/vec.h"
 #include "renderer/gl_utils.h"
 #include "renderer/gl_shader_cache.h"
 
@@ -33,7 +34,16 @@ constexpr const char* kProgramName = "prog";
 struct OpenGL {
   GLFWwindow* glfw = nullptr;
   renderer::GLShaderCache shader_cache;
+
+  // References to shader programs.
   uint32_t program_reference;
+
+  // References to uniforms.
+  uint32_t matrix_uniform;
+
+  // References to vertex data on GPU.
+  uint32_t triangle_vao_reference;
+  uint32_t rectangle_vao_reference;
 };
 
 static OpenGL kOpenGL;
@@ -70,6 +80,24 @@ bool Initialize() {
         kProgramName, &kOpenGL.program_reference)) {
     return false;
   }
+
+  kOpenGL.matrix_uniform =
+      glGetUniformLocation(kOpenGL.program_reference, "matrix");
+
+  // Create the geometry for basic shapes.
+
+  // Triangle.
+  kOpenGL.triangle_vao_reference = renderer::CreateGeometryVAO({
+      math::Vec2f( 0.0f , 0.25f),
+      math::Vec2f( 0.25f, 0.0f ),
+      math::Vec2f(-0.25f, 0.0f )});
+
+  // Rectangle. Notice it's a square. Scale to make rectangly.
+  kOpenGL.rectangle_vao_reference = renderer::CreateGeometryVAO({
+      math::Vec2f(-0.25f,  0.25f),
+      math::Vec2f( 0.25f,  0.25f),
+      math::Vec2f( 0.25f, -0.25f),
+      math::Vec2f(-0.25f, -0.25f)});
 
   return true;
 }

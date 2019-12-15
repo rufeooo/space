@@ -1,7 +1,5 @@
 #pragma once
 
-namespace component {
-
 struct RenderingComponent {
   RenderingComponent() = default;
   RenderingComponent(
@@ -17,5 +15,3 @@ struct RenderingComponent {
   // Number of vertices to render for this component.
   uint32_t vertex_count;
 };
-
-}

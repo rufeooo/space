@@ -3,8 +3,6 @@
 #include "math/vec.h"
 #include "math/quat.h"
 
-namespace component {
-
 struct ViewComponent {
   ViewComponent() = default;
 
@@ -15,5 +13,3 @@ struct ViewComponent {
   math::Vec3f position;
   math::Quatf orientation;
 };
-
-}
