@@ -93,9 +93,9 @@ bool Initialize() {
 
   // Triangle.
   kOpenGL.triangle_vao_reference = renderer::CreateGeometryVAO({
-      math::Vec2f( 0.0f  , 0.25f),
-      math::Vec2f( 0.125f, 0.0f ),
-      math::Vec2f(-0.125f, 0.0f )});
+      math::Vec2f( 0.0f  , 0.125f ),
+      math::Vec2f( 0.125f, -0.125f),
+      math::Vec2f(-0.125f, -0.125f)});
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
   kOpenGL.rectangle_vao_reference = renderer::CreateGeometryVAO({
@@ -122,7 +122,7 @@ bool Render() {
   glBindVertexArray(kOpenGL.triangle_vao_reference);
   kECS.Enumerate<TransformComponent, TriangleComponent>(
       [&](ecs::Entity entity,
-         TransformComponent& transform, TriangleComponent& triangle) {
+          TransformComponent& transform, TriangleComponent& triangle) {
     // Translate and rotate the triangle appropriately.
     math::Mat4f matrix =
         math::CreateTranslationMatrix(transform.position);
