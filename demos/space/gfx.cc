@@ -117,14 +117,14 @@ void PollEvents() {
 bool Render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-  // Draw all tirangles
+  // Draw all triangles
   glUseProgram(kGfx.program_reference);
   glBindVertexArray(kGfx.triangle_vao_reference);
   kECS.Enumerate<TransformComponent, TriangleComponent>(
       [&](ecs::Entity entity,
           TransformComponent& transform, TriangleComponent&) {
     // Translate and rotate the triangle appropriately.
-    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position);
+    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position) *
                          math::CreateRotationMatrix(transform.orientation);
     glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 3);
@@ -137,7 +137,7 @@ bool Render() {
       [&](ecs::Entity entity,
           TransformComponent& transform, RectangleComponent&) {
     // Translate and rotate the rectangle appropriately.
-    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position);
+    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position) *
                          math::CreateRotationMatrix(transform.orientation);
     glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);

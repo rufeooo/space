@@ -11,9 +11,17 @@ namespace {
 
 bool Initialize() {
   if (!gfx::Initialize()) return false;
-  // Just make a player... It's a triangle.
+  // Make a square. This thing moves around when clicking.
   kECS.Assign<TransformComponent>(0);
   kECS.Assign<RectangleComponent>(0);
+
+  // Make a triangle. This doesn't really do anything.
+  auto* transform = kECS.Assign<TransformComponent>(1);
+  // Move er up a bit.
+  transform->position.y += 0.5f;
+  transform->orientation.Set(0.f, math::Vec3f(0.f, 1.f, 0.f));
+  kECS.Assign<TriangleComponent>(1);
+
   return true;
 }
 
@@ -42,6 +50,9 @@ void HandleEvent(game::Event event) {
 }
 
 bool UpdateGame() {
+  // Rotate the triangle.
+  auto* transform = kECS.Get<TransformComponent>(1);
+  transform->orientation.Rotate(1.f);
   return true;
 }
 
