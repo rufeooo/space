@@ -46,6 +46,9 @@ struct OpenGL {
   // References to vertex data on GPU.
   uint32_t triangle_vao_reference;
   uint32_t rectangle_vao_reference;
+
+  int current_mouse_state;
+  int previous_mouse_state;
 };
 
 static OpenGL kOpenGL;
@@ -90,7 +93,7 @@ bool Initialize() {
 
   // Triangle.
   kOpenGL.triangle_vao_reference = renderer::CreateGeometryVAO({
-      math::Vec2f( 0.0f , 0.25f),
+      math::Vec2f( 0.0f  , 0.25f),
       math::Vec2f( 0.125f, 0.0f ),
       math::Vec2f(-0.125f, 0.0f )});
 
@@ -106,6 +109,9 @@ bool Initialize() {
 
 void PollEvents() {
   glfwPollEvents();
+  int state = glfwGetMouseButton(kOpenGL.glfw, GLFW_MOUSE_BUTTON_LEFT);
+  kOpenGL.previous_mouse_state = kOpenGL.current_mouse_state;
+  kOpenGL.current_mouse_state = state;
 }
 
 bool Render() {
@@ -114,16 +120,52 @@ bool Render() {
   // Draw all tirangles
   glUseProgram(kOpenGL.program_reference);
   glBindVertexArray(kOpenGL.triangle_vao_reference);
-  // Assume 1 triangle and just orient at origin.
-  math::Mat4f matrix = math::CreateIdentityMatrix<float, 4>();
   kECS.Enumerate<TransformComponent, TriangleComponent>(
       [&](ecs::Entity entity,
          TransformComponent& transform, TriangleComponent& triangle) {
+    // Translate and rotate the triangle appropriately.
+    math::Mat4f matrix =
+        math::CreateTranslationMatrix(transform.position);
+        math::CreateRotationMatrix(transform.orientation);
     glUniformMatrix4fv(kOpenGL.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 3);
   });
   glfwSwapBuffers(kOpenGL.glfw);
   return !glfwWindowShouldClose(kOpenGL.glfw);
+}
+
+math::Vec2f GetCursorPosition() {
+  double xpos, ypos;
+  glfwGetCursorPos(kOpenGL.glfw, &xpos, &ypos);
+  return math::Vec2f((float)xpos, (float)ypos);
+}
+
+
+math::Vec2f GetCursorPositionInGLSpace() {
+  // Get cursor. Top left (0,0) bottom right (window_width, window_height)
+  math::Vec2f cursor = GetCursorPosition();
+  // Convert to opengl screen space horizontal [-1, 1] vertical [-1, 1]
+  //
+  // 1. Convert cursor to top left (0,0) -> bottom right (2,2)
+  cursor /= gfx::GetWindowDims() / 2.f;
+  // 2. Subtract 1.f from both components to get (-1,-1) -> (1,1)
+  cursor -= 1.f;
+  // 3. Invert the y-axis since GL has (0,0) in middle and (-1,1) in top left.
+  cursor.y = -cursor.y;
+  return cursor;
+}
+
+
+math::Vec2f GetWindowDims() {
+  int width, height;
+  glfwGetWindowSize(kOpenGL.glfw, &width, &height);
+  return math::Vec2f((float)width, (float)height);
+}
+
+
+bool LeftMouseClicked() {
+  return kOpenGL.current_mouse_state == GLFW_RELEASE &&
+         kOpenGL.previous_mouse_state == GLFW_PRESS;
 }
 
 }

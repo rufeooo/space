@@ -28,6 +28,18 @@ struct Vec2 {
     return t;
   }
 
+  void operator-=(const T& rhs) {
+    x -= rhs;
+    y -= rhs;
+  }
+
+  Vec2<T> operator-(const T& rhs) const {
+    Vec2<T> t = *this;
+    t -= rhs;
+    return t;
+  }
+
+
   void operator-=(const Vec2<T>& rhs) {
     x -= rhs.x;
     y -= rhs.y;
@@ -56,6 +68,17 @@ struct Vec2 {
   }
 
   Vec2<T> operator/(const T& rhs) const {
+    Vec2<T> t = *this;
+    t /= rhs;
+    return t;
+  }
+
+  void operator/=(const Vec2<T>& rhs) {
+    x /= rhs.x;
+    y /= rhs.y;
+  }
+
+  Vec2<T> operator/(const Vec2<T>& rhs) const {
     Vec2<T> t = *this;
     t /= rhs;
     return t;
@@ -154,6 +177,18 @@ struct Vec3 {
   }
 
   Vec3<T> operator/(const T& rhs) const {
+    Vec3<T> t = *this;
+    t /= rhs;
+    return t;
+  }
+
+  void operator/=(const Vec3<T>& rhs) {
+    x /= rhs.x;
+    y /= rhs.y;
+    z /= rhs.z;
+  }
+
+  Vec3<T> operator/(const Vec3<T>& rhs) const {
     Vec3<T> t = *this;
     t /= rhs;
     return t;
