@@ -53,6 +53,17 @@ bool UpdateGame() {
   // Rotate the triangle.
   auto* transform = kECS.Get<TransformComponent>(1);
   transform->orientation.Rotate(1.f);
+
+  // Move the square towards the click.
+  kECS.Enumerate<TransformComponent, DestinationComponent>(
+      [](ecs::Entity ent, TransformComponent& transform,
+         DestinationComponent& destination) {
+    auto dir = math::Normalize(destination.position - transform.position.xy());
+    // Box will jitter after reaching destination. DestinationComponent will
+    // need to be removed when it "arrives" to fix that.
+    transform.position += dir * 0.005f;
+  });
+
   return true;
 }
 

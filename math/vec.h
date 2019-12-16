@@ -134,6 +134,9 @@ struct Vec3 {
       x(x), y(y), z(z) {
   }
 
+  Vec3(const Vec2<T>& v2) : x(v2.x), y(v2.y), z(0.f) {
+  }
+
   void operator+=(const Vec3<T>& rhs) {
     x += rhs.x;
     y += rhs.y;
@@ -200,6 +203,18 @@ struct Vec3 {
 
   bool operator!=(const Vec3<T>& rhs) const {
     return !(*this == rhs);
+  }
+
+  Vec2<T> xy() {
+    return Vec2<T>(x, y);
+  }
+
+  Vec2<T> yz() {
+    return Vec2<T>(y, z);
+  }
+
+  Vec2<T> xz() {
+    return Vec2<T>(x, z);
   }
 
   T x;
