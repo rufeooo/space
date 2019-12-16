@@ -99,10 +99,10 @@ bool Initialize() {
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
   kGfx.rectangle_vao_reference = renderer::CreateGeometryVAO({
-      math::Vec2f(-0.25f,  0.25f),
-      math::Vec2f( 0.25f,  0.25f),
-      math::Vec2f( 0.25f, -0.25f),
-      math::Vec2f(-0.25f, -0.25f)});
+      math::Vec2f(-0.0625f,  0.0625f),
+      math::Vec2f( 0.0625f,  0.0625f),
+      math::Vec2f( 0.0625f, -0.0625f),
+      math::Vec2f(-0.0625f, -0.0625f)});
 
   return true;
 }
@@ -122,13 +122,27 @@ bool Render() {
   glBindVertexArray(kGfx.triangle_vao_reference);
   kECS.Enumerate<TransformComponent, TriangleComponent>(
       [&](ecs::Entity entity,
-          TransformComponent& transform, TriangleComponent& triangle) {
+          TransformComponent& transform, TriangleComponent&) {
     // Translate and rotate the triangle appropriately.
     math::Mat4f matrix = math::CreateTranslationMatrix(transform.position);
                          math::CreateRotationMatrix(transform.orientation);
     glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 3);
   });
+
+  // Draw all rectangles.
+  glUseProgram(kGfx.program_reference);
+  glBindVertexArray(kGfx.rectangle_vao_reference);
+  kECS.Enumerate<TransformComponent, RectangleComponent>(
+      [&](ecs::Entity entity,
+          TransformComponent& transform, RectangleComponent&) {
+    // Translate and rotate the rectangle appropriately.
+    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position);
+                         math::CreateRotationMatrix(transform.orientation);
+    glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
+    glDrawArrays(GL_LINE_LOOP, 0, 4);
+  });
+
   glfwSwapBuffers(kGfx.glfw);
   return !glfwWindowShouldClose(kGfx.glfw);
 }

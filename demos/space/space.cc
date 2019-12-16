@@ -13,7 +13,7 @@ bool Initialize() {
   if (!gfx::Initialize()) return false;
   // Just make a player... It's a triangle.
   kECS.Assign<TransformComponent>(0);
-  kECS.Assign<TriangleComponent>(0);
+  kECS.Assign<RectangleComponent>(0);
   return true;
 }
 
