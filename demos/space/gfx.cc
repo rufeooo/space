@@ -33,7 +33,7 @@ constexpr const char* kFragmentShaderName = "frag";
 
 constexpr const char* kProgramName = "prog";
 
-struct OpenGL {
+struct Gfx {
   GLFWwindow* glfw = nullptr;
   renderer::GLShaderCache shader_cache;
 
@@ -51,54 +51,54 @@ struct OpenGL {
   int previous_mouse_state;
 };
 
-static OpenGL kOpenGL;
+static Gfx kGfx;
 
 bool Initialize() {
-  kOpenGL.glfw = renderer::InitGLAndCreateWindow(800, 800, "Space");
-  if (!kOpenGL.glfw) {
+  kGfx.glfw = renderer::InitGLAndCreateWindow(800, 800, "Space");
+  if (!kGfx.glfw) {
     std::cout << "Unable to start GL and create window."
               << std::endl;
     return false;
   }
 
-  if (!kOpenGL.shader_cache.CompileShader(
+  if (!kGfx.shader_cache.CompileShader(
         kVertexShaderName, renderer::ShaderType::VERTEX, kVertexShader)) {
     std::cout << "Unable to compile " << kVertexShaderName << std::endl;
     return false;
   }
 
-  if (!kOpenGL.shader_cache.CompileShader(
+  if (!kGfx.shader_cache.CompileShader(
       kFragmentShaderName, renderer::ShaderType::FRAGMENT, kFragmentShader)) {
     std::cout << "Unable to compile " << kFragmentShaderName << std::endl;
     return false;
   }
 
-  if (!kOpenGL.shader_cache.LinkProgram(
+  if (!kGfx.shader_cache.LinkProgram(
         kProgramName, { kVertexShaderName, kFragmentShaderName })) {
     std::cout << "Unable to link: " << kProgramName << " info: "
-              << kOpenGL.shader_cache.GetProgramInfo(kProgramName)
+              << kGfx.shader_cache.GetProgramInfo(kProgramName)
               << std::endl;
     return false;
   }
 
-  if (!kOpenGL.shader_cache.GetProgramReference(
-        kProgramName, &kOpenGL.program_reference)) {
+  if (!kGfx.shader_cache.GetProgramReference(
+        kProgramName, &kGfx.program_reference)) {
     return false;
   }
 
-  kOpenGL.matrix_uniform =
-      glGetUniformLocation(kOpenGL.program_reference, "matrix");
+  kGfx.matrix_uniform =
+      glGetUniformLocation(kGfx.program_reference, "matrix");
 
   // Create the geometry for basic shapes.
 
   // Triangle.
-  kOpenGL.triangle_vao_reference = renderer::CreateGeometryVAO({
+  kGfx.triangle_vao_reference = renderer::CreateGeometryVAO({
       math::Vec2f( 0.0f  , 0.125f ),
       math::Vec2f( 0.125f, -0.125f),
       math::Vec2f(-0.125f, -0.125f)});
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
-  kOpenGL.rectangle_vao_reference = renderer::CreateGeometryVAO({
+  kGfx.rectangle_vao_reference = renderer::CreateGeometryVAO({
       math::Vec2f(-0.25f,  0.25f),
       math::Vec2f( 0.25f,  0.25f),
       math::Vec2f( 0.25f, -0.25f),
@@ -109,34 +109,33 @@ bool Initialize() {
 
 void PollEvents() {
   glfwPollEvents();
-  int state = glfwGetMouseButton(kOpenGL.glfw, GLFW_MOUSE_BUTTON_LEFT);
-  kOpenGL.previous_mouse_state = kOpenGL.current_mouse_state;
-  kOpenGL.current_mouse_state = state;
+  int state = glfwGetMouseButton(kGfx.glfw, GLFW_MOUSE_BUTTON_LEFT);
+  kGfx.previous_mouse_state = kGfx.current_mouse_state;
+  kGfx.current_mouse_state = state;
 }
 
 bool Render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
   // Draw all tirangles
-  glUseProgram(kOpenGL.program_reference);
-  glBindVertexArray(kOpenGL.triangle_vao_reference);
+  glUseProgram(kGfx.program_reference);
+  glBindVertexArray(kGfx.triangle_vao_reference);
   kECS.Enumerate<TransformComponent, TriangleComponent>(
       [&](ecs::Entity entity,
           TransformComponent& transform, TriangleComponent& triangle) {
     // Translate and rotate the triangle appropriately.
-    math::Mat4f matrix =
-        math::CreateTranslationMatrix(transform.position);
-        math::CreateRotationMatrix(transform.orientation);
-    glUniformMatrix4fv(kOpenGL.matrix_uniform, 1, GL_FALSE, &matrix[0]);
+    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position);
+                         math::CreateRotationMatrix(transform.orientation);
+    glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 3);
   });
-  glfwSwapBuffers(kOpenGL.glfw);
-  return !glfwWindowShouldClose(kOpenGL.glfw);
+  glfwSwapBuffers(kGfx.glfw);
+  return !glfwWindowShouldClose(kGfx.glfw);
 }
 
 math::Vec2f GetCursorPosition() {
   double xpos, ypos;
-  glfwGetCursorPos(kOpenGL.glfw, &xpos, &ypos);
+  glfwGetCursorPos(kGfx.glfw, &xpos, &ypos);
   return math::Vec2f((float)xpos, (float)ypos);
 }
 
@@ -158,14 +157,14 @@ math::Vec2f GetCursorPositionInGLSpace() {
 
 math::Vec2f GetWindowDims() {
   int width, height;
-  glfwGetWindowSize(kOpenGL.glfw, &width, &height);
+  glfwGetWindowSize(kGfx.glfw, &width, &height);
   return math::Vec2f((float)width, (float)height);
 }
 
 
 bool LeftMouseClicked() {
-  return kOpenGL.current_mouse_state == GLFW_RELEASE &&
-         kOpenGL.previous_mouse_state == GLFW_PRESS;
+  return kGfx.current_mouse_state == GLFW_RELEASE &&
+         kGfx.previous_mouse_state == GLFW_PRESS;
 }
 
 }
