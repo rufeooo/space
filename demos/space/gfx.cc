@@ -47,8 +47,12 @@ struct Gfx {
   uint32_t triangle_vao_reference;
   uint32_t rectangle_vao_reference;
 
+  // State the mouse click is currently and previously in.
   int current_mouse_state;
   int previous_mouse_state;
+
+  // Number of pixels that correspond with a meter.
+  int meter_size = 50;
 };
 
 static Gfx kGfx;
@@ -92,17 +96,18 @@ bool Initialize() {
   // Create the geometry for basic shapes.
 
   // Triangle.
+  float m = kGfx.meter_size;
   kGfx.triangle_vao_reference = renderer::CreateGeometryVAO({
-      math::Vec2f( 0.0f  , 0.125f ),
-      math::Vec2f( 0.125f, -0.125f),
-      math::Vec2f(-0.125f, -0.125f)});
+      math::Vec2f( 0.0f,  m),
+      math::Vec2f(    m, -m),
+      math::Vec2f(   -m, -m)});
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
   kGfx.rectangle_vao_reference = renderer::CreateGeometryVAO({
-      math::Vec2f(-0.0625f,  0.0625f),
-      math::Vec2f( 0.0625f,  0.0625f),
-      math::Vec2f( 0.0625f, -0.0625f),
-      math::Vec2f(-0.0625f, -0.0625f)});
+      math::Vec2f(-m / 2.f,  m / 2.f),
+      math::Vec2f( m / 2.f,  m / 2.f),
+      math::Vec2f( m / 2.f, -m / 2.f),
+      math::Vec2f(-m / 2.f, -m / 2.f)});
 
   return true;
 }
@@ -116,7 +121,11 @@ void PollEvents() {
 
 bool Render() {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
+  math::Vec2f dims = GetWindowDims();
+  // TODO: Take into consideration camera.
+  math::Mat4f ortho = math::CreateOrthographicMatrix<float>(
+      dims.x, 0.f, 0.f, dims.y, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  
   // Draw all triangles
   glUseProgram(kGfx.program_reference);
   glBindVertexArray(kGfx.triangle_vao_reference);
@@ -124,8 +133,9 @@ bool Render() {
       [&](ecs::Entity entity,
           TransformComponent& transform, TriangleComponent&) {
     // Translate and rotate the triangle appropriately.
-    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position) *
-                         math::CreateRotationMatrix(transform.orientation);
+    math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
+                        math::CreateRotationMatrix(transform.orientation);
+    math::Mat4f matrix = ortho * model;
     glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 3);
   });
@@ -137,8 +147,9 @@ bool Render() {
       [&](ecs::Entity entity,
           TransformComponent& transform, RectangleComponent&) {
     // Translate and rotate the rectangle appropriately.
-    math::Mat4f matrix = math::CreateTranslationMatrix(transform.position) *
-                         math::CreateRotationMatrix(transform.orientation);
+    math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
+                        math::CreateRotationMatrix(transform.orientation);
+    math::Mat4f matrix = ortho * model;
     glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
   });
@@ -147,27 +158,16 @@ bool Render() {
   return !glfwWindowShouldClose(kGfx.glfw);
 }
 
-math::Vec2f GetCursorPosition() {
+math::Vec2f GetCursorPositionInScreenSpace() {
   double xpos, ypos;
   glfwGetCursorPos(kGfx.glfw, &xpos, &ypos);
+  math::Vec2f dims = GetWindowDims();
   return math::Vec2f((float)xpos, (float)ypos);
 }
 
-
-math::Vec2f GetCursorPositionInGLSpace() {
-  // Get cursor. Top left (0,0) bottom right (window_width, window_height)
-  math::Vec2f cursor = GetCursorPosition();
-  // Convert to opengl screen space horizontal [-1, 1] vertical [-1, 1]
-  //
-  // 1. Convert cursor to top left (0,0) -> bottom right (2,2)
-  cursor /= gfx::GetWindowDims() / 2.f;
-  // 2. Subtract 1.f from both components to get (-1,-1) -> (1,1)
-  cursor -= 1.f;
-  // 3. Invert the y-axis since GL has (0,0) in middle and (-1,1) in top left.
-  cursor.y = -cursor.y;
-  return cursor;
+math::Vec2f GetCursorPositionInWorldSpace() {
+  return GetCursorPositionInScreenSpace() / kGfx.meter_size;
 }
-
 
 math::Vec2f GetWindowDims() {
   int width, height;

@@ -12,14 +12,13 @@ namespace {
 bool Initialize() {
   if (!gfx::Initialize()) return false;
   // Make a square. This thing moves around when clicking.
-  kECS.Assign<TransformComponent>(0);
+  auto* transform = kECS.Assign<TransformComponent>(0);
+  transform->position = math::Vec3f(400.f, 400.f, 0.f);
   kECS.Assign<RectangleComponent>(0);
 
   // Make a triangle. This doesn't really do anything.
-  auto* transform = kECS.Assign<TransformComponent>(1);
-  // Move er up a bit.
-  transform->position.y += 0.5f;
-  transform->orientation.Set(0.f, math::Vec3f(0.f, 1.f, 0.f));
+  transform = kECS.Assign<TransformComponent>(1);
+  transform->position = math::Vec3f(200.f, 200.f, 0.f);
   kECS.Assign<TriangleComponent>(1);
 
   return true;
@@ -29,7 +28,7 @@ bool ProcessInput() {
   gfx::PollEvents();
 
   if (gfx::LeftMouseClicked()) {
-    math::Vec2f cursor_pos = gfx::GetCursorPositionInGLSpace();
+    math::Vec2f cursor_pos = gfx::GetCursorPositionInScreenSpace();
     command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
     move->entity_id = 0;
     move->position = cursor_pos;
@@ -61,7 +60,7 @@ bool UpdateGame() {
     auto dir = math::Normalize(destination.position - transform.position.xy());
     // Box will jitter after reaching destination. DestinationComponent will
     // need to be removed when it "arrives" to fix that.
-    transform.position += dir * 0.005f;
+    transform.position += dir * 5.f;
   });
 
   return true;
