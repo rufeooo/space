@@ -2,15 +2,18 @@
 #include <cassert>
 #include <thread>
 
-#include "asteroids.h"
-#include "asteroids_commands.h"
-#include "asteroids_state.h"
+#include "asteroids/asteroids.cc"
+#include "asteroids/asteroids_commands.cc"
+#include "asteroids/asteroids_state.cc"
 #include "components/common/input_component.h"
 #include "components/common/transform_component.h"
 #include "components/network/server_authoritative_component.h"
 #include "ecs/internal.h"
-#include "game/event_buffer.h"
-#include "game/game.h"
+#include "game/game.cc"
+#include "math/math.cc"
+#include "network/client.cc"
+#include "platform/platform.cc"
+#include "renderer/renderer.cc"
 
 DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "

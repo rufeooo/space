@@ -5,12 +5,14 @@
 #include <thread>
 #include <vector>
 
-#include "asteroids.h"
-#include "asteroids_commands.h"
-#include "asteroids_state.h"
-#include "game/event_buffer.h"
-#include "game/game.h"
-#include "network/server.h"
+#include "asteroids/asteroids.cc"
+#include "asteroids/asteroids_commands.cc"
+#include "asteroids/asteroids_state.cc"
+#include "game/game.cc"
+#include "math/math.cc"
+#include "network/server.cc"
+#include "platform/platform.cc"
+#include "renderer/renderer.cc"
 
 DEFINE_string(port, "9845", "Port for this application.");
 

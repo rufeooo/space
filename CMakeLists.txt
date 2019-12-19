@@ -32,10 +32,5 @@ set_target_properties(glad PROPERTIES FOLDER ThirdParty/glad)
 set_target_properties(glad-generate-files PROPERTIES FOLDER ThirdParty/glad)
 
 # Our stuff.
-add_subdirectory(search)
-add_subdirectory(network)
-add_subdirectory(tile)
-add_subdirectory(game)
-add_subdirectory(integration)
 add_subdirectory(example)
 add_subdirectory(src)

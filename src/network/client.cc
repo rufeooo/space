@@ -5,6 +5,8 @@
 #include <iostream>
 #include <thread>
 
+#include "network.cc"
+
 namespace network
 {
 namespace client
