@@ -24,21 +24,29 @@ AI -
 
   anthony: Apply pathfinding to moving squares on screen. A* has been repurposed from
            4x to accomplish this so this will mostly be defining a graph that units
-           can use the develop paths.
+           can utilize to calculate paths.
 
 engine - 
 
   anthony: Flip coordinate system to have positive y-axis pointing up on the screen.
            Currently pixel space is being used directly as world space.
-  anthony: Introduce a world space.
-  anthony: Use 16:9 aspect ratio when scaling. Currently we are using pixel width and
-           height when performing an orthographic projection. This has the nice property
-           that squares remain squares under 
+  anthony: Use 16:9 aspect ratio when scaling. This can be used to define our meter.
+           Currently we are using pixel width and height when performing an orthographic projection.
+           This has the nice property that squares remain squares under screen size mutation.
   anthony: Render a graph. By default this should be a graph showing our world space.
            as in the width / height of each square will be our 'meter'.
   anthony: Implement texture rendering. This should be as simple as attaching a component
            to an entity with some ID to represent the texture.
   anthony: Primitive UI, start with a square in world space that represents a button.
+           I'd like to use immediate mode graphics here. Instead of providing callbacks
+           on buttons the user will be able to do something like -
+
+           if (ui::Button("press me")) {
+             // Execute button press
+           }
+
+           This avoids the unnecessary complexity of defining UI layout and functionality
+           seperately.
 
 
 network -
