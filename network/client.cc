@@ -9,8 +9,6 @@ namespace network
 {
 namespace client
 {
-namespace
-{
 static OnMsgReceived _OnMsgReceived;
 
 constexpr int kMaxPacketSize = 1024;
@@ -127,7 +125,7 @@ RunClient()
   }
 }
 
-}  // namespace
+// namespace
 
 void
 Setup(OnMsgReceived on_msg_received_callback)

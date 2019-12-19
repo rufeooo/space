@@ -12,8 +12,6 @@
 #include "game/event_buffer.h"
 #include "game/game.h"
 
-namespace
-{
 DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
               "the game singleplayer otherwise.");
@@ -195,7 +193,7 @@ OnEnd()
   network::client::Stop();
 }
 
-}  // namespace
+// namespace
 
 int
 main(int argc, char** argv)

@@ -4,12 +4,10 @@
 
 namespace asteroids
 {
-namespace
-{
 static ecs::Entity kFree = 0;
 static int kIncrement = 1;
 
-}  // namespace
+// namespace
 
 OpenGLGameReferences&
 GlobalOpenGLGameReferences()

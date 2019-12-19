@@ -9,8 +9,6 @@
 
 namespace renderer
 {
-namespace
-{
 GLenum
 ToGLEnum(ShaderType shader_type)
 {
@@ -45,7 +43,7 @@ GetProgramInfoLog(uint32_t program_reference)
          " log: " + log;
 }
 
-}  // namespace
+// namespace
 
 bool
 GLShaderCache::CompileShader(const std::string& shader_name,

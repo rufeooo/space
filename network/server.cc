@@ -10,8 +10,6 @@ namespace network
 {
 namespace server
 {
-namespace
-{
 static OnClientConnected _OnClientConnected;
 static OnMsgReceived _OnMsgReceived;
 
@@ -164,7 +162,7 @@ RunServer()
   }
 }
 
-}  // namespace
+// namespace
 
 void
 Setup(OnClientConnected on_client_connected_callback,

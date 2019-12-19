@@ -12,8 +12,6 @@
 #include "game/game.h"
 #include "network/server.h"
 
-namespace
-{
 DEFINE_string(port, "9845", "Port for this application.");
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
@@ -187,49 +185,46 @@ SynchClientStateToServer(
   builder.size = 1024;
   builder.idx = 0;
 
-  components
-      .Enumerate<asteroids::AsteroidComponent, TransformComponent,
-                 asteroids::RandomNumberIntChoiceComponent>(
-          [&](ecs::Entity ent, asteroids::AsteroidComponent&,
-              TransformComponent& transform,
-              asteroids::RandomNumberIntChoiceComponent& random_num_comp) {
-            asteroids::commands::CreateAsteroid create;
-            create.entity_id = ent;
-            create.position = transform.position;
-            create.direction = math::Normalize(transform.orientation.Up());
-            create.angle = transform.orientation.angle_degrees;
-            create.random_number = random_num_comp.random_number;
-            game::Build(sizeof(asteroids::commands::CreateAsteroid),
-                        asteroids::commands::CREATE_ASTEROID,
-                        (const uint8_t*)&create, &builder);
-            OptionallySendPacket(server_player_join.client_id, &builder);
-          });
+  components.Enumerate<asteroids::AsteroidComponent, TransformComponent,
+                       asteroids::RandomNumberIntChoiceComponent>(
+      [&](ecs::Entity ent, asteroids::AsteroidComponent&,
+          TransformComponent& transform,
+          asteroids::RandomNumberIntChoiceComponent& random_num_comp) {
+        asteroids::commands::CreateAsteroid create;
+        create.entity_id = ent;
+        create.position = transform.position;
+        create.direction = math::Normalize(transform.orientation.Up());
+        create.angle = transform.orientation.angle_degrees;
+        create.random_number = random_num_comp.random_number;
+        game::Build(sizeof(asteroids::commands::CreateAsteroid),
+                    asteroids::commands::CREATE_ASTEROID,
+                    (const uint8_t*)&create, &builder);
+        OptionallySendPacket(server_player_join.client_id, &builder);
+      });
 
-  components
-      .Enumerate<asteroids::ProjectileComponent, TransformComponent>(
-          [&](ecs::Entity ent, asteroids::ProjectileComponent&,
-              TransformComponent& transform) {
-            asteroids::commands::CreateProjectile create;
-            create.entity_id = ent;
-            create.transform = transform;
-            game::Build(sizeof(asteroids::commands::CreateProjectile),
-                        asteroids::commands::CREATE_PROJECTILE,
-                        (const uint8_t*)&create, &builder);
-            OptionallySendPacket(server_player_join.client_id, &builder);
-          });
+  components.Enumerate<asteroids::ProjectileComponent, TransformComponent>(
+      [&](ecs::Entity ent, asteroids::ProjectileComponent&,
+          TransformComponent& transform) {
+        asteroids::commands::CreateProjectile create;
+        create.entity_id = ent;
+        create.transform = transform;
+        game::Build(sizeof(asteroids::commands::CreateProjectile),
+                    asteroids::commands::CREATE_PROJECTILE,
+                    (const uint8_t*)&create, &builder);
+        OptionallySendPacket(server_player_join.client_id, &builder);
+      });
 
-  components
-      .Enumerate<asteroids::PlayerComponent, TransformComponent>(
-          [&](ecs::Entity ent, asteroids::PlayerComponent,
-              TransformComponent& transform) {
-            asteroids::commands::CreatePlayer create;
-            create.entity_id = ent;
-            create.position = transform.position;
-            game::Build(sizeof(asteroids::commands::CreatePlayer),
-                        asteroids::commands::CREATE_PLAYER,
-                        (const uint8_t*)&create, &builder);
-            OptionallySendPacket(server_player_join.client_id, &builder);
-          });
+  components.Enumerate<asteroids::PlayerComponent, TransformComponent>(
+      [&](ecs::Entity ent, asteroids::PlayerComponent,
+          TransformComponent& transform) {
+        asteroids::commands::CreatePlayer create;
+        create.entity_id = ent;
+        create.position = transform.position;
+        game::Build(sizeof(asteroids::commands::CreatePlayer),
+                    asteroids::commands::CREATE_PLAYER, (const uint8_t*)&create,
+                    &builder);
+        OptionallySendPacket(server_player_join.client_id, &builder);
+      });
 
   network::server::Send(server_player_join.client_id, builder.data,
                         builder.idx + 1);
@@ -312,7 +307,7 @@ OnEnd()
   network::server::Stop();
 }
 
-}  // namespace
+// namespace
 
 int
 main(int argc, char** argv)

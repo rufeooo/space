@@ -7,8 +7,6 @@
 
 namespace math
 {
-namespace
-{
 float
 Signed2DTriArea(const math::Vec2f& a, const math::Vec2f& b,
                 const math::Vec2f& c)
@@ -67,7 +65,7 @@ DoIntersect(const math::Vec2f& p1, const math::Vec2f& q1, const math::Vec2f& p2,
   return false;  // Doesn't fall in any of the above cases
 }
 
-}  // namespace
+// namespace
 
 // pg 152. Real-Time Collision Detection by Christer Ericson
 bool

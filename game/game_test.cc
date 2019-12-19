@@ -3,8 +3,6 @@
 #include "game.h"
 #include "gtest/gtest.h"
 
-namespace
-{
 bool
 DumbInitialize()
 {
@@ -39,7 +37,7 @@ DumbEnd()
 {
 }
 
-}  // namespace
+// namespace
 
 TEST(Game, HappyPathGameTest)
 {
