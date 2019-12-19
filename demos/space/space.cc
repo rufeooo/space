@@ -60,11 +60,10 @@ bool UpdateGame() {
   if (destination) {
     auto dir =
         math::Normalize(destination->position - transform->position.xy());
-    // Box will jitter after reaching destination. DestinationComponent will
-    // need to be removed when it "arrives" to fix that.
     transform->position += dir * 1.f;
     float length_squared =
         math::LengthSquared(transform->position.xy() - destination->position);
+    // Remove DestinationComponent so entity stops.
     if (length_squared < 15.0f) {
       kECS.Remove<DestinationComponent>(0);
     }
