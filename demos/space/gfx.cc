@@ -98,9 +98,9 @@ bool Initialize() {
   // Triangle.
   float m = kGfx.meter_size;
   kGfx.triangle_vao_reference = renderer::CreateGeometryVAO({
-      math::Vec2f( 0.0f,  m),
-      math::Vec2f(    m, -m),
-      math::Vec2f(   -m, -m)});
+      math::Vec2f(    0.0f,  m / 2.f),
+      math::Vec2f( m / 2.f, -m / 2.f),
+      math::Vec2f(-m / 2.f, -m / 2.f)});
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
   kGfx.rectangle_vao_reference = renderer::CreateGeometryVAO({

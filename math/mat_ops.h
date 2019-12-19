@@ -68,8 +68,6 @@ template <class T>
 Mat<T, 4, 4> CreateViewMatrix(const Vec3<T>& translation,
                               const Quat<T>& quat) {
   Mat<T, 4, 4> view;
-  // A quat is really a versor [w,(x,y,z)]. So grab the variables out
-  // with those names to make the view more clear.
   view[0]  = 1.f - 2.f * quat.y * quat.y - 2.f * quat.z * quat.z;
   view[1]  = 2.f * quat.x * quat.y - 2.f * quat.w * quat.z;
   view[2]  = 2.f * quat.x * quat.z + 2 * quat.w * quat.y;

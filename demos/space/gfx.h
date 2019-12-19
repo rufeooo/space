@@ -15,8 +15,6 @@ bool Render();
 
 math::Vec2f GetCursorPositionInScreenSpace();
 
-math::Vec2f GetCursorPositionInGLSpace();
-
 math::Vec2f GetCursorPositionInWorldSpace();
 
 math::Vec2f GetWindowDims();

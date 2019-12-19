@@ -6,6 +6,7 @@
 #include "command.h"
 #include "ecs.h"
 #include "gfx.h"
+#include "math/vec.h"
 
 namespace {
 
@@ -19,6 +20,7 @@ bool Initialize() {
   // Make a triangle. This doesn't really do anything.
   transform = kECS.Assign<TransformComponent>(1);
   transform->position = math::Vec3f(200.f, 200.f, 0.f);
+  transform->orientation.Set(0.f, math::Vec3f(0.f, 0.f, 1.f));
   kECS.Assign<TriangleComponent>(1);
 
   return true;
@@ -50,18 +52,23 @@ void HandleEvent(game::Event event) {
 
 bool UpdateGame() {
   // Rotate the triangle.
-  auto* transform = kECS.Get<TransformComponent>(1);
-  transform->orientation.Rotate(1.f);
+  //auto* transform = kECS.Get<TransformComponent>(1);
+  //transform->orientation.Rotate(1.f);
 
-  // Move the square towards the click.
-  kECS.Enumerate<TransformComponent, DestinationComponent>(
-      [](ecs::Entity ent, TransformComponent& transform,
-         DestinationComponent& destination) {
-    auto dir = math::Normalize(destination.position - transform.position.xy());
+  TransformComponent* transform = kECS.Get<TransformComponent>(0);
+  DestinationComponent* destination = kECS.Get<DestinationComponent>(0);
+  if (destination) {
+    auto dir =
+        math::Normalize(destination->position - transform->position.xy());
     // Box will jitter after reaching destination. DestinationComponent will
     // need to be removed when it "arrives" to fix that.
-    transform.position += dir * 5.f;
-  });
+    transform->position += dir * 1.f;
+    float length_squared =
+        math::LengthSquared(transform->position.xy() - destination->position);
+    if (length_squared < 15.0f) {
+      kECS.Remove<DestinationComponent>(0);
+    }
+  }
 
   return true;
 }
