@@ -2,7 +2,9 @@
 
 #include "network/network.h"
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   if (!network::SocketInit()) {
     printf("Failed to initialize...\n\n");
     return 1;
@@ -19,9 +21,9 @@ int main(int argc, char** argv) {
 
   printf("Creating socket...\n\n");
 
-  SOCKET socket_listen = socket(
-      bind_address->ai_family, bind_address->ai_socktype,
-      bind_address->ai_protocol);
+  SOCKET socket_listen =
+      socket(bind_address->ai_family, bind_address->ai_socktype,
+             bind_address->ai_protocol);
 
   if (!network::SocketIsValid(socket_listen)) {
     fprintf(stderr, "socket() failed. (%d)\n", network::SocketErrno());
@@ -29,8 +31,7 @@ int main(int argc, char** argv) {
   }
 
   printf("Binding socket to local address...\n\n");
-  if (bind(socket_listen, bind_address->ai_addr,
-           bind_address->ai_addrlen)) {
+  if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen)) {
     fprintf(stderr, "bind() failed. (%d)\n", network::SocketErrno());
     return 1;
   }
@@ -48,8 +49,7 @@ int main(int argc, char** argv) {
     fd_set reads;
     reads = master;
     if (select(max_socket + 1, &reads, 0, 0, 0) < 0) {
-      fprintf(stderr, "select() failed. (%d)\n\n",
-              network::SocketErrno());
+      fprintf(stderr, "select() failed. (%d)\n\n", network::SocketErrno());
       return 1;
     }
     if (!FD_ISSET(socket_listen, &reads)) continue;
@@ -57,18 +57,16 @@ int main(int argc, char** argv) {
     socklen_t client_len = sizeof(client_address);
     char read[1024];
     memset(&read[0], 0, sizeof(read));
-    int bytes_received = recvfrom(
-        socket_listen, read, 1024, 0,
-        (struct sockaddr*)&client_address, &client_len);
+    int bytes_received =
+        recvfrom(socket_listen, read, 1024, 0,
+                 (struct sockaddr*)&client_address, &client_len);
     if (bytes_received < 1) {
-      fprintf(stderr, "connection closed. (%d)\n\n",
-              network::SocketErrno());
+      fprintf(stderr, "connection closed. (%d)\n\n", network::SocketErrno());
       return 1;
     }
     char address_buffer[100];
-    getnameinfo((struct sockaddr*)&client_address, client_len,
-                address_buffer, sizeof(address_buffer), 0, 0,
-                NI_NUMERICHOST);
+    getnameinfo((struct sockaddr*)&client_address, client_len, address_buffer,
+                sizeof(address_buffer), 0, 0, NI_NUMERICHOST);
     printf("New connection from %s\n\n", address_buffer);
 
     int j;
@@ -77,7 +75,7 @@ int main(int argc, char** argv) {
     }
     printf("Sending '%s' to %s\n\n", read, address_buffer);
     sendto(socket_listen, read, bytes_received, 0,
-           (struct sockaddr*) &client_address, client_len);
+           (struct sockaddr*)&client_address, client_len);
   }
 
   printf("Closing listening socket...\n\n");

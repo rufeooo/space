@@ -5,12 +5,12 @@
 #include <iostream>
 #include <thread>
 
-namespace network {
-
-namespace server {
-
-namespace {
-
+namespace network
+{
+namespace server
+{
+namespace
+{
 static OnClientConnected _OnClientConnected;
 static OnMsgReceived _OnMsgReceived;
 
@@ -32,7 +32,7 @@ struct ServerState {
   std::atomic<bool> server_running = false;
 
   // ...
-  Connection clients[kMaxClients]; 
+  Connection clients[kMaxClients];
 
   // ...
   int client_count;
@@ -55,17 +55,21 @@ struct ServerState {
 
 static ServerState kServerState;
 
-int GetClientId(const sockaddr_storage& client_address) {
+int
+GetClientId(const sockaddr_storage& client_address)
+{
   for (int i = 0; i < kMaxClients; ++i) {
-    if (memcmp(&kServerState.clients[i].client_address,
-               &client_address, sizeof(client_address)) == 0) {
+    if (memcmp(&kServerState.clients[i].client_address, &client_address,
+               sizeof(client_address)) == 0) {
       return i;
     }
   }
   return -1;
 }
 
-void SetupBindAddressInfo() {
+void
+SetupBindAddressInfo()
+{
   addrinfo hints = {0};
   hints.ai_family = AF_INET;
   hints.ai_socktype = SOCK_DGRAM;  // UDP - use SOCK_STREAM for UDP
@@ -74,20 +78,20 @@ void SetupBindAddressInfo() {
   getaddrinfo(0, kServerState.port.c_str(), &hints, &bind_address);
 }
 
-bool SetupListenSocket() {
+bool
+SetupListenSocket()
+{
   auto& server_socket = kServerState.server_socket;
   auto& bind_address = kServerState.bind_address;
-  server_socket =
-      socket(bind_address->ai_family, bind_address->ai_socktype,
-             bind_address->ai_protocol);
+  server_socket = socket(bind_address->ai_family, bind_address->ai_socktype,
+                         bind_address->ai_protocol);
 
   if (!SocketIsValid(server_socket)) {
     std::cout << "socket() failed: " << network::SocketErrno() << std::endl;
     return false;
   }
 
-  if (bind(server_socket, bind_address->ai_addr,
-           bind_address->ai_addrlen)) {
+  if (bind(server_socket, bind_address->ai_addr, bind_address->ai_addrlen)) {
     std::cout << "bind() failed: " << network::SocketErrno() << std::endl;
     return false;
   }
@@ -95,7 +99,9 @@ bool SetupListenSocket() {
   return true;
 }
 
-void RunServerLoop(timeval timeout, SOCKET max_socket) {
+void
+RunServerLoop(timeval timeout, SOCKET max_socket)
+{
   fd_set reads;
   reads = kServerState.master_fd;
 
@@ -106,19 +112,18 @@ void RunServerLoop(timeval timeout, SOCKET max_socket) {
   }
 
   // If there is data to read from the socket, read it and cache
-  // off the client address.    
-  auto& socket_listen = kServerState.server_socket; 
+  // off the client address.
+  auto& socket_listen = kServerState.server_socket;
   if (FD_ISSET(socket_listen, &reads)) {
     sockaddr_storage client_address;
     socklen_t client_len = sizeof(client_address);
-    int bytes_received = recvfrom(
-        socket_listen, kServerState.read_buffer, kMaxPacketSize,
-        0, (sockaddr*)&client_address, &client_len);
+    int bytes_received =
+        recvfrom(socket_listen, kServerState.read_buffer, kMaxPacketSize, 0,
+                 (sockaddr*)&client_address, &client_len);
     assert(bytes_received < kMaxPacketSize);
 
     if (bytes_received < 1) {
-      fprintf(stderr, "connection closed. (%d)\n\n",
-              network::SocketErrno());
+      fprintf(stderr, "connection closed. (%d)\n\n", network::SocketErrno());
       kServerState.server_running = false;
       return;
     }
@@ -140,7 +145,9 @@ void RunServerLoop(timeval timeout, SOCKET max_socket) {
   }
 }
 
-void RunServer() {
+void
+RunServer()
+{
   FD_ZERO(&kServerState.master_fd);
   FD_SET(kServerState.server_socket, &kServerState.master_fd);
   SOCKET max_socket = kServerState.server_socket;
@@ -156,16 +163,19 @@ void RunServer() {
   }
 }
 
-}  // anonymous
+}  // namespace
 
-void Setup(
-    OnClientConnected on_client_connected_callback,
-    OnMsgReceived on_msg_received_callback) {
+void
+Setup(OnClientConnected on_client_connected_callback,
+      OnMsgReceived on_msg_received_callback)
+{
   _OnClientConnected = on_client_connected_callback;
   _OnMsgReceived = on_msg_received_callback;
 }
 
-bool Start(const char* port) {
+bool
+Start(const char* port)
+{
   if (!SocketInit()) {
     std::cout << "Failed to initialize." << std::endl;
     return false;
@@ -186,20 +196,24 @@ bool Start(const char* port) {
   return true;
 }
 
-void Stop() {
+void
+Stop()
+{
   auto& server_thread = kServerState.server_thread;
   if (!server_thread.joinable()) return;
   kServerState.server_running = false;
   server_thread.join();
 }
 
-void Send(int client_id, uint8_t* buffer, int size) {
+void
+Send(int client_id, uint8_t* buffer, int size)
+{
   if (!kServerState.server_running) return;
   sendto(kServerState.server_socket, (char*)buffer, size, 0,
          (sockaddr*)&kServerState.clients[client_id].client_address,
          kServerState.clients[client_id].client_len);
 }
 
-}  // server
+}  // namespace server
 
-}  // network
+}  // namespace network

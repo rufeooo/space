@@ -2,7 +2,9 @@
 
 #include "network/network.h"
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   if (!network::SocketInit()) {
     printf("Failed to initialize...\n\n");
     return 1;
@@ -18,25 +20,23 @@ int main(int argc, char** argv) {
   getaddrinfo(0, "8080", &hints, &bind_address);
 
   printf("Creating socket...\n\n");
-  SOCKET socket_listen = socket(
-      bind_address->ai_family, bind_address->ai_socktype,
-      bind_address->ai_protocol);
+  SOCKET socket_listen =
+      socket(bind_address->ai_family, bind_address->ai_socktype,
+             bind_address->ai_protocol);
   if (!network::SocketIsValid(socket_listen)) {
     fprintf(stderr, "socket() failed. (%d)\n", network::SocketErrno());
     return 1;
   }
 
   printf("Binding socket to local address...\n\n");
-  if (bind(socket_listen, bind_address->ai_addr,
-           bind_address->ai_addrlen)) {
+  if (bind(socket_listen, bind_address->ai_addr, bind_address->ai_addrlen)) {
     fprintf(stderr, "bind() failed. (%d)\n", network::SocketErrno());
     return 1;
   }
   freeaddrinfo(bind_address);
   printf("Listening...\n\n");
   if (listen(socket_listen, 10) < 0) {
-    fprintf(stderr, "listen() failed. (%d)\n\n",
-            network::SocketErrno());
+    fprintf(stderr, "listen() failed. (%d)\n\n", network::SocketErrno());
     return 1;
   }
 
@@ -51,8 +51,7 @@ int main(int argc, char** argv) {
     fd_set reads;
     reads = master;
     if (select(max_socket + 1, &reads, 0, 0, 0) < 0) {
-      fprintf(stderr, "select() failed. (%d)\n",
-              network::SocketErrno());
+      fprintf(stderr, "select() failed. (%d)\n", network::SocketErrno());
       return 1;
     }
     SOCKET i;
@@ -62,12 +61,10 @@ int main(int argc, char** argv) {
       if (i == socket_listen) {
         struct sockaddr_storage client_address;
         socklen_t client_len = sizeof(client_address);
-        SOCKET socket_client =
-            accept(socket_listen, (struct sockaddr*) &client_address,
-            &client_len);
+        SOCKET socket_client = accept(
+            socket_listen, (struct sockaddr*)&client_address, &client_len);
         if (!network::SocketIsValid(socket_client)) {
-          fprintf(stderr, "accept() failed. (%d)\n",
-                  network::SocketErrno());
+          fprintf(stderr, "accept() failed. (%d)\n", network::SocketErrno());
           return 1;
         }
         FD_SET(socket_client, &master);

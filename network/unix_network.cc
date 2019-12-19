@@ -1,22 +1,30 @@
 #include "network.h"
 
-namespace network {
-
-bool SocketInit() {
+namespace network
+{
+bool
+SocketInit()
+{
   return true;
 }
 
-bool SocketIsValid(SOCKET s) {
+bool
+SocketIsValid(SOCKET s)
+{
   return s >= 0;
 }
 
-bool SocketClose(SOCKET s) {
+bool
+SocketClose(SOCKET s)
+{
   close(s);
   return true;
 }
 
-int SocketErrno() {
+int
+SocketErrno()
+{
   return errno;
 }
 
-}
+}  // namespace network

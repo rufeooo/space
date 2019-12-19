@@ -3,10 +3,12 @@
 #include <cassert>
 #include <iostream>
 
-namespace integration {
-
-void EntityReplication::Run() {
-  // Create the EntitySystemDelta for each client. 
+namespace integration
+{
+void
+EntityReplication::Run()
+{
+  // Create the EntitySystemDelta for each client.
   std::unordered_map<int, EntitySystemDelta> client_deltas;
   for (auto& c : client_entities_) {
     client_deltas[c.first] = EntitySystemDelta();
@@ -34,36 +36,45 @@ void EntityReplication::Run() {
     }
   }
   for (auto& delta : client_deltas) {
-    if (delta.second.client_id == -1) continue; // No delta
+    if (delta.second.client_id == -1) continue;  // No delta
     deltas_.push_back(std::move(delta.second));
   }
 }
 
-void EntityReplication::AddEntityAuthority(
-    ecs::Entity entity, std::vector<uint8_t>&& command_data) {
+void
+EntityReplication::AddEntityAuthority(ecs::Entity entity,
+                                      std::vector<uint8_t>&& command_data)
+{
   authority_entities_[entity] = command_data;
 }
 
-void EntityReplication::RemoveEntityAuthority(ecs::Entity entity) {
+void
+EntityReplication::RemoveEntityAuthority(ecs::Entity entity)
+{
   auto found = authority_entities_.find(entity);
   if (found == authority_entities_.end()) return;
   authority_entities_.erase(found);
 }
 
-void EntityReplication::AddEntityClient(
-    int client_id, ecs::Entity entity) {
+void
+EntityReplication::AddEntityClient(int client_id, ecs::Entity entity)
+{
   assert(client_id != -1);
   auto& client_set = client_entities_[client_id];
   client_set.insert(entity);
 }
 
-void EntityReplication::RemoveClient(int client_id) {
+void
+EntityReplication::RemoveClient(int client_id)
+{
   auto found = client_entities_.find(client_id);
   if (found == client_entities_.end()) return;
   client_entities_.erase(found);
 }
 
-bool EntityReplication::PollDeltas(EntitySystemDelta* delta) {
+bool
+EntityReplication::PollDeltas(EntitySystemDelta* delta)
+{
   assert(delta != nullptr);
   if (deltas_.empty()) {
     return false;
@@ -73,7 +84,9 @@ bool EntityReplication::PollDeltas(EntitySystemDelta* delta) {
   return true;
 }
 
-void EntityReplication::ApplyDelta(const EntitySystemDelta& delta) {
+void
+EntityReplication::ApplyDelta(const EntitySystemDelta& delta)
+{
   assert(delta.client_id != -1);
   auto found = client_entities_.find(delta.client_id);
   if (found == client_entities_.end()) return;
@@ -85,4 +98,4 @@ void EntityReplication::ApplyDelta(const EntitySystemDelta& delta) {
   }
 }
 
-}
+}  // namespace integration

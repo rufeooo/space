@@ -7,7 +7,9 @@ struct Combined {
   math::Vec3f vec;
 } __attribute__((packed));
 
-int main() {
+int
+main()
+{
   std::cout << sizeof(math::Vec3i) << std::endl;
   std::cout << sizeof(uint64_t) << std::endl;
   std::cout << sizeof(Combined) << std::endl;

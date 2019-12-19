@@ -1,7 +1,7 @@
 #pragma once
 
-#include "math/vec.h"
 #include "math/quat.h"
+#include "math/vec.h"
 
 struct TransformComponent {
   math::Vec3f position;

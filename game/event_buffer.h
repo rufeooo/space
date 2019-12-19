@@ -2,8 +2,8 @@
 
 #include "event.h"
 
-namespace game {
-
+namespace game
+{
 struct EventBuffer {
   uint8_t* buffer = nullptr;
   int buffer_size = 0;
@@ -11,7 +11,7 @@ struct EventBuffer {
   int poll_idx = 0;
 };
 
-// Initialize an event buffer of size_bytes 
+// Initialize an event buffer of size_bytes
 void AllocateEventBuffer(int size_bytes);
 
 // Free memory in event buffer.
@@ -40,9 +40,11 @@ void SetCustomEventBuffer(EventBuffer* event_buffer);
 // Given a type and ID create an event. Typically ID is
 // some sort of enum that will later be used to determine type.
 template <class T, class ID>
-T* CreateEvent(ID event_id) {
+T*
+CreateEvent(ID event_id)
+{
   T* e = (T*)EnqueueEvent(sizeof(T), (uint16_t)event_id);
   return e;
 }
 
-}
+}  // namespace game

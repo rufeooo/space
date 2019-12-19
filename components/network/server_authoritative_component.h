@@ -2,10 +2,10 @@
 
 #include <vector>
 
-namespace component {
-
+namespace component
+{
 struct ServerAuthoritativeComponent {
   uint8_t bitmask;
 };
 
-}
+}  // namespace component

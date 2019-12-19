@@ -1,9 +1,9 @@
-#include <array>
-#include <thread>
 #include <gflags/gflags.h>
-#include <mutex>
-#include <vector>
+#include <array>
 #include <cassert>
+#include <mutex>
+#include <thread>
+#include <vector>
 
 #include "asteroids.h"
 #include "asteroids_commands.h"
@@ -12,31 +12,35 @@
 #include "game/game.h"
 #include "network/server.h"
 
-namespace {
-
+namespace
+{
 DEFINE_string(port, "9845", "Port for this application.");
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
 static std::vector<int> kConnectedClients;
 static std::mutex kMutex;
 
-void OnClientConnected(int client_id) {
+void
+OnClientConnected(int client_id)
+{
   // Server state needs to be sent to the client on the game thread
   // so enqueue a message informing the game server to do so.
-  constexpr int size = sizeof(asteroids::commands::ServerPlayerJoin)
-                       + game::kEventHeaderSize;
+  constexpr int size =
+      sizeof(asteroids::commands::ServerPlayerJoin) + game::kEventHeaderSize;
   uint8_t raw_event[size];
   asteroids::commands::ServerPlayerJoin join;
   join.client_id = client_id;
   game::Encode(sizeof(asteroids::commands::ServerPlayerJoin),
-               asteroids::commands::SERVER_PLAYER_JOIN,
-               (const uint8_t*)(&join), &raw_event[0]);
+               asteroids::commands::SERVER_PLAYER_JOIN, (const uint8_t*)(&join),
+               &raw_event[0]);
   game::EnqueueEvent(&raw_event[0], size);
   std::lock_guard<std::mutex> guard(kMutex);
   kConnectedClients.push_back(client_id);
 }
 
-void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
+void
+OnClientMsgReceived(int client_id, uint8_t* msg, int size)
+{
   game::Event e = game::Decode(msg);
   switch ((asteroids::commands::Event)e.metadata) {
     case asteroids::commands::CREATE_PLAYER: {
@@ -68,20 +72,17 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
       asteroids::commands::DeleteEntity delete_entity;
       delete_entity.entity_id = c->entity_id;
       game::Build(sizeof(asteroids::commands::DeleteEntity),
-                   asteroids::commands::DELETE_ENTITY,
-                   (uint8_t*)(&delete_entity),
-                   &builder);
+                  asteroids::commands::DELETE_ENTITY,
+                  (uint8_t*)(&delete_entity), &builder);
       game::Build(sizeof(asteroids::commands::CreatePlayer),
-                   asteroids::commands::CREATE_PLAYER,
-                   (uint8_t*)(&create_player[0]),
-                   &builder);
+                  asteroids::commands::CREATE_PLAYER,
+                  (uint8_t*)(&create_player[0]), &builder);
       asteroids::commands::PlayerIdMutation id_mutate;
       id_mutate.entity_id = create_player->entity_id;
       // Make sure the client updates its player id idx.
       game::Build(sizeof(asteroids::commands::PlayerIdMutation),
-                   asteroids::commands::PLAYER_ID_MUTATION,
-                   (uint8_t*)(&id_mutate),
-                   &builder);
+                  asteroids::commands::PLAYER_ID_MUTATION,
+                  (uint8_t*)(&id_mutate), &builder);
 
       // Send message back to client.
       network::server::Send(client_id, builder.data, builder.size);
@@ -101,16 +102,16 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
       game::Event e = game::Decode(msg);
       asteroids::commands::ClientCreateAuthoritative* c =
           (asteroids::commands::ClientCreateAuthoritative*)(e.data);
-      std::cout << "CLIENT CREATE CLIENT_CREATE_AUTHORITATIVE("
-                << c->entity_id << ")" << std::endl;
+      std::cout << "CLIENT CREATE CLIENT_CREATE_AUTHORITATIVE(" << c->entity_id
+                << ")" << std::endl;
       break;
     }
     case asteroids::commands::CLIENT_DELETE_AUTHORITATIVE: {
       game::Event e = game::Decode(msg);
       asteroids::commands::ClientDeleteAuthoritative* c =
           (asteroids::commands::ClientDeleteAuthoritative*)(e.data);
-      std::cout << "CLIENT CREATE CLIENT_DELETE_AUTHORITATIVE("
-                << c->entity_id << ")" << std::endl;
+      std::cout << "CLIENT CREATE CLIENT_DELETE_AUTHORITATIVE(" << c->entity_id
+                << ")" << std::endl;
       break;
     }
     default:
@@ -118,59 +119,65 @@ void OnClientMsgReceived(int client_id, uint8_t* msg, int size) {
   }
 }
 
-void SyncAuthoritativeComponents() {
+void
+SyncAuthoritativeComponents()
+{
   auto& components = asteroids::GlobalGameState().components;
   std::lock_guard<std::mutex> guard(kMutex);
   if (kConnectedClients.empty()) return;
   components.Enumerate<component::ServerAuthoritativeComponent>(
       [&](ecs::Entity entity, component::ServerAuthoritativeComponent& a) {
-    // TODO: Change this to EventBuilder.
-    if ((a.bitmask & asteroids::commands::TRANSFORM) != 0) {
-      auto* t = components.Get<component::TransformComponent>(entity);
-      if (t) {
-        constexpr int size = sizeof(asteroids::commands::UpdateTransform)
-                             + game::kEventHeaderSize;
-        static uint8_t data_transform[size];
-        asteroids::commands::UpdateTransform u;
-        u.entity_id = entity;
-        u.transform = *t;
-        game::Encode(sizeof(asteroids::commands::UpdateTransform),
-                     asteroids::commands::UPDATE_TRANSFORM,
-                     (uint8_t*)(&u), &data_transform[0]);
-        for (int client_id : kConnectedClients) {
-          network::server::Send(client_id, &data_transform[0], size);
+        // TODO: Change this to EventBuilder.
+        if ((a.bitmask & asteroids::commands::TRANSFORM) != 0) {
+          auto* t = components.Get<component::TransformComponent>(entity);
+          if (t) {
+            constexpr int size = sizeof(asteroids::commands::UpdateTransform) +
+                                 game::kEventHeaderSize;
+            static uint8_t data_transform[size];
+            asteroids::commands::UpdateTransform u;
+            u.entity_id = entity;
+            u.transform = *t;
+            game::Encode(sizeof(asteroids::commands::UpdateTransform),
+                         asteroids::commands::UPDATE_TRANSFORM, (uint8_t*)(&u),
+                         &data_transform[0]);
+            for (int client_id : kConnectedClients) {
+              network::server::Send(client_id, &data_transform[0], size);
+            }
+          }
         }
-      }
-    }
 
-    if ((a.bitmask & asteroids::commands::PHYSICS) != 0) {
-      auto* p = components.Get<asteroids::PhysicsComponent>(entity);
-      if (p) {
-        constexpr int size = sizeof(asteroids::commands::UpdatePhysics)
-                             + game::kEventHeaderSize;
-        static uint8_t data_physics[size];
-        asteroids::commands::UpdatePhysics u;
-        u.entity_id = entity;
-        u.physics = *p;
-        game::Encode(sizeof(asteroids::commands::UpdatePhysics),
-                     asteroids::commands::UPDATE_PHYSICS,
-                     (uint8_t*)(&u), &data_physics[0]);
-        for (int client_id : kConnectedClients) {
-          network::server::Send(client_id, &data_physics[0], size);
+        if ((a.bitmask & asteroids::commands::PHYSICS) != 0) {
+          auto* p = components.Get<asteroids::PhysicsComponent>(entity);
+          if (p) {
+            constexpr int size = sizeof(asteroids::commands::UpdatePhysics) +
+                                 game::kEventHeaderSize;
+            static uint8_t data_physics[size];
+            asteroids::commands::UpdatePhysics u;
+            u.entity_id = entity;
+            u.physics = *p;
+            game::Encode(sizeof(asteroids::commands::UpdatePhysics),
+                         asteroids::commands::UPDATE_PHYSICS, (uint8_t*)(&u),
+                         &data_physics[0]);
+            for (int client_id : kConnectedClients) {
+              network::server::Send(client_id, &data_physics[0], size);
+            }
+          }
         }
-      }
-    }
-  });
+      });
 }
 
-void OptionallySendPacket(int client_id, game::EventBuilder* builder) {
+void
+OptionallySendPacket(int client_id, game::EventBuilder* builder)
+{
   if (builder->idx < 900) return;
   network::server::Send(client_id, builder->data, builder->idx + 1);
   builder->idx = 0;
 }
 
-void SynchClientStateToServer(
-    const asteroids::commands::ServerPlayerJoin& server_player_join) {
+void
+SynchClientStateToServer(
+    const asteroids::commands::ServerPlayerJoin& server_player_join)
+{
   std::cout << "Syncing client: " << server_player_join.client_id << std::endl;
   auto& components = asteroids::GlobalGameState().components;
 
@@ -180,55 +187,57 @@ void SynchClientStateToServer(
   builder.size = 1024;
   builder.idx = 0;
 
-  components.Enumerate<asteroids::AsteroidComponent,
-                       component::TransformComponent,
-                       asteroids::RandomNumberIntChoiceComponent>(
-      [&](ecs::Entity ent, asteroids::AsteroidComponent&,
-          component::TransformComponent& transform,
-          asteroids::RandomNumberIntChoiceComponent& random_num_comp) {
-    asteroids::commands::CreateAsteroid create;
-    create.entity_id = ent;
-    create.position = transform.position;
-    create.direction = math::Normalize(transform.orientation.Up());
-    create.angle = transform.orientation.angle_degrees;
-    create.random_number = random_num_comp.random_number;
-    game::Build(sizeof(asteroids::commands::CreateAsteroid),
-                asteroids::commands::CREATE_ASTEROID,
-                (const uint8_t*)&create, &builder);
-    OptionallySendPacket(server_player_join.client_id, &builder);
-  });
+  components
+      .Enumerate<asteroids::AsteroidComponent, component::TransformComponent,
+                 asteroids::RandomNumberIntChoiceComponent>(
+          [&](ecs::Entity ent, asteroids::AsteroidComponent&,
+              component::TransformComponent& transform,
+              asteroids::RandomNumberIntChoiceComponent& random_num_comp) {
+            asteroids::commands::CreateAsteroid create;
+            create.entity_id = ent;
+            create.position = transform.position;
+            create.direction = math::Normalize(transform.orientation.Up());
+            create.angle = transform.orientation.angle_degrees;
+            create.random_number = random_num_comp.random_number;
+            game::Build(sizeof(asteroids::commands::CreateAsteroid),
+                        asteroids::commands::CREATE_ASTEROID,
+                        (const uint8_t*)&create, &builder);
+            OptionallySendPacket(server_player_join.client_id, &builder);
+          });
 
-  components.Enumerate<asteroids::ProjectileComponent,
-                       component::TransformComponent>(
-      [&](ecs::Entity ent, asteroids::ProjectileComponent&,
-          component::TransformComponent& transform) {
-    asteroids::commands::CreateProjectile create;
-    create.entity_id = ent;
-    create.transform = transform;
-    game::Build(sizeof(asteroids::commands::CreateProjectile),
-                asteroids::commands::CREATE_PROJECTILE,
-                (const uint8_t*)&create, &builder);
-    OptionallySendPacket(server_player_join.client_id, &builder);
-  });
+  components
+      .Enumerate<asteroids::ProjectileComponent, component::TransformComponent>(
+          [&](ecs::Entity ent, asteroids::ProjectileComponent&,
+              component::TransformComponent& transform) {
+            asteroids::commands::CreateProjectile create;
+            create.entity_id = ent;
+            create.transform = transform;
+            game::Build(sizeof(asteroids::commands::CreateProjectile),
+                        asteroids::commands::CREATE_PROJECTILE,
+                        (const uint8_t*)&create, &builder);
+            OptionallySendPacket(server_player_join.client_id, &builder);
+          });
 
-  components.Enumerate<asteroids::PlayerComponent,
-                       component::TransformComponent>(
-      [&](ecs::Entity ent, asteroids::PlayerComponent,
-          component::TransformComponent& transform) {
-    asteroids::commands::CreatePlayer create;
-    create.entity_id = ent;
-    create.position = transform.position;
-    game::Build(sizeof(asteroids::commands::CreatePlayer),
-                asteroids::commands::CREATE_PLAYER,
-                (const uint8_t*)&create, &builder);
-    OptionallySendPacket(server_player_join.client_id, &builder);
-  });
+  components
+      .Enumerate<asteroids::PlayerComponent, component::TransformComponent>(
+          [&](ecs::Entity ent, asteroids::PlayerComponent,
+              component::TransformComponent& transform) {
+            asteroids::commands::CreatePlayer create;
+            create.entity_id = ent;
+            create.position = transform.position;
+            game::Build(sizeof(asteroids::commands::CreatePlayer),
+                        asteroids::commands::CREATE_PLAYER,
+                        (const uint8_t*)&create, &builder);
+            OptionallySendPacket(server_player_join.client_id, &builder);
+          });
 
   network::server::Send(server_player_join.client_id, builder.data,
                         builder.idx + 1);
 }
 
-void ForwardEventToClients(game::Event event) {
+void
+ForwardEventToClients(game::Event event)
+{
   std::lock_guard<std::mutex> guard(kMutex);
   for (int client_id : kConnectedClients) {
     network::server::Send(client_id, event.data - game::kEventHeaderSize,
@@ -236,7 +245,9 @@ void ForwardEventToClients(game::Event event) {
   }
 }
 
-void HandleEvent(game::Event event) {
+void
+HandleEvent(game::Event event)
+{
   // Server adds events related to syncing client state.
   switch ((asteroids::commands::Event)event.metadata) {
     case asteroids::commands::SERVER_PLAYER_JOIN:
@@ -248,11 +259,13 @@ void HandleEvent(game::Event event) {
       ForwardEventToClients(event);
       // Fall through so the server creates the asteroid.
     default:
-      asteroids::HandleEvent(event); // Default to games HandleEvent
+      asteroids::HandleEvent(event);  // Default to games HandleEvent
   };
 }
 
-bool Initialize() {
+bool
+Initialize()
+{
   assert(!FLAGS_port.empty());
 
   network::server::Setup(&OnClientConnected, &OnClientMsgReceived);
@@ -267,40 +280,45 @@ bool Initialize() {
     return false;
   }
 
-  asteroids::GlobalGameState().components
-      .Assign<asteroids::GameStateComponent>(
-          asteroids::GenerateFreeEntity());
+  asteroids::GlobalGameState().components.Assign<asteroids::GameStateComponent>(
+      asteroids::GenerateFreeEntity());
   return true;
 }
 
-bool ProcessInput() {
+bool
+ProcessInput()
+{
   glfwPollEvents();
   return true;
 }
 
-bool Update() {
+bool
+Update()
+{
   SyncAuthoritativeComponents();
   asteroids::UpdateGame();
   return true;
 }
 
-bool Render() {
+bool
+Render()
+{
   return asteroids::RenderGame();
 }
 
-void OnEnd() {
+void
+OnEnd()
+{
   network::server::Stop();
 }
 
-}
+}  // namespace
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  game::Setup(&Initialize,
-              &ProcessInput,
-              &HandleEvent,
-              &Update,
-              &Render,
+  game::Setup(&Initialize, &ProcessInput, &HandleEvent, &Update, &Render,
               &OnEnd);
 
   if (!game::Run()) {

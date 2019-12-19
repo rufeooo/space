@@ -11,10 +11,13 @@ DEFINE_string(hostname, "127.0.0.1",
 
 DEFINE_string(port, "9843", "Port for this application.");
 
-void SendGarbage() {
+void
+SendGarbage()
+{
 }
 
-
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   return 0;
 }

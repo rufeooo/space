@@ -1,12 +1,12 @@
 #pragma once
 
-#include <chrono> 
+#include <chrono>
 #include <cstdint>
 
 #include "event.h"
 
-namespace game {
-
+namespace game
+{
 // Function run on game init.
 typedef bool (*Initialize)(void);
 
@@ -26,16 +26,12 @@ typedef bool (*Render)(void);
 typedef void (*OnEnd)(void);
 
 // Setup game callbacks.
-void Setup(
-    Initialize init_callback,
-    ProcessInput input_callback,
-    HandleEvent event_callback,
-    Update update_callback,
-    Render render_callback,
-    OnEnd end_callback);
+void Setup(Initialize init_callback, ProcessInput input_callback,
+           HandleEvent event_callback, Update update_callback,
+           Render render_callback, OnEnd end_callback);
 
 // Runs the game.
-bool Run(uint64_t loop_count=0);
+bool Run(uint64_t loop_count = 0);
 
 // Pause the game.
 void Pause();
@@ -58,4 +54,4 @@ void SaveEventsToFile();
 // Replay events from a given file.
 void LoadEventsFromFile(const char* filename);
 
-}
+}  // namespace game

@@ -1,18 +1,20 @@
-#include <iostream>
 #include <cassert>
+#include <iostream>
 
 #include "camera.cc"
 #include "command.cc"
 #include "ecs.h"
 #include "gfx.cc"
 
-#include "game/game.h"
 #include "game/event_buffer.h"
+#include "game/game.h"
 #include "math/vec.h"
 
-namespace {
-
-bool Initialize() {
+namespace
+{
+bool
+Initialize()
+{
   if (!gfx::Initialize()) return false;
   // Make a square. This thing moves around when clicking.
   auto* transform = kECS.Assign<TransformComponent>(0);
@@ -31,7 +33,9 @@ bool Initialize() {
   return true;
 }
 
-bool ProcessInput() {
+bool
+ProcessInput()
+{
   gfx::PollEvents();
 
   if (gfx::LeftMouseClicked()) {
@@ -45,7 +49,9 @@ bool ProcessInput() {
   return true;
 }
 
-void HandleEvent(game::Event event) {
+void
+HandleEvent(game::Event event)
+{
   switch ((command::Event)event.metadata) {
     case command::MOVE:
       command::Execute(*((command::Move*)event.data));
@@ -56,7 +62,9 @@ void HandleEvent(game::Event event) {
   }
 }
 
-bool UpdateGame() {
+bool
+UpdateGame()
+{
   uint32_t input_mask = gfx::GetInputMask();
   math::Vec3f camera_translation(0.f, 0.f, 0.f);
   if ((input_mask & (1 << gfx::KEY_W)) != 0) camera_translation.y -= 1.f;
@@ -82,23 +90,22 @@ bool UpdateGame() {
   return true;
 }
 
-void OnEnd() {
+void
+OnEnd()
+{
 }
 
-}
+}  // namespace
 
-int main(int argc, char** argv) {
-  game::Setup(&Initialize,
-              &ProcessInput,
-              &HandleEvent,
-              &UpdateGame,
-              &gfx::Render,
-              &OnEnd);
+int
+main(int argc, char** argv)
+{
+  game::Setup(&Initialize, &ProcessInput, &HandleEvent, &UpdateGame,
+              &gfx::Render, &OnEnd);
 
   if (!game::Run()) {
     std::cerr << "Encountered error running spacey game..." << std::endl;
   }
 
   return 0;
-
 }

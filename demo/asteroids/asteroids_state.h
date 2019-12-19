@@ -14,8 +14,8 @@
 #include "renderer/gl_shader_cache.h"
 #include "renderer/gl_utils.h"
 
-namespace asteroids {
-
+namespace asteroids
+{
 // References used for OpenGL.
 struct OpenGLGameReferences {
   // Projectiles
@@ -56,12 +56,12 @@ EntityGeometry& GlobalEntityGeometry();
 
 struct GameState {
   ecs::ComponentStorage<
-    component::ViewComponent, PhysicsComponent, PolygonShape,
-    component::TransformComponent, component::InputComponent,
-    GameStateComponent, component::RenderingComponent, TTLComponent,
-    AsteroidComponent, PlayerComponent, ProjectileComponent,
-    RandomNumberIntChoiceComponent,
-    component::ServerAuthoritativeComponent> components;
+      component::ViewComponent, PhysicsComponent, PolygonShape,
+      component::TransformComponent, component::InputComponent,
+      GameStateComponent, component::RenderingComponent, TTLComponent,
+      AsteroidComponent, PlayerComponent, ProjectileComponent,
+      RandomNumberIntChoiceComponent, component::ServerAuthoritativeComponent>
+      components;
   ecs::Entity player_id = -1;
 };
 
@@ -72,4 +72,4 @@ void SetEntityStart(ecs::Entity entity);
 void SetEntityIncrement(int increment);
 ecs::Entity GenerateFreeEntity();
 
-}
+}  // namespace asteroids

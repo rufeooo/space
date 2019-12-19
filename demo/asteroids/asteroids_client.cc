@@ -1,33 +1,37 @@
+#include <gflags/gflags.h>
 #include <cassert>
 #include <thread>
-#include <gflags/gflags.h>
 
 #include "asteroids.h"
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
-#include "components/common/transform_component.h"
 #include "components/common/input_component.h"
+#include "components/common/transform_component.h"
 #include "components/network/server_authoritative_component.h"
 #include "ecs/internal.h"
 #include "game/event_buffer.h"
 #include "game/game.h"
 
-namespace {
-
+namespace
+{
 DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
               "the game singleplayer otherwise.");
 DEFINE_string(port, "9845", "Port for this application.");
 DEFINE_string(replay_file, "", "Run game from replay file.");
 
-void OnServerMsgReceived(uint8_t* msg, int size) {
+void
+OnServerMsgReceived(uint8_t* msg, int size)
+{
   assert(size != 0);
   game::EnqueueEvent(msg, size);
 }
 
-void OnServerAuthorityCreated(ecs::Entity entity) {
-  constexpr int size = sizeof(asteroids::commands::ClientCreateAuthoritative)
-                       + game::kEventHeaderSize;
+void
+OnServerAuthorityCreated(ecs::Entity entity)
+{
+  constexpr int size = sizeof(asteroids::commands::ClientCreateAuthoritative) +
+                       game::kEventHeaderSize;
   static uint8_t data[size];
   asteroids::commands::ClientCreateAuthoritative create;
   create.entity_id = entity;
@@ -37,9 +41,11 @@ void OnServerAuthorityCreated(ecs::Entity entity) {
   network::client::Send(&data[0], size);
 }
 
-void OnServerAuthorityRemoved(ecs::Entity entity) {
-  constexpr int size = sizeof(asteroids::commands::ClientDeleteAuthoritative)
-                       + game::kEventHeaderSize;
+void
+OnServerAuthorityRemoved(ecs::Entity entity)
+{
+  constexpr int size = sizeof(asteroids::commands::ClientDeleteAuthoritative) +
+                       game::kEventHeaderSize;
   static uint8_t data[size];
   asteroids::commands::ClientDeleteAuthoritative create;
   create.entity_id = entity;
@@ -49,12 +55,13 @@ void OnServerAuthorityRemoved(ecs::Entity entity) {
   network::client::Send(&data[0], size);
 }
 
-bool SetupClientConnection() {
+bool
+SetupClientConnection()
+{
   if (FLAGS_hostname.empty()) return true;
 
   network::client::Setup(&OnServerMsgReceived);
-  if (!network::client::Start(
-      FLAGS_hostname.c_str(), FLAGS_port.c_str())) {
+  if (!network::client::Start(FLAGS_hostname.c_str(), FLAGS_port.c_str())) {
     std::cout << "Unable to start client." << std::endl;
     return false;
   }
@@ -62,7 +69,9 @@ bool SetupClientConnection() {
   return true;
 }
 
-void SetupClientConfiguration() {
+void
+SetupClientConfiguration()
+{
   // Clients entities start at max free entity and then decrement.
   // These are largely ephemeral and will be deleted when the server
   // replicates client created entities.
@@ -92,20 +101,19 @@ void SetupClientConfiguration() {
   // Only the server has a game state component in a networked game.
   components.Assign<asteroids::GameStateComponent>(
       asteroids::GenerateFreeEntity());
-
 }
 
-void SetupClientPlayer() {
+void
+SetupClientPlayer()
+{
   // Create the player.
-  auto* create_player =
-      game::CreateEvent<asteroids::commands::CreatePlayer>(
-          asteroids::commands::CREATE_PLAYER);
+  auto* create_player = game::CreateEvent<asteroids::commands::CreatePlayer>(
+      asteroids::commands::CREATE_PLAYER);
   create_player->entity_id = asteroids::GenerateFreeEntity();
 
   // Set this clients player id to the right player id.
-  auto* change_id = 
-      game::CreateEvent<asteroids::commands::PlayerIdMutation>(
-          asteroids::commands::PLAYER_ID_MUTATION);
+  auto* change_id = game::CreateEvent<asteroids::commands::PlayerIdMutation>(
+      asteroids::commands::PLAYER_ID_MUTATION);
   change_id->entity_id = create_player->entity_id;
 
   if (FLAGS_hostname.empty()) return;
@@ -116,7 +124,9 @@ void SetupClientPlayer() {
       sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
 }
 
-bool Initialize() {
+bool
+Initialize()
+{
   if (!asteroids::Initialize()) {
     std::cout << "Failed to initialize asteroids." << std::endl;
     return false;
@@ -133,7 +143,9 @@ bool Initialize() {
   return true;
 }
 
-bool ProcessInput() {
+bool
+ProcessInput()
+{
   glfwPollEvents();
   static asteroids::commands::Input previous_player_input;
   static asteroids::commands::Input player_input;
@@ -143,31 +155,25 @@ bool ProcessInput() {
   player_input.input_mask = 0;
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_W)) {
     player_input.input_mask =
-        player_input.input_mask |
-        (uint8_t)asteroids::commands::InputKey::W;
+        player_input.input_mask | (uint8_t)asteroids::commands::InputKey::W;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_A)) {
     player_input.input_mask =
-        player_input.input_mask |
-        (uint8_t)asteroids::commands::InputKey::A;
+        player_input.input_mask | (uint8_t)asteroids::commands::InputKey::A;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_S)) {
     player_input.input_mask =
-        player_input.input_mask |
-        (uint8_t)asteroids::commands::InputKey::S;
+        player_input.input_mask | (uint8_t)asteroids::commands::InputKey::S;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_D)) {
     player_input.input_mask =
-        player_input.input_mask |
-        (uint8_t)asteroids::commands::InputKey::D;
+        player_input.input_mask | (uint8_t)asteroids::commands::InputKey::D;
   }
   if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
     player_input.input_mask =
-        player_input.input_mask |
-        (uint8_t)asteroids::commands::InputKey::SPACE;
+        player_input.input_mask | (uint8_t)asteroids::commands::InputKey::SPACE;
   }
-  if (player_input.input_mask !=
-          previous_player_input.input_mask ||
+  if (player_input.input_mask != previous_player_input.input_mask ||
       player_input.previous_input_mask !=
           previous_player_input.previous_input_mask) {
     auto* input_event = game::CreateEvent<asteroids::commands::Input>(
@@ -183,19 +189,20 @@ bool ProcessInput() {
   return true;
 }
 
-void OnEnd() {
+void
+OnEnd()
+{
   network::client::Stop();
 }
 
-}
+}  // namespace
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   gflags::ParseCommandLineFlags(&argc, &argv, true);
-  game::Setup(&Initialize, &ProcessInput,
-              &asteroids::HandleEvent,
-              &asteroids::UpdateGame,
-              &asteroids::RenderGame,
-              &OnEnd);
+  game::Setup(&Initialize, &ProcessInput, &asteroids::HandleEvent,
+              &asteroids::UpdateGame, &asteroids::RenderGame, &OnEnd);
   if (!game::Run()) {
     std::cerr << "Encountered error running game..." << std::endl;
   }

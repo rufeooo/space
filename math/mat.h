@@ -2,19 +2,21 @@
 
 #include <array>
 #include <cassert>
-#include <string>
 #include <initializer_list>
+#include <string>
 
 #include "vec.h"
 
-namespace math {
-
+namespace math
+{
 // column major matrix
 template <typename T, size_t M, size_t N>
-class Mat {
+class Mat
+{
  public:
   Mat() = default;
-  Mat(std::initializer_list<T> l) {
+  Mat(std::initializer_list<T> l)
+  {
     assert(l.size() == M * N);
     int i = 0;
     for (const auto& v : l) {
@@ -22,32 +24,48 @@ class Mat {
     }
   }
 
-  T& operator()(size_t m, size_t n) {
+  T&
+  operator()(size_t m, size_t n)
+  {
     assert(m * n < M * N);
     return data_[n * M + m];
   }
 
-  const T& operator()(size_t m, size_t n) const {
+  const T&
+  operator()(size_t m, size_t n) const
+  {
     assert(m * n < M * N);
     return data_[n * M + m];
   }
 
-  T& operator[](size_t i) {
-    return data_[i];
+  T& operator[](size_t i) { return data_[i]; }
+
+  size_t
+  rows() const
+  {
+    return M;
+  }
+  size_t
+  cols() const
+  {
+    return N;
   }
 
-  size_t rows() const { return M; }
-  size_t cols() const { return N; }
-
-  bool operator==(const Mat& rhs) const {
+  bool
+  operator==(const Mat& rhs) const
+  {
     return data_ == rhs.data_;
   }
 
-  bool operator!=(const Mat& rhs) const {
+  bool
+  operator!=(const Mat& rhs) const
+  {
     return !(data_ == rhs.data_);
   }
 
-  std::string String() const {
+  std::string
+  String() const
+  {
     std::string m = "";
     for (size_t i = 0; i < M; ++i) {
       for (size_t j = 0; j < N; ++j) {
@@ -59,7 +77,9 @@ class Mat {
     return m;
   }
 
-  Mat<T, N, M> Transpose() const {
+  Mat<T, N, M>
+  Transpose() const
+  {
     Mat<T, N, M> t;
     for (size_t i = 0; i < N; ++i) {
       for (size_t j = 0; j < M; ++j) {
@@ -75,8 +95,8 @@ class Mat {
 // This is fun... It's impossible for a program to compile if the
 // multplication is invalid.
 template <typename T, size_t M, size_t N, size_t P>
-Mat<T, M, P> operator*(const Mat<T, M, N>& lhs,
-                       const Mat<T, N, P>& rhs) {
+Mat<T, M, P> operator*(const Mat<T, M, N>& lhs, const Mat<T, N, P>& rhs)
+{
   Mat<T, M, P> r;
   for (int i = 0; i < M; ++i) {
     for (int j = 0; j < P; ++j) {
@@ -90,39 +110,48 @@ Mat<T, M, P> operator*(const Mat<T, M, N>& lhs,
 }
 
 template <typename T, size_t M, size_t N>
-Mat<T, M, N> operator*(const Mat<T, M, N>& lhs, const T& rhs) {
+Mat<T, M, N> operator*(const Mat<T, M, N>& lhs, const T& rhs)
+{
   Mat<T, M, N> r;
   for (size_t i = 0; i < M * N; ++i) r.data_[i] = lhs.data_[i] * rhs;
   return r;
 }
 
 template <typename T, size_t M, size_t N>
-Mat<T, M, N> operator*(const T& rhs, const Mat<T, M, N>& lhs) {
+Mat<T, M, N> operator*(const T& rhs, const Mat<T, M, N>& lhs)
+{
   return lhs * rhs;
 }
 
-
 template <typename T, size_t M, size_t N>
-Mat<T, M, N> operator/(const Mat<T, M, N>& lhs, const T& rhs) {
+Mat<T, M, N>
+operator/(const Mat<T, M, N>& lhs, const T& rhs)
+{
   Mat<T, M, N> r;
   for (size_t i = 0; i < M * N; ++i) r.data_[i] = lhs.data_[i] / rhs;
   return r;
 }
 
 template <typename T, size_t M, size_t N>
-Mat<T, M, N> operator+(const Mat<T, M, N>& lhs, const T& rhs) {
+Mat<T, M, N>
+operator+(const Mat<T, M, N>& lhs, const T& rhs)
+{
   Mat<T, M, N> r;
   for (size_t i = 0; i < M * N; ++i) r.data_[i] = lhs.data_[i] + rhs;
   return r;
 }
 
 template <typename T, size_t M, size_t N>
-Mat<T, M, N> operator+(const T& rhs, const Mat<T, M, N>& lhs) {
+Mat<T, M, N>
+operator+(const T& rhs, const Mat<T, M, N>& lhs)
+{
   return lhs + rhs;
 }
 
 template <typename T, size_t M, size_t N>
-Mat<T, M, N> operator-(const Mat<T, M, N>& lhs, const T& rhs) {
+Mat<T, M, N>
+operator-(const Mat<T, M, N>& lhs, const T& rhs)
+{
   Mat<T, M, N> r;
   for (size_t i = 0; i < M * N; ++i) r.data_[i] = lhs.data_[i] - rhs;
   return r;
@@ -173,15 +202,12 @@ using Mat4d = Mat<double, 4, 4>;
 //
 // m * v = [ x, ycos(theta) - zsin(theta), ysin(theta) + zcos(theta) ]
 template <class T>
-Vec3f operator*(const Mat<T, 4, 4>& lhs, const Vec3f& rhs) {
+Vec3f operator*(const Mat<T, 4, 4>& lhs, const Vec3f& rhs)
+{
   return Vec3f(
-    lhs(0, 0) * rhs.x + lhs(0, 1) * rhs.y +
-    lhs(0, 2) * rhs.z + lhs(0, 3),
-    lhs(1, 0) * rhs.x + lhs(1, 1) * rhs.y +
-    lhs(1, 2) * rhs.z + lhs(1, 3),
-    lhs(2, 0) * rhs.x + lhs(2, 1) * rhs.y +
-    lhs(2, 2) * rhs.z + lhs(2, 3)
-  );
+      lhs(0, 0) * rhs.x + lhs(0, 1) * rhs.y + lhs(0, 2) * rhs.z + lhs(0, 3),
+      lhs(1, 0) * rhs.x + lhs(1, 1) * rhs.y + lhs(1, 2) * rhs.z + lhs(1, 3),
+      lhs(2, 0) * rhs.x + lhs(2, 1) * rhs.y + lhs(2, 2) * rhs.z + lhs(2, 3));
 }
 
-}  // math
+}  // namespace math

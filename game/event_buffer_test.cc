@@ -1,9 +1,10 @@
 #include <iostream>
 
-#include "gtest/gtest.h"
 #include "event_buffer.h"
+#include "gtest/gtest.h"
 
-TEST(EventBuffer, HappyPathEventBuffer) {
+TEST(EventBuffer, HappyPathEventBuffer)
+{
   game::AllocateEventBuffer(1024);
 
   struct Foo {
@@ -63,7 +64,9 @@ TEST(EventBuffer, HappyPathEventBuffer) {
   ASSERT_EQ(((Baz*)event.data)->e, 5);
 }
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

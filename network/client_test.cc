@@ -4,30 +4,37 @@
 #include <iostream>
 #include <thread>
 
-#include "server.h"
 #include "client.h"
+#include "server.h"
 
 static int kCallbacksCalled = 0;
 
-void OnClientConnected(int client_id) {
+void
+OnClientConnected(int client_id)
+{
   std::cout << "Client " << client_id << " connected..." << std::endl;
   ASSERT_EQ(client_id, 0);
   ++kCallbacksCalled;
 }
 
-void OnServerMsgReceived(int client_id, uint8_t* data, int size) {
+void
+OnServerMsgReceived(int client_id, uint8_t* data, int size)
+{
   std::cout << "Client " << client_id << " sent msg..." << std::endl;
   ASSERT_EQ(size, 5);
   ASSERT_EQ(strncmp((char*)data, "hello", size), 0);
   ++kCallbacksCalled;
 }
 
-void OnClientMsgReceived(uint8_t* data, int size) {
+void
+OnClientMsgReceived(uint8_t* data, int size)
+{
   std::cout << "Server sent msg..." << std::endl;
   ++kCallbacksCalled;
 }
 
-TEST(Server, ClientHappyPath) {
+TEST(Server, ClientHappyPath)
+{
   using namespace std::chrono_literals;
 
   network::server::Setup(&OnClientConnected, &OnServerMsgReceived);
@@ -54,7 +61,9 @@ TEST(Server, ClientHappyPath) {
   network::client::Stop();
 }
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

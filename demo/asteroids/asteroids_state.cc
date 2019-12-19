@@ -2,52 +2,68 @@
 
 #include <iostream>
 
-namespace asteroids {
-
-namespace {
-
+namespace asteroids
+{
+namespace
+{
 static ecs::Entity kFree = 0;
 static int kIncrement = 1;
 
-}
+}  // namespace
 
-OpenGLGameReferences& GlobalOpenGLGameReferences() {
+OpenGLGameReferences&
+GlobalOpenGLGameReferences()
+{
   static OpenGLGameReferences opengl_game_references;
   return opengl_game_references;
 }
 
-OpenGL& GlobalOpenGL() {
+OpenGL&
+GlobalOpenGL()
+{
   static OpenGL opengl;
   return opengl;
 }
 
-EntityGeometry& GlobalEntityGeometry() {
+EntityGeometry&
+GlobalEntityGeometry()
+{
   static EntityGeometry entity_geometry;
   return entity_geometry;
 }
 
-GameState& GlobalGameState() {
+GameState&
+GlobalGameState()
+{
   static GameState game_state;
   return game_state;
 }
 
-ecs::Entity& GlobalFreeEntity() {
+ecs::Entity&
+GlobalFreeEntity()
+{
   static ecs::Entity free_entity = 1;
   return free_entity;
 }
 
-void SetEntityStart(ecs::Entity entity) {
+void
+SetEntityStart(ecs::Entity entity)
+{
   kFree = entity;
 }
 
-void SetEntityIncrement(int increment) {
+void
+SetEntityIncrement(int increment)
+{
   kIncrement = increment;
 }
 
-ecs::Entity GenerateFreeEntity() {
+ecs::Entity
+GenerateFreeEntity()
+{
   ecs::Entity free = kFree;
   kFree += kIncrement;
   return free;
 }
 
-}
+}  // namespace asteroids

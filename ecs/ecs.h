@@ -4,23 +4,26 @@
 #pragma once
 
 #include <algorithm>
-#include <tuple>
-#include <iostream>
-#include <unordered_map>
 #include <functional>
+#include <iostream>
+#include <tuple>
+#include <unordered_map>
 #include <vector>
 
 #include "entity.h"
 #include "internal.h"
 #include "util.h"
 
-namespace ecs {
-
+namespace ecs
+{
 template <typename... COMPONENTS>
-class ComponentStorage {
+class ComponentStorage
+{
  private:
   template <typename T>
-  void OptionallyDispatchAssignCallback(ecs::Entity entity) {
+  void
+  OptionallyDispatchAssignCallback(ecs::Entity entity)
+  {
     auto& assign_callback =
         std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
             assign_callbacks_);
@@ -29,7 +32,9 @@ class ComponentStorage {
   }
 
   template <typename T>
-  void OptionallyDispatchRemoveCallback(ecs::Entity entity) {
+  void
+  OptionallyDispatchRemoveCallback(ecs::Entity entity)
+  {
     auto& remove_callback =
         std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
             remove_callbacks_);
@@ -55,33 +60,34 @@ class ComponentStorage {
   //   time if the underlying vector changes beneath the user after the
   //   pointer has been returned.
   template <typename T>
-  T* Get(Entity entity) {
-    auto& components = std::get<std::vector<std::pair<Entity, T>>>(
-        components_);
-    auto found = std::lower_bound(
-        components.begin(), components.end(),
-        entity, internal::CompareEntity<T>());
-    if (found != components.end() &&
-        (*found).first == entity) return &(*found).second;
+  T*
+  Get(Entity entity)
+  {
+    auto& components = std::get<std::vector<std::pair<Entity, T>>>(components_);
+    auto found = std::lower_bound(components.begin(), components.end(), entity,
+                                  internal::CompareEntity<T>());
+    if (found != components.end() && (*found).first == entity)
+      return &(*found).second;
     return nullptr;
   }
 
   template <typename T>
-  void Remove(Entity entity) {
-    auto& components = std::get<std::vector<std::pair<Entity, T>>>(
-        components_);
-    auto found = std::lower_bound(
-        components.begin(), components.end(),
-        entity, internal::CompareEntity<T>());
-    if (found != components.end() &&
-        (*found).first == entity) {
+  void
+  Remove(Entity entity)
+  {
+    auto& components = std::get<std::vector<std::pair<Entity, T>>>(components_);
+    auto found = std::lower_bound(components.begin(), components.end(), entity,
+                                  internal::CompareEntity<T>());
+    if (found != components.end() && (*found).first == entity) {
       components.erase(found);
     }
     OptionallyDispatchRemoveCallback<T>(entity);
   }
 
   template <typename T>
-  void RemoveCallback(const std::function<void(ecs::Entity)>& func) {
+  void
+  RemoveCallback(const std::function<void(ecs::Entity)>& func)
+  {
     auto& remove_callback =
         std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
             remove_callbacks_);
@@ -101,9 +107,10 @@ class ComponentStorage {
   // Will create an object of type Foo and append it to the component
   // list components_<Foo>.
   template <typename T, typename... Args>
-  T* Assign(Entity entity, Args&& ...args) {
-    auto& components = std::get<std::vector<std::pair<Entity, T>>>(
-        components_);
+  T*
+  Assign(Entity entity, Args&&... args)
+  {
+    auto& components = std::get<std::vector<std::pair<Entity, T>>>(components_);
     // Require placeholder at end of component lists because we rely on
     // pointer advancing in vectors and they must have a condition to
     // stop.
@@ -112,9 +119,8 @@ class ComponentStorage {
       components.push_back({ENTITY_LIST_END, T()});
     }
     // Binary search for the entity.
-    auto found = std::lower_bound(
-        components.begin(), components.end(),
-        entity, internal::CompareEntity<T>());
+    auto found = std::lower_bound(components.begin(), components.end(), entity,
+                                  internal::CompareEntity<T>());
     // If the entity is found overwrite it's component data. Otherwise,
     // insert a new entity in sorted order.
     if ((*found).first == entity) {
@@ -122,19 +128,19 @@ class ComponentStorage {
       OptionallyDispatchAssignCallback<T>(entity);
       return &(*found).second;
     } else {
-      auto inserted = components.insert(
-          found, {entity, T(std::forward<Args>(args)...)});
+      auto inserted =
+          components.insert(found, {entity, T(std::forward<Args>(args)...)});
       // Store deletion necessary when cleaning up this entity.
-      deletion_[entity].push_back([this, entity]() {
-        Remove<T>(entity);
-      });
+      deletion_[entity].push_back([this, entity]() { Remove<T>(entity); });
       OptionallyDispatchAssignCallback<T>(entity);
       return &inserted->second;
     }
   }
 
   template <typename T>
-  void AssignCallback(const std::function<void(ecs::Entity)>& func) {
+  void
+  AssignCallback(const std::function<void(ecs::Entity)>& func)
+  {
     auto& assign_callback =
         std::get<std::pair<T, std::function<void(ecs::Entity)>>>(
             assign_callbacks_);
@@ -171,10 +177,12 @@ class ComponentStorage {
   // The type expected in the functor for each component is -
   // std::pair<Entity, ComponentType>*.
   template <typename... Args, typename F>
-  void Enumerate(F&& f) {
-    //auto tup = internal::Gather<Args...>(components_);
-    auto tup = std::make_tuple(internal::GetComponentPointer<Args>(
-        components_)...);
+  void
+  Enumerate(F&& f)
+  {
+    // auto tup = internal::Gather<Args...>(components_);
+    auto tup =
+        std::make_tuple(internal::GetComponentPointer<Args>(components_)...);
     while (!internal::AnyMax(tup)) {
       Entity entity;
       if (internal::AllEqual(tup, entity)) {
@@ -182,7 +190,7 @@ class ComponentStorage {
         internal::AdvanceAll(tup);
         continue;
       }
-      internal::AdvanceMin(tup); 
+      internal::AdvanceMin(tup);
     }
   }
 
@@ -191,14 +199,17 @@ class ComponentStorage {
   // Clear<Foo>()
   // Will remove all components of type Foo.
   template <typename T>
-  void Clear() {
-    auto& components = std::get<std::vector<std::pair<Entity, T>>>(
-        components_);
-    components.clear(); 
+  void
+  Clear()
+  {
+    auto& components = std::get<std::vector<std::pair<Entity, T>>>(components_);
+    components.clear();
   }
 
   // Removes all components from every component list given the entity.
-  void Delete(ecs::Entity entity) {
+  void
+  Delete(ecs::Entity entity)
+  {
     auto found = deletion_.find(entity);
     if (found == deletion_.end()) return;
     for (auto& delete_func : found->second) {
@@ -208,17 +219,14 @@ class ComponentStorage {
   }
 
  private:
-  std::tuple<std::vector<std::pair<Entity, COMPONENTS>>...>
-      components_;
-  std::unordered_map<ecs::Entity, std::vector<std::function<void()>>>
-      deletion_;
+  std::tuple<std::vector<std::pair<Entity, COMPONENTS>>...> components_;
+  std::unordered_map<ecs::Entity, std::vector<std::function<void()>>> deletion_;
   // Default initialization insures there are no listeners to start
   // out with.
   std::tuple<std::pair<COMPONENTS, std::function<void(ecs::Entity)>>...>
       assign_callbacks_;
   std::tuple<std::pair<COMPONENTS, std::function<void(ecs::Entity)>>...>
       remove_callbacks_;
-
 };
 
 }  // namespace ecs

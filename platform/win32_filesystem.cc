@@ -2,10 +2,12 @@
 
 #include <Windows.h>
 
-namespace filesystem {
-
-bool MakeDirectory(const char* name) {
-    return CreateDirectory(name, nullptr);
+namespace filesystem
+{
+bool
+MakeDirectory(const char* name)
+{
+  return CreateDirectory(name, nullptr);
 }
 
-}
+}  // namespace filesystem

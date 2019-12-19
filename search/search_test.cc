@@ -10,9 +10,12 @@
 // Graph for testing purposes. Does not handle many edge cases, such
 // as duplicate edge insertion, and should not be used for anything
 // other than these tests without significant modification.
-class SimpleGraph {
+class SimpleGraph
+{
  public:
-  void Add(char from, char to, uint32_t weight=0) {
+  void
+  Add(char from, char to, uint32_t weight = 0)
+  {
     Edge e;
     e.from_ = from;
     e.to_ = to;
@@ -20,7 +23,9 @@ class SimpleGraph {
     edges_[from].push_back(e);
   }
 
-  std::vector<char> Neighbors(char node) const {
+  std::vector<char>
+  Neighbors(char node) const
+  {
     std::vector<char> n;
     const auto& found = edges_.find(node);
     if (found == edges_.end()) return n;
@@ -32,7 +37,9 @@ class SimpleGraph {
 
   // This function is wrong because it implies a path is possible
   // between a and b even if it's not.
-  uint32_t Weight(char from, char to) const {
+  uint32_t
+  Weight(char from, char to) const
+  {
     const auto& found = edges_.find(from);
     if (found == edges_.end()) return UINT32_MAX;
     for (const auto& e : found->second) {
@@ -41,7 +48,9 @@ class SimpleGraph {
     return UINT32_MAX;
   }
 
-  void Clear() {
+  void
+  Clear()
+  {
     edges_.clear();
   }
 
@@ -55,7 +64,8 @@ class SimpleGraph {
   std::unordered_map<char, std::vector<Edge>> edges_;
 };
 
-TEST(SearchTest, PathExistsBFS) {
+TEST(SearchTest, PathExistsBFS)
+{
   //   I   K
   //   B   J
   // D A C G H
@@ -106,17 +116,14 @@ TEST(SearchTest, PathExistsBFS) {
   }
 }
 
-TEST(SearchTest, PathExistsAStar) {
+TEST(SearchTest, PathExistsAStar)
+{
   {
     // Example graph found at -
     // https://en.wikipedia.org/wiki/A*_search_algorithm
     SimpleGraph sg;
-    auto expand_func = [&sg](char start) {
-      return sg.Neighbors(start);
-    };
-    auto cost_func = [&sg](char a, char b) {
-      return sg.Weight(a, b);
-    };
+    auto expand_func = [&sg](char start) { return sg.Neighbors(start); };
+    auto cost_func = [&sg](char a, char b) { return sg.Weight(a, b); };
     sg.Add('0', 'a', 15);
     sg.Add('0', 'd', 20);
     sg.Add('a', 'b', 20);
@@ -125,19 +132,15 @@ TEST(SearchTest, PathExistsAStar) {
     // Change this weight to 10 to see path change.
     sg.Add('c', 'f', 40);
     sg.Add('e', 'f', 20);
-    std::vector<char> path = search::PathTo(
-      '0', 'f', expand_func, cost_func, cost_func);
+    std::vector<char> path =
+        search::PathTo('0', 'f', expand_func, cost_func, cost_func);
     ASSERT_TRUE(path == std::vector<char>({'0', 'd', 'e', 'f'}));
   }
 
   {
     SimpleGraph sg;
-    auto expand_func = [&sg](char start) {
-      return sg.Neighbors(start);
-    };
-    auto cost_func = [&sg](char a, char b) {
-      return sg.Weight(a, b);
-    };
+    auto expand_func = [&sg](char start) { return sg.Neighbors(start); };
+    auto cost_func = [&sg](char a, char b) { return sg.Weight(a, b); };
     sg.Add('0', 'a', 15);
     sg.Add('0', 'd', 20);
     sg.Add('a', 'b', 20);
@@ -145,29 +148,29 @@ TEST(SearchTest, PathExistsAStar) {
     sg.Add('d', 'e', 30);
     sg.Add('c', 'f', 10);
     sg.Add('e', 'f', 20);
-    std::vector<char> path = search::PathTo(
-      '0', 'f', expand_func, cost_func, cost_func);
+    std::vector<char> path =
+        search::PathTo('0', 'f', expand_func, cost_func, cost_func);
     ASSERT_EQ(path, std::vector<char>({'0', 'a', 'b', 'c', 'f'}));
   }
 }
 
-TEST(SearchTest, ShortestPathNumberOfLines) {
+TEST(SearchTest, ShortestPathNumberOfLines)
+{
   int start = 0, end = 10;
   auto expand_func = [](int start) {
     return std::vector<int>({start + 1, start - 1});
   };
   auto cost_func = [](int, int) { return 1; };
-  auto heuristic_func = [](int current, int end) { 
-    return end - current;
-  };
-  std::vector<int> path = search::PathTo(
-      start, end, expand_func, cost_func, heuristic_func);
+  auto heuristic_func = [](int current, int end) { return end - current; };
+  std::vector<int> path =
+      search::PathTo(start, end, expand_func, cost_func, heuristic_func);
   // Shortest pat from 0 to 10 on a number line is 0 to 10.
-  ASSERT_TRUE(path ==
-      std::vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
+  ASSERT_TRUE(path == std::vector<int>({0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10}));
 }
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

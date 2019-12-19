@@ -4,10 +4,10 @@
 
 #include "stdint.h"
 
-namespace network {
-
-namespace client {
-
+namespace network
+{
+namespace client
+{
 // Call when message is received from the server.
 typedef void (*OnMsgReceived)(uint8_t*, int);
 
@@ -20,6 +20,6 @@ void Stop();
 
 void Send(uint8_t* buffer, int size);
 
-}  // client
+}  // namespace client
 
-}  // network
+}  // namespace network

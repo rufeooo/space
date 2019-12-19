@@ -1,26 +1,26 @@
 #if defined(_WIN32)
-  #ifndef _WIN32_WINNT
-    #define _WIN32_WINNT 0x0600
-  #endif
-  #include <winsock2.h>
-  #include <ws2tcpip.h>
-  #pragma comment(lib, "ws2_32.lib")
+#ifndef _WIN32_WINNT
+#define _WIN32_WINNT 0x0600
+#endif
+#include <winsock2.h>
+#include <ws2tcpip.h>
+#pragma comment(lib, "ws2_32.lib")
 #else
-  #include <sys/types.h>
-  #include <sys/socket.h>
-  #include <netinet/in.h>
-  #include <arpa/inet.h>
-  #include <netdb.h>
-  #include <unistd.h>
-  #include <errno.h>
-  #define SOCKET int
-  #define INVALID_SOCKET (-1)
+#include <arpa/inet.h>
+#include <errno.h>
+#include <netdb.h>
+#include <netinet/in.h>
+#include <sys/socket.h>
+#include <sys/types.h>
+#include <unistd.h>
+#define SOCKET int
+#define INVALID_SOCKET (-1)
 #endif
 
 #include <stdio.h>
 
-namespace network {
-
+namespace network
+{
 // On unix - Does nothing.
 // On windows - Calls WSAStartup.
 bool SocketInit();
@@ -37,4 +37,4 @@ bool SocketClose(SOCKET s);
 // On windows - Returns WSAGetLastError()
 int SocketErrno();
 
-}
+}  // namespace network

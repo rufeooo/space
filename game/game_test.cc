@@ -1,43 +1,50 @@
 #include <iostream>
 
-#include "gtest/gtest.h"
 #include "game.h"
+#include "gtest/gtest.h"
 
-namespace {
-
-bool DumbInitialize() {
+namespace
+{
+bool
+DumbInitialize()
+{
   return true;
 }
 
-bool DumbProcessInput() {
+bool
+DumbProcessInput()
+{
   return true;
 }
 
-void DumbHandleEvent(game::Event event) {
+void
+DumbHandleEvent(game::Event event)
+{
 }
 
-bool DumbUpdate() {
+bool
+DumbUpdate()
+{
   return true;
 }
 
-bool DumbRender() {
+bool
+DumbRender()
+{
   return true;
 }
 
-void DumbEnd() {
-
+void
+DumbEnd()
+{
 }
 
-}
+}  // namespace
 
-TEST(Game, HappyPathGameTest) {
-  game::Setup(
-      &DumbInitialize,
-      &DumbProcessInput,
-      &DumbHandleEvent,
-      &DumbUpdate,
-      &DumbRender,
-      &DumbEnd);
+TEST(Game, HappyPathGameTest)
+{
+  game::Setup(&DumbInitialize, &DumbProcessInput, &DumbHandleEvent, &DumbUpdate,
+              &DumbRender, &DumbEnd);
   uint64_t count = 500;
   game::Run(count);
   ASSERT_EQ(game::Updates(), count);
@@ -46,7 +53,9 @@ TEST(Game, HappyPathGameTest) {
   ASSERT_EQ(game::Time(), std::chrono::milliseconds(7500));
 }
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
 }

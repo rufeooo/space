@@ -1,10 +1,10 @@
 #pragma once
 
-#include "math/vec.h"
 #include "math/mat.h"
+#include "math/vec.h"
 
-namespace camera {
-
+namespace camera
+{
 // Move the camera to position.
 void MoveTo(const math::Vec3f& position);
 
@@ -20,4 +20,4 @@ math::Vec3f position();
 // Return the cameras current view matrix.
 math::Mat4f view_matrix();
 
-}
+}  // namespace camera

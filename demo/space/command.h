@@ -4,11 +4,11 @@
 
 #include "math/vec.h"
 
-namespace command {
-
+namespace command
+{
 enum Event {
-  INVALID  = 0,
-  MOVE     = 1,
+  INVALID = 0,
+  MOVE = 1,
 };
 
 struct Move {
@@ -18,4 +18,4 @@ struct Move {
 
 void Execute(const Move& move);
 
-}
+}  // namespace command

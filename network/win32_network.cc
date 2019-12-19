@@ -1,8 +1,10 @@
 #include "network.h"
 
-namespace network {
-
-bool SocketInit() {
+namespace network
+{
+bool
+SocketInit()
+{
   WSADATA d;
   if (WSAStartup(MAKEWORD(2, 2), &d)) {
     return false;
@@ -10,17 +12,23 @@ bool SocketInit() {
   return true;
 }
 
-bool SocketIsValid(SOCKET s) {
+bool
+SocketIsValid(SOCKET s)
+{
   return s != INVALID_SOCKET;
 }
 
-bool SocketClose(SOCKET s) {
+bool
+SocketClose(SOCKET s)
+{
   closesocket(s);
   return true;
 }
 
-int SocketErrno() {
+int
+SocketErrno()
+{
   return WSAGetLastError();
 }
 
-}
+}  // namespace network

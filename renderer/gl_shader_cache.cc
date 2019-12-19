@@ -1,17 +1,19 @@
 #include "gl_shader_cache.h"
 
+#include <glad/glad.h>
 #include <cstdio>
 #include <iostream>
 #include <sstream>
-#include <glad/glad.h>
 
 #include "gl_utils.h"
 
-namespace renderer {
-
-namespace {
-
-GLenum ToGLEnum(ShaderType shader_type) {
+namespace renderer
+{
+namespace
+{
+GLenum
+ToGLEnum(ShaderType shader_type)
+{
   switch (shader_type) {
     case ShaderType::VERTEX:
       return GL_VERTEX_SHADER;
@@ -21,38 +23,38 @@ GLenum ToGLEnum(ShaderType shader_type) {
   return -1;
 }
 
-std::string GetShaderInfoLog(uint32_t shader_reference) {
+std::string
+GetShaderInfoLog(uint32_t shader_reference)
+{
   constexpr int log_length = 4096;
   int actual_length = 0;
   char log[log_length];
-  glGetShaderInfoLog(
-      shader_reference, log_length, &actual_length, log);
-  return "Shader Log for reference: " +
-         std::to_string(shader_reference) +
+  glGetShaderInfoLog(shader_reference, log_length, &actual_length, log);
+  return "Shader Log for reference: " + std::to_string(shader_reference) +
          " log: " + log;
 }
 
-std::string GetProgramInfoLog(uint32_t program_reference) {
+std::string
+GetProgramInfoLog(uint32_t program_reference)
+{
   constexpr int log_length = 4096;
   int actual_length = 0;
   char log[log_length];
-  glGetProgramInfoLog(
-      program_reference, log_length, &actual_length, log);
-  return "Program Log for reference: " +
-         std::to_string(program_reference) +
+  glGetProgramInfoLog(program_reference, log_length, &actual_length, log);
+  return "Program Log for reference: " + std::to_string(program_reference) +
          " log: " + log;
 }
 
-}  // anonymous
+}  // namespace
 
-bool GLShaderCache::CompileShader(
-       const std::string& shader_name,
-       ShaderType shader_type,
-       const std::string& shader_src) {
+bool
+GLShaderCache::CompileShader(const std::string& shader_name,
+                             ShaderType shader_type,
+                             const std::string& shader_src)
+{
   // Don't compile a shader with the same name or the original one will
   // be orphaned.
-  if (shader_reference_map_.find(shader_name) !=
-      shader_reference_map_.end()) {
+  if (shader_reference_map_.find(shader_name) != shader_reference_map_.end()) {
     return false;
   }
   // Trying to compile is likely an accident from the user. It would
@@ -81,9 +83,10 @@ bool GLShaderCache::CompileShader(
   return true;
 }
 
-bool GLShaderCache::GetShaderReference(
-    const std::string& shader_name,
-    uint32_t* shader_reference) {
+bool
+GLShaderCache::GetShaderReference(const std::string& shader_name,
+                                  uint32_t* shader_reference)
+{
   auto found = shader_reference_map_.find(shader_name);
   if (found == shader_reference_map_.end()) {
     return false;
@@ -92,9 +95,10 @@ bool GLShaderCache::GetShaderReference(
   return true;
 }
 
-bool GLShaderCache::LinkProgram(
-    const std::string& program_name,
-    const std::vector<std::string>& shader_names) {
+bool
+GLShaderCache::LinkProgram(const std::string& program_name,
+                           const std::vector<std::string>& shader_names)
+{
   if (program_reference_map_.find(program_name) !=
       program_reference_map_.end()) {
     return false;
@@ -119,7 +123,9 @@ bool GLShaderCache::LinkProgram(
   return true;
 }
 
-bool GLShaderCache::UseProgram(const std::string& program_name) {
+bool
+GLShaderCache::UseProgram(const std::string& program_name)
+{
   auto found = program_reference_map_.find(program_name);
   if (found == program_reference_map_.end()) {
     return false;
@@ -128,9 +134,10 @@ bool GLShaderCache::UseProgram(const std::string& program_name) {
   return true;
 }
 
-bool GLShaderCache::GetProgramReference(
-    const std::string& program_name,
-    uint32_t* program_reference) {
+bool
+GLShaderCache::GetProgramReference(const std::string& program_name,
+                                   uint32_t* program_reference)
+{
   auto found = program_reference_map_.find(program_name);
   if (found == program_reference_map_.end()) {
     return false;
@@ -139,8 +146,9 @@ bool GLShaderCache::GetProgramReference(
   return true;
 }
 
-std::string GLShaderCache::GetProgramInfo(
-    const std::string& program_name) {
+std::string
+GLShaderCache::GetProgramInfo(const std::string& program_name)
+{
   uint32_t program_reference;
   if (!GetProgramReference(program_name, &program_reference)) {
     return "Program does not exist.";
@@ -153,7 +161,7 @@ std::string GLShaderCache::GetProgramInfo(
   ss << "GL_LINK_STATUS = " << params << std::endl;
   glGetProgramiv(program_reference, GL_ATTACHED_SHADERS, &params);
   ss << "GL_ATTACHED_SHADERS = " << params << std::endl;
-  glGetProgramiv (program_reference, GL_ACTIVE_ATTRIBUTES, &params);
+  glGetProgramiv(program_reference, GL_ACTIVE_ATTRIBUTES, &params);
   ss << "GL_ACTIVE_ATTRIBUTES = " << params << std::endl;
   for (GLuint i = 0; i < (GLuint)params; i++) {
     char name[64];
@@ -161,23 +169,19 @@ std::string GLShaderCache::GetProgramInfo(
     int actual_length = 0;
     int size = 0;
     GLenum type;
-    glGetActiveAttrib(
-        program_reference, i, max_length, &actual_length, &size,
-        &type, name);
+    glGetActiveAttrib(program_reference, i, max_length, &actual_length, &size,
+                      &type, name);
     if (size > 1) {
       for (int j = 0; j < size; j++) {
         char long_name[64];
         std::sprintf(long_name, "%s[%i]", name, j);
-        int location = glGetAttribLocation(
-            program_reference, long_name);
-        ss << i << ") type: " << GLTypeToString(type)
-           << " name: " << long_name
+        int location = glGetAttribLocation(program_reference, long_name);
+        ss << i << ") type: " << GLTypeToString(type) << " name: " << long_name
            << " location: " << location << std::endl;
       }
     } else {
       int location = glGetAttribLocation(program_reference, name);
-      ss << i << ") type: " << GLTypeToString(type)
-         << " name: " << name
+      ss << i << ") type: " << GLTypeToString(type) << " name: " << name
          << " location: " << location << std::endl;
     }
   }
@@ -189,27 +193,23 @@ std::string GLShaderCache::GetProgramInfo(
     int actual_length = 0;
     int size = 0;
     GLenum type;
-    glGetActiveUniform(
-        program_reference, i, max_length, &actual_length, &size,
-        &type, name);
+    glGetActiveUniform(program_reference, i, max_length, &actual_length, &size,
+                       &type, name);
     if (size > 1) {
       for (int j = 0; j < size; j++) {
-       char long_name[64];
-       std::sprintf(long_name, "%s[%i]", name, j);
-       int location = glGetUniformLocation(
-           program_reference, long_name);
-       ss << i << ") type: " << GLTypeToString(type)
-          << " name: " << long_name
-          << " location: " << location << std::endl;
+        char long_name[64];
+        std::sprintf(long_name, "%s[%i]", name, j);
+        int location = glGetUniformLocation(program_reference, long_name);
+        ss << i << ") type: " << GLTypeToString(type) << " name: " << long_name
+           << " location: " << location << std::endl;
       }
     } else {
       int location = glGetUniformLocation(program_reference, name);
-      ss << i << ") type: " << GLTypeToString(type)
-         << " name: " << name
+      ss << i << ") type: " << GLTypeToString(type) << " name: " << name
          << " location: " << location << std::endl;
     }
   }
   return ss.str();
 }
 
-}  // renderer
+}  // namespace renderer

@@ -2,8 +2,8 @@
 
 #include <cstdint>
 
-namespace ecs {
-
+namespace ecs
+{
 using Entity = uint64_t;
 
 inline constexpr Entity ENTITY_LIST_END = 0xFFFFFFFF;

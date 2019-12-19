@@ -1,7 +1,6 @@
 #pragma once
 
-namespace filesystem {
-
+namespace filesystem
+{
 bool MakeDirectory(const char* name);
-
 }

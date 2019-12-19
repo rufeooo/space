@@ -2,8 +2,8 @@
 
 #include <cstdint>
 
-namespace game {
-
+namespace game
+{
 struct Event {
   // Size of the event in bytes.
   uint16_t size;
@@ -13,8 +13,7 @@ struct Event {
   uint8_t* data = nullptr;
 };
 
-constexpr int kEventHeaderSize
-    = sizeof(Event::size) + sizeof(Event::metadata);
+constexpr int kEventHeaderSize = sizeof(Event::size) + sizeof(Event::metadata);
 
 struct SavedEvent {
   // The game loop the event was run on.
@@ -38,11 +37,11 @@ struct EventBuilder {
 Event Decode(uint8_t* msg);
 
 // Copy data into msg given the size and metadata.
-void Encode(uint16_t size, uint16_t metadata,
-            const uint8_t* data, uint8_t* msg);
+void Encode(uint16_t size, uint16_t metadata, const uint8_t* data,
+            uint8_t* msg);
 
 // Incrementally builds events into an EventBuilder struct.
-void Build(uint16_t size, uint16_t metadata,
-           const uint8_t* data, EventBuilder* builder);
+void Build(uint16_t size, uint16_t metadata, const uint8_t* data,
+           EventBuilder* builder);
 
-}
+}  // namespace game

@@ -12,21 +12,19 @@
 #include "event_buffer.h"
 #include "platform/filesystem.h"
 
-namespace game {
-
-namespace {
-
+namespace game
+{
+namespace
+{
 struct State {
   // Run each game logic update with a delta_time of ms_per_update.
-  std::chrono::milliseconds ms_per_update = 
-      std::chrono::milliseconds(15);
+  std::chrono::milliseconds ms_per_update = std::chrono::milliseconds(15);
   // Run a frame every min_ms_per_frame if the time it takes to run
   // update / render  is under this value the system will sleep until
   // it reaches min_ms_per_frame. This is really just to save battery
   // on my laptop at the moment. I'm not really sure it's worth always
   // doing.
-  std::chrono::milliseconds min_ms_per_frame = 
-      std::chrono::milliseconds(15);
+  std::chrono::milliseconds min_ms_per_frame = std::chrono::milliseconds(15);
   std::chrono::milliseconds game_time;
   std::chrono::milliseconds real_time;
   std::chrono::milliseconds ms_per_frame;
@@ -55,12 +53,16 @@ static OnEnd _OnEnd;
 // TODO: Come up with a better solution for that.
 constexpr int kEventBufferSize = 20 * 1024;
 
-inline std::chrono::milliseconds NowMS() {
+inline std::chrono::milliseconds
+NowMS()
+{
   return std::chrono::duration_cast<std::chrono::milliseconds>(
       std::chrono::high_resolution_clock::now().time_since_epoch());
 }
 
-void OptionallyPumpEventsFromFile() {
+void
+OptionallyPumpEventsFromFile()
+{
   auto& input = kGameState.input_event_file;
   if (!input.is_open()) return;
   // First 8 bytes of event file is the game loop.
@@ -87,15 +89,16 @@ void OptionallyPumpEventsFromFile() {
     // being used.
     assert(event_buffer.buffer != nullptr);
     int size_with_header = size + kEventHeaderSize;
-    input.read((char*)&event_buffer.buffer[event_buffer.idx],
-               size_with_header);
+    input.read((char*)&event_buffer.buffer[event_buffer.idx], size_with_header);
     event_buffer.idx += size_with_header;
     cur_pos += size_with_header;
     input.seekg(cur_pos);
   }
 }
 
-void OptionallyCloseEventsFile() {
+void
+OptionallyCloseEventsFile()
+{
   auto& input = kGameState.input_event_file;
   if (!input.is_open()) return;
   auto cur_pos = input.tellg();
@@ -104,26 +107,25 @@ void OptionallyCloseEventsFile() {
   SetCustomEventBuffer(nullptr);
 }
 
-void OptionallyWriteEventToFile(const Event& event) {
+void
+OptionallyWriteEventToFile(const Event& event)
+{
   auto& file = kGameState.output_event_file;
   if (!file.is_open()) return;
   // Write game loop first then event.
-  file.write((char*)&kGameState.game_updates,
-             sizeof(kGameState.game_updates));
+  file.write((char*)&kGameState.game_updates, sizeof(kGameState.game_updates));
   file.write((char*)&event.size, sizeof(event.size));
   file.write((char*)&event.metadata, sizeof(event.metadata));
   file.write((char*)&event.data[0], event.size);
 }
 
-}
+}  // namespace
 
-void Setup(
-    Initialize init_callback,
-    ProcessInput input_callback,
-    HandleEvent event_callback,
-    Update update_callback,
-    Render render_callback,
-    OnEnd end_callback) {
+void
+Setup(Initialize init_callback, ProcessInput input_callback,
+      HandleEvent event_callback, Update update_callback,
+      Render render_callback, OnEnd end_callback)
+{
   // Reset game state.
   kGameState = State();
   _Initialize = init_callback;
@@ -137,7 +139,9 @@ void Setup(
 }
 
 // Runs the game.
-bool Run(uint64_t loop_count) {
+bool
+Run(uint64_t loop_count)
+{
   if (!_Initialize()) {
     _OnEnd();
     return false;
@@ -148,9 +152,8 @@ bool Run(uint64_t loop_count) {
   kGameState.game_updates = 0;
   kGameState.game_time = std::chrono::milliseconds(0);
   std::chrono::milliseconds current, elapsed, endloop;
-  
-  while (loop_count == 0 || kGameState.game_updates < loop_count) {
 
+  while (loop_count == 0 || kGameState.game_updates < loop_count) {
     if (kGameState.end) {
       _OnEnd();
       return true;
@@ -163,8 +166,7 @@ bool Run(uint64_t loop_count) {
     _ProcessInput();
     kGameState.real_time += elapsed;
 
-    while (!kGameState.paused &&
-           lag >= kGameState.ms_per_update) {
+    while (!kGameState.paused && lag >= kGameState.ms_per_update) {
       // Pump the event queue if a replay is coming from file.
       OptionallyPumpEventsFromFile();
 
@@ -194,7 +196,7 @@ bool Run(uint64_t loop_count) {
 
     if (!_Render()) {
       _OnEnd();
-      return true; // Returns ??
+      return true;  // Returns ??
     }
 
     endloop = NowMS();
@@ -202,8 +204,7 @@ bool Run(uint64_t loop_count) {
     auto ms = endloop - current;
 
     // sleep s.t. we only do min_ms_per_frame.
-    if (kGameState.sleep_on_loop_end &&
-        ms < kGameState.min_ms_per_frame) {
+    if (kGameState.sleep_on_loop_end && ms < kGameState.min_ms_per_frame) {
       auto sleep_time = kGameState.min_ms_per_frame - ms;
       std::this_thread::sleep_for(sleep_time);
     }
@@ -217,41 +218,54 @@ bool Run(uint64_t loop_count) {
   return true;
 }
 
-void Pause() {
+void
+Pause()
+{
   kGameState.paused = true;
 }
 
-void Resume() {
+void
+Resume()
+{
   kGameState.paused = false;
 }
 
-void End() {
+void
+End()
+{
   kGameState.end = true;
 }
 
-std::chrono::milliseconds Time() {
+std::chrono::milliseconds
+Time()
+{
   return kGameState.game_time;
 }
 
-int Updates() {
+int
+Updates()
+{
   return kGameState.game_updates;
 }
 
-void SaveEventsToFile() {
+void
+SaveEventsToFile()
+{
   filesystem::MakeDirectory("_tmp");
   std::time_t time_now = std::time(nullptr);
   std::stringstream ss;
-	ss << std::put_time(std::localtime(&time_now),
+  ss << std::put_time(std::localtime(&time_now),
                       "_tmp/EVENTS_%y-%m-%d_%OH-%OM-%OS");
   kGameState.output_event_file.open(ss.str());
 }
 
-void LoadEventsFromFile(const char* filename) {
+void
+LoadEventsFromFile(const char* filename)
+{
   // Setup the event buffer.
   auto& event_buffer = kGameState.event_buffer;
   if (!event_buffer.buffer) {
-    event_buffer.buffer =
-      (uint8_t*)calloc(kEventBufferSize, sizeof(uint8_t));
+    event_buffer.buffer = (uint8_t*)calloc(kEventBufferSize, sizeof(uint8_t));
   }
   event_buffer.buffer_size = kEventBufferSize;
   event_buffer.idx = 0;
@@ -261,4 +275,4 @@ void LoadEventsFromFile(const char* filename) {
   SetCustomEventBuffer(&event_buffer);
 }
 
-}
+}  // namespace game

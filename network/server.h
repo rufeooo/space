@@ -4,10 +4,10 @@
 
 #include "stdint.h"
 
-namespace network {
-
-namespace server {
-
+namespace network
+{
+namespace server
+{
 // ...
 constexpr int kMaxClients = 10;
 
@@ -19,9 +19,8 @@ typedef void (*OnClientConnected)(int);
 // Called when a message is received from a client_id.
 typedef void (*OnMsgReceived)(int, uint8_t*, int);
 
-void Setup(
-    OnClientConnected on_client_connected_callback,
-    OnMsgReceived on_msg_received_callback);
+void Setup(OnClientConnected on_client_connected_callback,
+           OnMsgReceived on_msg_received_callback);
 
 // Start the server and bind it
 bool Start(const char* port);
@@ -32,6 +31,6 @@ void Stop();
 // Send a message to a specific client.
 void Send(int client_id, uint8_t* buffer, int size);
 
-}  // server
+}  // namespace server
 
-}  // network
+}  // namespace network

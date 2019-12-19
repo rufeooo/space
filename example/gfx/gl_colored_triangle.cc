@@ -1,5 +1,5 @@
-#include <glad/glad.h>
 #include <GLFW/glfw3.h>
+#include <glad/glad.h>
 #include <iostream>
 
 const char* vertex_shader = R"(
@@ -22,7 +22,9 @@ const char* fragment_shader = R"(
   }
 )";
 
-int main() {
+int
+main()
+{
   if (!glfwInit()) {
     std::cerr << "Cound not start GLFW3" << std::endl;
     return 1;
@@ -32,14 +34,13 @@ int main() {
   glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
   glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
   glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  GLFWwindow* window = glfwCreateWindow(
-      640, 480, "Hello Triangle", NULL, NULL);
-   if (!window) {
+  GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
+  if (!window) {
     std::cout << "Failed to open window with GLFW3" << std::endl;
     return 1;
   }
-  glfwMakeContextCurrent(window); // glad must be called after this.
-  if (!gladLoadGLLoader((GLADloadproc) glfwGetProcAddress)) {
+  glfwMakeContextCurrent(window);  // glad must be called after this.
+  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
     std::cout << "Failed to initialize OpenGL context" << std::endl;
     return 1;
   }
@@ -50,45 +51,39 @@ int main() {
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
 
-  glEnable(GL_CULL_FACE); // cull face
-  glCullFace(GL_BACK); // cull back face
-  glFrontFace(GL_CW); // GL_CCW for counter clock-wise
+  glEnable(GL_CULL_FACE);  // cull face
+  glCullFace(GL_BACK);     // cull back face
+  glFrontFace(GL_CW);      // GL_CCW for counter clock-wise
 
   GLfloat points[] = {
-    0.0f, 0.5f, 0.0f,
-    0.5f, -0.5f, 0.0f,
-    -0.5f, -0.5f, 0.0f,
+      0.0f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f,
   };
   GLfloat colors[] = {
-    1.0f, 0.0f, 0.0f,
-    0.0f, 1.0f, 0.0f,
-    0.0f, 0.0f, 1.0f,
+      1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
   };
 
   // Create points VBO.
   GLuint points_vbo = 0;
   glGenBuffers(1, &points_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-  glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), points,
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 
   // Create colors VBO.
   GLuint colors_vbo = 0;
   glGenBuffers(1, &colors_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors,
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
 
   GLuint vao = 0;
-  glGenVertexArrays (1, &vao);
-  glBindVertexArray (vao);
+  glGenVertexArrays(1, &vao);
+  glBindVertexArray(vao);
   // This needs to be done for each bound vao
   glEnableVertexAttribArray(0);
   glEnableVertexAttribArray(1);
-  glBindBuffer (GL_ARRAY_BUFFER, points_vbo);
-  glVertexAttribPointer (0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-  glBindBuffer (GL_ARRAY_BUFFER, colors_vbo);
-  glVertexAttribPointer (1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
+  glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
+  glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
+  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
   // Create and compile vertex shader.
   GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -110,9 +105,9 @@ int main() {
     glUseProgram(shader_program);
     // Bind the vertex array object.
     glBindVertexArray(vao);
-    //glPolygonMode(GL_FRONT, GL_LINE);
+    // glPolygonMode(GL_FRONT, GL_LINE);
     // Draw them points.
-    glDrawArrays(GL_TRIANGLES, 0, 3); // Draws the triangle
+    glDrawArrays(GL_TRIANGLES, 0, 3);  // Draws the triangle
     glfwPollEvents();
     glfwSwapBuffers(window);
   }

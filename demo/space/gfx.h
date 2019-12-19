@@ -4,14 +4,14 @@
 
 // Do our best to keep all graphics related calls in here.
 
-namespace gfx {
-
+namespace gfx
+{
 enum Input {
-  KEY_NONE         = 0,
-  KEY_W            = 0x1,
-  KEY_A            = 0x2,
-  KEY_S            = 0x4,
-  KEY_D            = 0x8,
+  KEY_NONE = 0,
+  KEY_W = 0x1,
+  KEY_A = 0x2,
+  KEY_S = 0x4,
+  KEY_D = 0x8,
   MOUSE_LEFT_CLICK = 0x10,
 };
 
@@ -34,4 +34,4 @@ bool LeftMouseClicked();
 // currently being pressed.
 uint32_t GetInputMask();
 
-}
+}  // namespace gfx

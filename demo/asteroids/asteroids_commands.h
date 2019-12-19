@@ -7,22 +7,22 @@
 #include "components/common/transform_component.h"
 #include "math/vec.h"
 
-namespace asteroids {
-
-namespace commands {
-
+namespace asteroids
+{
+namespace commands
+{
 enum AuthorityBitmask {
-  NONE      = 0x00,
+  NONE = 0x00,
   TRANSFORM = 0x01,
-  PHYSICS   = 0x02,
+  PHYSICS = 0x02,
 };
 
 enum Event {
-  CREATE_PLAYER      = 0,
-  CREATE_ASTEROID    = 1,
-  CREATE_PROJECTILE  = 2,
-  PLAYER_INPUT       = 3,
-  DELETE_ENTITY      = 4,
+  CREATE_PLAYER = 0,
+  CREATE_ASTEROID = 1,
+  CREATE_PROJECTILE = 2,
+  PLAYER_INPUT = 3,
+  DELETE_ENTITY = 4,
   PLAYER_ID_MUTATION = 5,
 
   // These two events are not explicitly handled in the event
@@ -32,7 +32,7 @@ enum Event {
   CLIENT_DELETE_AUTHORITATIVE = 7,
 
   UPDATE_TRANSFORM = 8,
-  UPDATE_PHYSICS   = 9,
+  UPDATE_PHYSICS = 9,
 
   SERVER_PLAYER_JOIN = 10,
 };
@@ -56,11 +56,11 @@ struct CreateAsteroid {
 };
 
 enum class InputKey {
-  NONE  = 0,
-  W     = 1,
-  A     = 2,
-  S     = 4,
-  D     = 8,
+  NONE = 0,
+  W = 1,
+  A = 2,
+  S = 4,
+  D = 8,
   SPACE = 16,
 };
 
@@ -111,6 +111,6 @@ void Execute(UpdateTransform& update_transform);
 void Execute(UpdatePhysics& update_physics);
 void Execute(ServerPlayerJoin& server_player_join);
 
-}
+}  // namespace commands
 
-}
+}  // namespace asteroids

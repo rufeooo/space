@@ -9,10 +9,10 @@
 
 #include "internal.h"
 
-namespace search {
-
+namespace search
+{
 // PathTo calculates a shortest path from start to end inclusive using
-// A*. The user is expected to provide a valid cost function and 
+// A*. The user is expected to provide a valid cost function and
 // heuristic function.
 //
 // Parameters -
@@ -47,7 +47,7 @@ namespace search {
 //
 // Returns -
 //  A list of type std::vector<T> that contains the shortest path
-//  from start to finish including both start and finish. 
+//  from start to finish including both start and finish.
 //
 // Example Usage -
 //
@@ -58,7 +58,7 @@ namespace search {
 //    return std::vector<int>({start + 1, start - 1});
 //  };
 //  auto cost_func = [](int, int) { return 1; };
-//  auto heuristic_func = [](int current, int end) { 
+//  auto heuristic_func = [](int current, int end) {
 //    return end - current;
 //  };
 //  std::vector<int> path = search::PathTo(
@@ -66,16 +66,18 @@ namespace search {
 //
 //  Path contains 0-10.
 template <typename T, typename E, typename C, typename H>
-std::vector<T> PathTo(
-    const T& start, const T& end,
-    E expand_func, C cost_func, H heuristic_func) {
+std::vector<T>
+PathTo(const T& start, const T& end, E expand_func, C cost_func,
+       H heuristic_func)
+{
   using internal::BuildPath;
   using internal::PathNode;
   using internal::PathNodeComparator;
   using internal::Score;
   std::vector<T> coords;
   std::priority_queue<PathNode<T>, std::vector<PathNode<T>>,
-                      PathNodeComparator<T>> open;
+                      PathNodeComparator<T>>
+      open;
   open.push(PathNode(start, 0, heuristic_func(start, end)));
   // Set of open list discoveries for quick lookup.
   std::unordered_set<T> open_discovered;
@@ -110,9 +112,7 @@ std::vector<T> PathTo(
         continue;
       }
       auto cost = cost_func(current.location_, neighbor);
-      PathNode pn(
-        neighbor, cost, cost + heuristic_func(neighbor, end)
-      );
+      PathNode pn(neighbor, cost, cost + heuristic_func(neighbor, end));
       // If not in open list, add it for evaluation.
       if (open_discovered.find(neighbor) == open_discovered.end()) {
         open.push(pn);
@@ -150,7 +150,9 @@ std::vector<T> PathTo(
 //
 // Example Usage - See search_test.cc TEST_CASE Path exists using bfs.
 template <typename T, typename E>
-void BreadthFirst(const T& start, int max_depth, E expand_func) {
+void
+BreadthFirst(const T& start, int max_depth, E expand_func)
+{
   std::queue<T> to_explore;
   // Used to avoid expanding nodes already explored.
   std::unordered_map<T, uint32_t> discovered;
@@ -173,4 +175,4 @@ void BreadthFirst(const T& start, int max_depth, E expand_func) {
   }
 }
 
-}
+}  // namespace search
