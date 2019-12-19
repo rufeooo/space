@@ -1,11 +1,11 @@
-#include "gl_shader_cache.h"
-#include "gl_utils.h"
 
-#include <GLFW/glfw3.h>
 #include <glad/glad.h>
 
+#include <GLFW/glfw3.h>
+#include "gl_utils.h"
 #include "gmock/gmock.h"
 #include "gtest/gtest.h"
+#include "renderer.cc"
 
 namespace renderer
 {

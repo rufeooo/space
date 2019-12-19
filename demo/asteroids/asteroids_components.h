@@ -2,23 +2,12 @@
 
 #include <vector>
 
+#include "components/common/transform_component.h"
 #include "math/vec.h"
 #include "network/client.h"
 
 namespace asteroids
 {
-struct InputComponent {
-  InputComponent() = default;
-  // Set to true when the user request a projectile to be shot.
-  bool shoot_projectile = false;
-  // State the space bar was last in.
-  int space_state;
-  // If a was pressed in the past process input calls.
-  bool a_pressed = false;
-  // If b was pressed in the past process input calls.
-  bool d_pressed = false;
-};
-
 struct PhysicsComponent {
   PhysicsComponent() = default;
   PhysicsComponent(const math::Vec3f& acceleration, const math::Vec3f& velocity,

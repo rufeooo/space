@@ -125,11 +125,11 @@ SyncAuthoritativeComponents()
   auto& components = asteroids::GlobalGameState().components;
   std::lock_guard<std::mutex> guard(kMutex);
   if (kConnectedClients.empty()) return;
-  components.Enumerate<component::ServerAuthoritativeComponent>(
-      [&](ecs::Entity entity, component::ServerAuthoritativeComponent& a) {
+  components.Enumerate<ServerAuthoritativeComponent>(
+      [&](ecs::Entity entity, ServerAuthoritativeComponent& a) {
         // TODO: Change this to EventBuilder.
         if ((a.bitmask & asteroids::commands::TRANSFORM) != 0) {
-          auto* t = components.Get<component::TransformComponent>(entity);
+          auto* t = components.Get<TransformComponent>(entity);
           if (t) {
             constexpr int size = sizeof(asteroids::commands::UpdateTransform) +
                                  game::kEventHeaderSize;
@@ -188,10 +188,10 @@ SynchClientStateToServer(
   builder.idx = 0;
 
   components
-      .Enumerate<asteroids::AsteroidComponent, component::TransformComponent,
+      .Enumerate<asteroids::AsteroidComponent, TransformComponent,
                  asteroids::RandomNumberIntChoiceComponent>(
           [&](ecs::Entity ent, asteroids::AsteroidComponent&,
-              component::TransformComponent& transform,
+              TransformComponent& transform,
               asteroids::RandomNumberIntChoiceComponent& random_num_comp) {
             asteroids::commands::CreateAsteroid create;
             create.entity_id = ent;
@@ -206,9 +206,9 @@ SynchClientStateToServer(
           });
 
   components
-      .Enumerate<asteroids::ProjectileComponent, component::TransformComponent>(
+      .Enumerate<asteroids::ProjectileComponent, TransformComponent>(
           [&](ecs::Entity ent, asteroids::ProjectileComponent&,
-              component::TransformComponent& transform) {
+              TransformComponent& transform) {
             asteroids::commands::CreateProjectile create;
             create.entity_id = ent;
             create.transform = transform;
@@ -219,9 +219,9 @@ SynchClientStateToServer(
           });
 
   components
-      .Enumerate<asteroids::PlayerComponent, component::TransformComponent>(
+      .Enumerate<asteroids::PlayerComponent, TransformComponent>(
           [&](ecs::Entity ent, asteroids::PlayerComponent,
-              component::TransformComponent& transform) {
+              TransformComponent& transform) {
             asteroids::commands::CreatePlayer create;
             create.entity_id = ent;
             create.position = transform.position;

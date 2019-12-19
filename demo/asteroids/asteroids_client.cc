@@ -89,10 +89,10 @@ SetupClientConfiguration()
   auto& components = asteroids::GlobalGameState().components;
 
   if (!FLAGS_hostname.empty()) {
-    components.AssignCallback<component::ServerAuthoritativeComponent>(
+    components.AssignCallback<ServerAuthoritativeComponent>(
         &OnServerAuthorityCreated);
 
-    components.RemoveCallback<component::ServerAuthoritativeComponent>(
+    components.RemoveCallback<ServerAuthoritativeComponent>(
         &OnServerAuthorityRemoved);
 
     return;

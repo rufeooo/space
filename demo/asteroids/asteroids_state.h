@@ -56,11 +56,11 @@ EntityGeometry& GlobalEntityGeometry();
 
 struct GameState {
   ecs::ComponentStorage<
-      component::ViewComponent, PhysicsComponent, PolygonShape,
-      component::TransformComponent, component::InputComponent,
-      GameStateComponent, component::RenderingComponent, TTLComponent,
+      ViewComponent, PhysicsComponent, PolygonShape,
+      TransformComponent, InputComponent,
+      GameStateComponent, RenderingComponent, TTLComponent,
       AsteroidComponent, PlayerComponent, ProjectileComponent,
-      RandomNumberIntChoiceComponent, component::ServerAuthoritativeComponent>
+      RandomNumberIntChoiceComponent, ServerAuthoritativeComponent>
       components;
   ecs::Entity player_id = -1;
 };

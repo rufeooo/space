@@ -1,7 +1,5 @@
 #pragma once
 
-namespace component
-{
 enum Key {
   KEYBOARD_NONE = 0x00,
   KEYBOARD_W = 0x01,
@@ -16,28 +14,28 @@ struct InputComponent {
   uint8_t previous_input_mask;
 };
 
-inline bool
+  inline bool
 IsKeyDown(uint8_t mask, Key key)
 {
   return (mask & key) != 0;
 }
 
-inline bool
+  inline bool
 IsKeyUp(uint8_t mask, Key key)
 {
   return (mask & key) == 0;
 }
 
-inline void
+  inline void
 SetKeyDown(uint8_t& mask, Key key)
 {
   mask |= key;
 }
 
-inline void
+  inline void
 SetKeyUp(uint8_t& mask, Key key)
 {
   mask ^= key;
 }
 
-}  // namespace component
+// namespace component

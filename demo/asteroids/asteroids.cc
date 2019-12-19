@@ -50,7 +50,7 @@ InitializeGraphics()
     std::cout << "Unable to start GL and create window." << std::endl;
     return false;
   }
-  components.Assign<component::ViewComponent>(
+  components.Assign<ViewComponent>(
       opengl.camera, math::Vec3f(0.0f, 0.0f, 1.5f),
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
   if (!opengl.shader_cache.CompileShader(
@@ -160,10 +160,10 @@ ProjectileCollidesWithAsteroid(ecs::Entity projectile, ecs::Entity asteroid)
 {
   auto& components = GlobalGameState().components;
   auto* projectile_transform =
-      components.Get<component::TransformComponent>(projectile);
+      components.Get<TransformComponent>(projectile);
   auto* projectile_physics = components.Get<PhysicsComponent>(projectile);
   auto* asteroid_transform =
-      components.Get<component::TransformComponent>(asteroid);
+      components.Get<TransformComponent>(asteroid);
   auto* asteroid_shape = components.Get<PolygonShape>(asteroid);
   assert(projectile_physics != nullptr);
   assert(asteroid_transform != nullptr);
@@ -311,16 +311,16 @@ UpdateGame()
   }
 
   // Provide ship control to the entity with Input (the player.)
-  components.Enumerate<PhysicsComponent, component::TransformComponent,
-                       component::InputComponent>(
+  components.Enumerate<PhysicsComponent, TransformComponent,
+                       InputComponent>(
       [](ecs::Entity ent, PhysicsComponent& physics,
-         component::TransformComponent& transform,
-         component::InputComponent& input) {
+         TransformComponent& transform,
+         InputComponent& input) {
         UpdatePhysics(physics);
         // TODO: Make sure this doesn't happen too often???
-        if (component::IsKeyDown(input.previous_input_mask,
-                                 component::KEYBOARD_SPACE) &&
-            component::IsKeyUp(input.input_mask, component::KEYBOARD_SPACE)) {
+        if (IsKeyDown(input.previous_input_mask,
+                                 KEYBOARD_SPACE) &&
+            IsKeyUp(input.input_mask, KEYBOARD_SPACE)) {
           auto* create_projectile =
               game::CreateEvent<commands::CreateProjectile>(
                   commands::CREATE_PROJECTILE);
@@ -329,29 +329,29 @@ UpdateGame()
           projectile_transform = transform;
           // Unset input so two projectile will not shoot if the Update happens
           // to be called more than once for this frame.
-          component::SetKeyUp(input.previous_input_mask,
-                              component::KEYBOARD_SPACE);
+          SetKeyUp(input.previous_input_mask,
+                              KEYBOARD_SPACE);
         }
-        if (component::IsKeyDown(input.input_mask, component::KEYBOARD_A)) {
+        if (IsKeyDown(input.input_mask, KEYBOARD_A)) {
           transform.orientation.Rotate(-kRotationSpeed);
         }
-        if (component::IsKeyDown(input.input_mask, component::KEYBOARD_D)) {
+        if (IsKeyDown(input.input_mask, KEYBOARD_D)) {
           transform.orientation.Rotate(kRotationSpeed);
         }
         auto u = transform.orientation.Up();
         physics.acceleration = math::Vec3f(0.f, 0.f, 0.f);
-        if (component::IsKeyDown(input.input_mask, component::KEYBOARD_W)) {
+        if (IsKeyDown(input.input_mask, KEYBOARD_W)) {
           physics.acceleration = u * physics.acceleration_speed;
         }
-        if (component::IsKeyDown(input.input_mask, component::KEYBOARD_S)) {
+        if (IsKeyDown(input.input_mask, KEYBOARD_S)) {
           physics.acceleration = u * -physics.acceleration_speed;
         }
       });
 
   components
-      .Enumerate<PhysicsComponent, component::TransformComponent, PolygonShape>(
+      .Enumerate<PhysicsComponent, TransformComponent, PolygonShape>(
           [](ecs::Entity ent, PhysicsComponent& physics,
-             component::TransformComponent& transform, PolygonShape& shape) {
+             TransformComponent& transform, PolygonShape& shape) {
             transform.prev_position = transform.position;
             transform.position += physics.velocity;
             // Get entity min/max x and y.
@@ -429,15 +429,15 @@ RenderGame()
   auto& components = GlobalGameState().components;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   auto* view_component =
-      components.Get<component::ViewComponent>(opengl.camera);
+      components.Get<ViewComponent>(opengl.camera);
   math::Mat4f view = math::CreateViewMatrix(view_component->position,
                                             view_component->orientation);
   math::Mat4f projection = math::CreatePerspectiveMatrix<float>(800, 800);
   auto projection_view = projection * view;
-  components.Enumerate<component::RenderingComponent,
-                       component::TransformComponent>(
-      [&](ecs::Entity ent, component::RenderingComponent& comp,
-          component::TransformComponent& transform) {
+  components.Enumerate<RenderingComponent,
+                       TransformComponent>(
+      [&](ecs::Entity ent, RenderingComponent& comp,
+          TransformComponent& transform) {
         glUseProgram(comp.program_reference);
         math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
                             math::CreateRotationMatrix(transform.orientation);

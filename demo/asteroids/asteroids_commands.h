@@ -4,7 +4,6 @@
 #include <functional>
 
 #include "asteroids_components.h"
-#include "components/common/transform_component.h"
 #include "math/vec.h"
 
 namespace asteroids
@@ -44,7 +43,7 @@ struct CreatePlayer {
 
 struct CreateProjectile {
   uint64_t entity_id;
-  component::TransformComponent transform;
+  TransformComponent transform;
 };
 
 struct CreateAsteroid {
@@ -89,7 +88,7 @@ struct ClientDeleteAuthoritative {
 
 struct UpdateTransform {
   uint64_t entity_id;
-  component::TransformComponent transform;
+  TransformComponent transform;
 };
 
 struct UpdatePhysics {

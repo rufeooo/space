@@ -10,9 +10,6 @@ set(gl_triangle_srcs
 set(gl_triangle_translate_srcs
     "gl_triangle_translate.cc")
 
-set(gl_log_srcs
-    "gl_log.cc")
-
 function(create_gfx_example name srcs)
   include_directories(
     ${CMAKE_SOURCE_DIR}
@@ -26,4 +23,3 @@ create_gfx_example(gl_version gl_version_srcs)
 create_gfx_example(gl_colored_triangle gl_colored_triangle_srcs)
 create_gfx_example(gl_triangle gl_triangle_srcs)
 create_gfx_example(gl_triangle_translate gl_triangle_translate_srcs)
-create_gfx_example(gl_log gl_log_srcs)
