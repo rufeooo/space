@@ -2,7 +2,7 @@
 #include <string.h>
 #include <time.h>
 
-#include "network/network.h"
+#include "network/network.cc"
 
 int
 main()

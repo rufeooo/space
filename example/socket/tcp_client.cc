@@ -1,6 +1,6 @@
 #include <gflags/gflags.h>
 
-#include "network/network.h"
+#include "network/network.cc"
 
 DEFINE_string(hostname, "127.0.0.1", "hostname");
 DEFINE_string(port, "8080", "port");

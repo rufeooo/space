@@ -1,6 +1,6 @@
 #include <gflags/gflags.h>
 
-#include "network/network.h"
+#include "network/network.cc"
 
 #include <cstring>
 

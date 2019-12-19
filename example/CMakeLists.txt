@@ -1,3 +1,5 @@
+include_directories(${CMAKE_SOURCE_DIR}/src)
+
 add_subdirectory(ecs)
 add_subdirectory(flags)
 add_subdirectory(gfx)

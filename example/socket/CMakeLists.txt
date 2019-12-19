@@ -28,19 +28,19 @@ include_directories(${CMAKE_SOURCE_DIR}/third_party/gflags/src)
 include_directories(${CMAKE_SOURCE_DIR})
 
 add_executable(time_server ${time_server_srcs})
-target_link_libraries(time_server network)
+target_link_libraries(time_server)
 
 add_executable(tcp_client ${tcp_client_srcs})
-target_link_libraries(tcp_client network gflags)
+target_link_libraries(tcp_client gflags)
 
 add_executable(tcp_server ${tcp_server_srcs})
-target_link_libraries(tcp_server network gflags)
+target_link_libraries(tcp_server gflags)
 
 add_executable(udp_server ${udp_server_srcs})
-target_link_libraries(udp_server network gflags)
+target_link_libraries(udp_server gflags)
 
 add_executable(udp_client ${udp_client_srcs})
-target_link_libraries(udp_client network gflags)
+target_link_libraries(udp_client gflags)
 
 add_executable(udp_server_toupper ${udp_server_toupper_srcs})
-target_link_libraries(udp_server_toupper network gflags)
+target_link_libraries(udp_server_toupper gflags)
