@@ -2,6 +2,8 @@
 
 #include "network/network.h"
 
+#include <cstring>
+
 int
 main(int argc, char** argv)
 {

@@ -1,3 +1,4 @@
+
 #include "event_buffer.h"
 
 #include <cassert>
@@ -5,17 +6,13 @@
 #include <cstring>
 #include <mutex>
 
-#include "event.h"
+#include "event.cc"
 
 namespace game
-{
-namespace
 {
 static EventBuffer kDefaultEventBuffer;
 static EventBuffer* kCustomEventBuffer = nullptr;
 static std::mutex kMutex;
-
-}  // namespace
 
 void
 AllocateEventBuffer(int size_bytes)

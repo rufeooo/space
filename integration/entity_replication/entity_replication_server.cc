@@ -2,6 +2,7 @@
 
 #include <cassert>
 #include <iostream>
+#include <thread>
 
 #include "entity_replication.h"
 #include "network/client.h"

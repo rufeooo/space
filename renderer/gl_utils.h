@@ -1,16 +1,17 @@
 #pragma once
 
+#include <glad/glad.h>
+
+#include <GLFW/glfw3.h>
 #include <string>
 #include <vector>
-#include <glad/glad.h>
-#include <GLFW/glfw3.h>
 
 #include "math/vec.h"
 
-namespace renderer {
-
-GLFWwindow* InitGLAndCreateWindow(
-    int window_width, int window_height, const char* title);
+namespace renderer
+{
+GLFWwindow* InitGLAndCreateWindow(int window_width, int window_height,
+                                  const char* title);
 
 // Given a GLenum returns a stringified version of it. For example -
 // GLTypeToString(GL_BOOL) = "bool"
@@ -29,4 +30,4 @@ uint32_t CreateGeometryVAO(const std::vector<GLfloat>& verts);
 // Creates a vbo for a vert list of 2d vectors.
 uint32_t CreateGeometryVAO(const std::vector<math::Vec2f>& verts);
 
-}
+}  // namespace renderer

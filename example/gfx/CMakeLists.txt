@@ -16,10 +16,9 @@ set(gl_log_srcs
 function(create_gfx_example name srcs)
   include_directories(
     ${CMAKE_SOURCE_DIR}
-    ${CMAKE_SOURCE_DIR}/third_party/glfw/include
-    ${CMAKE_SOURCE_DIR}/third_party/plog/include)
+    ${CMAKE_SOURCE_DIR}/third_party/glfw/include)
   add_executable(${name} ${${srcs}})
-  target_link_libraries(${name} glfw glad plog)
+  target_link_libraries(${name} glfw glad)
   set_target_properties(${name} PROPERTIES FOLDER Examples/gfx)
 endfunction(create_gfx_example)
 

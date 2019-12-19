@@ -9,12 +9,10 @@
 #include <string>
 #include <thread>
 
-#include "event_buffer.h"
+#include "event_buffer.cc"
 #include "platform/filesystem.h"
 
 namespace game
-{
-namespace
 {
 struct State {
   // Run each game logic update with a delta_time of ms_per_update.
@@ -119,7 +117,7 @@ OptionallyWriteEventToFile(const Event& event)
   file.write((char*)&event.data[0], event.size);
 }
 
-}  // namespace
+// namespace
 
 void
 Setup(Initialize init_callback, ProcessInput input_callback,
