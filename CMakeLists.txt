@@ -23,7 +23,6 @@ set(GFLAGS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
 # Third party libraries.
 add_subdirectory(third_party/gflags)
 add_subdirectory(third_party/glad)
-add_subdirectory(third_party/googletest)
 add_subdirectory(third_party/glfw)
 
 # Move third party targets into their own folders for Visual Studio

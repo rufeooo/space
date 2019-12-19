@@ -12,7 +12,3 @@ mkdir $LOG_DIR -p
 
 # Make the build directory if it doesn't already exist.
 mkdir $BUILD_DIR -p
-
-pushd $BUILD_DIR
-cmake ../
-popd
