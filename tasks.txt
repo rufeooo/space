@@ -1,26 +1,44 @@
-Testing
-[] Use gtest in ecs_test instead of catch.
-[] Use gtest in search_test instead of catch.
-[] Remove catch submodule.
+This document is meant to give you and I some context into what the other is working
+on and what we believe need to be done in the future. This is not meant to be an
+exhaustive list but instead provide you and I the means to work independently on items
+without duplicating work.
 
-Component
-[] Add fbs for common components.
-    [] Transform
-    [] Vec3
-    [] Quat
-[] Add conversion from fbs to in memory.
-    [] Transform
-    [] Vec3
-    [] Quat 
+The format for each line item is [user]: <Description>
 
-Asteroids
+If a line item has a <Description> and no [user] that means one of us believes this task
+should be done but are not actively working on it.
 
-When commands are send to clients via SendRecepientFullGameState
-entities begin to conflict. As in a command is sent to create asteroid
-with entity 1 but entity 1 may exist already on that client and
-furthermore the clients "free" entity list is not properly updated.
+Delete items when they are done.
 
-Now that commands come in entities that exist are properly CREATED
-on the client but they are not in the correct position. I think this
-is ok and will be addressed when components become synchable between
-client / server.
+---------- TASKS ---------- 
+
+gameplay -
+
+sound -
+
+  : Develop a system for playing audio / sound files. I think we should do our best to
+    minimize external dependencies for the sake of build time / complexity but would
+    not be surprised if we had to adopt one for this task.
+
+AI -
+
+  anthony: Apply pathfinding to moving squares on screen. A* has been repurposed from
+           4x to accomplish this so this will mostly be defining a graph that units
+           can use the develop paths.
+
+engine - 
+
+  anthony: Flip coordinate system to have positive y-axis pointing up on the screen.
+           Currently pixel space is being used directly as world space.
+  anthony: Introduce a world space.
+  anthony: Use 16:9 aspect ratio when scaling. Currently we are using pixel width and
+           height when performing an orthographic projection. This has the nice property
+           that squares remain squares under 
+  anthony: Render a graph. By default this should be a graph showing our world space.
+           as in the width / height of each square will be our 'meter'.
+  anthony: Implement texture rendering. This should be as simple as attaching a component
+           to an entity with some ID to represent the texture.
+  anthony: Primitive UI, start with a square in world space that represents a button.
+
+
+network -
