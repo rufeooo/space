@@ -2,6 +2,7 @@
 
 #include <iostream>
 
+#include "camera.h"
 #include "ecs.h"
 #include "math/vec.h"
 #include "math/mat_ops.h"
@@ -47,9 +48,12 @@ struct Gfx {
   uint32_t triangle_vao_reference;
   uint32_t rectangle_vao_reference;
 
+  uint32_t previous_input_mask;
+  uint32_t input_mask;
+
   // State the mouse click is currently and previously in.
-  int current_mouse_state;
-  int previous_mouse_state;
+  //int current_mouse_state;
+  //int previous_mouse_state;
 
   // Number of pixels that correspond with a meter.
   int meter_size = 50;
@@ -112,11 +116,21 @@ bool Initialize() {
   return true;
 }
 
+
 void PollEvents() {
   glfwPollEvents();
-  int state = glfwGetMouseButton(kGfx.glfw, GLFW_MOUSE_BUTTON_LEFT);
-  kGfx.previous_mouse_state = kGfx.current_mouse_state;
-  kGfx.current_mouse_state = state;
+  kGfx.previous_input_mask = kGfx.input_mask;
+  kGfx.input_mask = 0;
+  int mouse_state = glfwGetMouseButton(kGfx.glfw, GLFW_MOUSE_BUTTON_LEFT);
+  if (mouse_state == GLFW_PRESS) kGfx.input_mask |= 1 << MOUSE_LEFT_CLICK;
+  int w_state = glfwGetKey(kGfx.glfw, GLFW_KEY_W);
+  if (w_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_W;
+  int a_state = glfwGetKey(kGfx.glfw, GLFW_KEY_A);
+  if (a_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_A;
+  int s_state = glfwGetKey(kGfx.glfw, GLFW_KEY_S);
+  if (s_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_S;
+  int d_state = glfwGetKey(kGfx.glfw, GLFW_KEY_D);
+  if (d_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_D;
 }
 
 bool Render() {
@@ -125,6 +139,10 @@ bool Render() {
   // TODO: Take into consideration camera.
   math::Mat4f ortho = math::CreateOrthographicMatrix<float>(
       dims.x, 0.f, 0.f, dims.y, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  math::Mat4f view = camera::view_matrix();
+  math::Mat4f ortho_view = ortho * view;
+
+  //std::cout << view.String() << std::endl;
   
   // Draw all triangles
   glUseProgram(kGfx.program_reference);
@@ -135,7 +153,7 @@ bool Render() {
     // Translate and rotate the triangle appropriately.
     math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
                         math::CreateRotationMatrix(transform.orientation);
-    math::Mat4f matrix = ortho * model;
+    math::Mat4f matrix = ortho_view * model;
     glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 3);
   });
@@ -149,7 +167,7 @@ bool Render() {
     // Translate and rotate the rectangle appropriately.
     math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
                         math::CreateRotationMatrix(transform.orientation);
-    math::Mat4f matrix = ortho * model;
+    math::Mat4f matrix = ortho_view * model;
     glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
     glDrawArrays(GL_LINE_LOOP, 0, 4);
   });
@@ -175,10 +193,13 @@ math::Vec2f GetWindowDims() {
   return math::Vec2f((float)width, (float)height);
 }
 
-
 bool LeftMouseClicked() {
-  return kGfx.current_mouse_state == GLFW_RELEASE &&
-         kGfx.previous_mouse_state == GLFW_PRESS;
+  return ((kGfx.input_mask          & (1 << MOUSE_LEFT_CLICK)) == 0) &&
+         ((kGfx.previous_input_mask & (1 << MOUSE_LEFT_CLICK)) != 0);
+}
+
+uint32_t GetInputMask() {
+  return kGfx.input_mask;
 }
 
 }

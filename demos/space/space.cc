@@ -1,11 +1,13 @@
 #include <iostream>
 #include <cassert>
 
-#include "game/game.h"
-#include "game/event_buffer.h"
+#include "camera.h"
 #include "command.h"
 #include "ecs.h"
 #include "gfx.h"
+
+#include "game/game.h"
+#include "game/event_buffer.h"
 #include "math/vec.h"
 
 namespace {
@@ -23,6 +25,9 @@ bool Initialize() {
   transform->orientation.Set(0.f, math::Vec3f(0.f, 0.f, 1.f));
   kECS.Assign<TriangleComponent>(1);
 
+  camera::MoveTo(math::Vec3f(0.f, 0.f, 0.f));
+  camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
+
   return true;
 }
 
@@ -33,7 +38,8 @@ bool ProcessInput() {
     math::Vec2f cursor_pos = gfx::GetCursorPositionInScreenSpace();
     command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
     move->entity_id = 0;
-    move->position = cursor_pos;
+    // A bit of an optimization. Assume no zoom when converting to world space.
+    move->position = cursor_pos + camera::position().xy();
   }
 
   return true;
@@ -51,9 +57,13 @@ void HandleEvent(game::Event event) {
 }
 
 bool UpdateGame() {
-  // Rotate the triangle.
-  //auto* transform = kECS.Get<TransformComponent>(1);
-  //transform->orientation.Rotate(1.f);
+  uint32_t input_mask = gfx::GetInputMask();
+  math::Vec3f camera_translation(0.f, 0.f, 0.f);
+  if ((input_mask & (1 << gfx::KEY_W)) != 0) camera_translation.y -= 1.f;
+  if ((input_mask & (1 << gfx::KEY_S)) != 0) camera_translation.y += 1.f;
+  if ((input_mask & (1 << gfx::KEY_A)) != 0) camera_translation.x -= 1.f;
+  if ((input_mask & (1 << gfx::KEY_D)) != 0) camera_translation.x += 1.f;
+  camera::Translate(camera_translation);
 
   TransformComponent* transform = kECS.Get<TransformComponent>(0);
   DestinationComponent* destination = kECS.Get<DestinationComponent>(0);
