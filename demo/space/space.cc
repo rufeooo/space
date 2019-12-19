@@ -10,8 +10,6 @@
 #include "game/game.h"
 #include "math/vec.h"
 
-namespace
-{
 bool
 Initialize()
 {
@@ -95,7 +93,7 @@ OnEnd()
 {
 }
 
-}  // namespace
+// namespace
 
 int
 main(int argc, char** argv)

@@ -16,7 +16,11 @@
 # along with ycmd.  If not, see <http://www.gnu.org/licenses/>.
 
 import os
+import platform
 import ycm_core
+
+def DirectoryOfThisScript():
+  return os.path.dirname( os.path.abspath( __file__ ) )
 
 # These are the compilation flags that will be used in case there's no
 # compilation database set (by default, one is not set).
@@ -31,24 +35,26 @@ flags = [
 # language to use when compiling headers. So it will guess. Badly. So C++
 # headers will be compiled as C headers. You don't want that so ALWAYS specify
 # a "-std=<something>".
-# For a C project, you would set this to something like 'c99' instead of
-# 'c++11'.
-'-std=c++14',
+'-std=c++17',
 # ...and the same thing goes for the magic -x option which specifies the
 # language that the files to be compiled are written in. This is mostly
 # relevant for c++ headers.
 # For a C project, you would set this to 'c' instead of 'c++'.
 '-x',
 'c++',
-'-isystem',
-'/usr/include',
-'-isystem',
-'/usr/local/include',
-'-isystem',
-'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/c++/v1',
-'-isystem',
-'/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include',
+'-I',
+DirectoryOfThisScript(),
 ]
+
+if platform.system() != 'Linux':
+  '-isystem',
+  '/usr/include',
+  '-isystem',
+  '/usr/local/include',
+  '-isystem',
+  '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/../lib/c++/v1',
+  '-isystem',
+  '/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/include',
 
 
 # Set this to the absolute path to the folder (NOT the file!) containing the
@@ -65,9 +71,6 @@ else:
   database = None
 
 SOURCE_EXTENSIONS = [ '.cpp', '.cxx', '.cc', '.c', '.m', '.mm' ]
-
-def DirectoryOfThisScript():
-  return os.path.dirname( os.path.abspath( __file__ ) )
 
 
 def IsHeaderFile( filename ):
@@ -99,7 +102,6 @@ def FlagsForFile( filename, **kwargs ):
   if not database:
     return {
       'flags': flags,
-      'include_paths_relative_to_dir': DirectoryOfThisScript()
     }
 
   compilation_info = GetCompilationInfoForFile( filename )
