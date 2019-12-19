@@ -3,7 +3,7 @@
 #include <iostream>
 #include <thread>
 
-#include "server.h"
+#include "server.cc"
 
 struct Client {
   SOCKET socket;
