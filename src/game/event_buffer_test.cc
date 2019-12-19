@@ -1,6 +1,6 @@
 #include <iostream>
 
-#include "event_buffer.h"
+#include "event_buffer.cc"
 #include "gtest/gtest.h"
 
 TEST(EventBuffer, HappyPathEventBuffer)

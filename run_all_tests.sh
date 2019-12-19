@@ -6,34 +6,38 @@ source run_constants.sh
 # TODO: Is there a more clever way to find all test targets? Maybe
 # cmake can intelligently make a target for all test files.
 make ecs_test
-./ecs/ecs_test
-
-make search_test
-./search/search_test
+./src/ecs_test
 
 make vec_test
-./math/vec_test
+./src/vec_test
 
 make mat_test
-./math/mat_test
+./src/mat_test
 
 make quat_test
-./math/quat_test
+./src/quat_test
 
 make mat_ops_test
-./math/mat_ops_test
+./src/mat_ops_test
 
-make server_test
-./network/server_test
+#make server_test
+#./src/server_test
 
-make client_test
-./network/client_test
+#make client_test
+#./src/client_test
 
 make intersection_test
-./math/intersection_test
+./src/intersection_test
 
 make game_test
-./game/game_test
+./src/game_test
 
-make gl_shader_cache_test
-./renderer/gl_shader_cache_test
+make event_buffer_test
+./src/event_buffer_test
+
+#make gl_shader_cache_test
+#./src/gl_shader_cache_test
+
+#make search_test
+#./src/search_test
+

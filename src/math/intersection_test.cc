@@ -1,6 +1,6 @@
 #include "gtest/gtest.h"
 
-#include "intersection.h"
+#include "intersection.cc"
 #include "vec.h"
 
 TEST(Intersection, LineSegmentsIntersectPositive_One)

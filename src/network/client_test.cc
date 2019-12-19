@@ -4,8 +4,8 @@
 #include <iostream>
 #include <thread>
 
-#include "client.h"
-#include "server.h"
+#include "client.cc"
+#include "server.cc"
 
 static int kCallbacksCalled = 0;
 

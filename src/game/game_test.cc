@@ -1,6 +1,7 @@
 #include <iostream>
 
-#include "game.h"
+#include "platform/unix_filesystem.cc"
+#include "game.cc"
 #include "gtest/gtest.h"
 
 bool
