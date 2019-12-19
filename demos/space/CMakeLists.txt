@@ -1,6 +1,5 @@
 include_directories(${CMAKE_SOURCE_DIR})
 
-add_executable(space "space.cc" "camera.h" "camera.cc" "command.h"
-                     "command.cc" "components.h" "ecs.h" "gfx.h" "gfx.cc")
+add_executable(space "space.cc" )
 
 target_link_libraries(space glfw_renderer math_lib game_lib)

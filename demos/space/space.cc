@@ -1,10 +1,10 @@
 #include <iostream>
 #include <cassert>
 
-#include "camera.h"
-#include "command.h"
+#include "camera.cc"
+#include "command.cc"
 #include "ecs.h"
-#include "gfx.h"
+#include "gfx.cc"
 
 #include "game/game.h"
 #include "game/event_buffer.h"
