@@ -4,7 +4,11 @@
 #include "camera.cc"
 #include "command.cc"
 #include "ecs.h"
+#include "platform/platform.cc"
+#include "game/game.cc"
 #include "gfx.cc"
+#include "math/math.cc"
+#include "renderer/renderer.cc"
 
 #include "game/event_buffer.h"
 #include "game/game.h"
