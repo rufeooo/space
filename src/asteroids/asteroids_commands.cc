@@ -7,7 +7,6 @@
 #include "components/common/input_component.h"
 #include "components/network/server_authoritative_component.h"
 #include "game/event.h"
-#include "integration/entity_replication/entity_replication_server.h"
 
 namespace asteroids
 {
