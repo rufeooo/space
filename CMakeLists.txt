@@ -22,13 +22,10 @@ set(GFLAGS_BUILD_TESTING OFF CACHE BOOL "" FORCE)
 
 # Third party libraries.
 add_subdirectory(third_party/gflags)
-add_subdirectory(third_party/glad)
 add_subdirectory(third_party/glfw)
 
 # Move third party targets into their own folders for Visual Studio
 set_target_properties(gflags_nothreads_static PROPERTIES FOLDER ThirdParty/gflags)
-set_target_properties(glad PROPERTIES FOLDER ThirdParty/glad)
-set_target_properties(glad-generate-files PROPERTIES FOLDER ThirdParty/glad)
 
 # Our stuff.
 add_subdirectory(example)
