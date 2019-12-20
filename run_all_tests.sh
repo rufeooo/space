@@ -1,3 +1,4 @@
+#!/bin/bash
 # Script that runs all tests.
 
 source run_constants.sh

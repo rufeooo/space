@@ -1,3 +1,4 @@
+#!/bin/bash
 # Script that runs a single test
 
 if [ -z "$1" ]; then

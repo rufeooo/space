@@ -1,3 +1,4 @@
+#!/bin/bash
 BUILD_DIR="build"
 LOG_DIR="logs"
 
