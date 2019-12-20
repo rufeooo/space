@@ -168,7 +168,7 @@ InitOpenGL(HDC real_dc)
 }
 
 LRESULT CALLBACK
-window_callback(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
+WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 {
   LRESULT result = 0;
 
@@ -186,11 +186,11 @@ window_callback(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 }
 
 HWND
-create_window(HINSTANCE inst)
+SetupWindow(HINSTANCE inst)
 {
   WNDCLASSA window_class = {
     .style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC,
-    .lpfnWndProc = window_callback,
+    .lpfnWndProc = WindowProc,
     .hInstance = inst,
     .hCursor = LoadCursor(0, IDC_ARROW),
     .hbrBackground = 0,
@@ -234,7 +234,7 @@ create_window(HINSTANCE inst)
 int WINAPI
 WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd_line, int show)
 {
-  HWND window = create_window(inst);
+  HWND window = SetupWindow(inst);
   HDC gldc = GetDC(window);
   HGLRC glrc = InitOpenGL(gldc);
 
