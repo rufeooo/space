@@ -5,6 +5,9 @@ _tmp/
 
 EVENTS.bin
 *.swp
+*.suo
+*.db
+*.ipch
 *_generated.h
 *.obj
 *.exe
