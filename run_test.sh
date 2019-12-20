@@ -5,15 +5,8 @@ if [ -z "$1" ]; then
   echo "Usage: ./run_test.sh <*_test.cc>"
 fi
 
-if [ -z "$CXX" ]; then
-	CXX=`which clang++`
-fi
-if [ -z "$CXX" ]; then
-	CXX=`which g++`
-fi
-if [ -z "$CXX" ]; then
-	echo "Failed to detect compiler"
-	exit 1
+if [ -z $BUILD_DIR ]; then
+	source ./run_constants.sh
 fi
 
 if [ -z "$SOURCE_DIR" ]; then
