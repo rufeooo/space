@@ -174,12 +174,12 @@ WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 
   switch (msg) {
     case WM_CLOSE:
-    case WM_DESTROY:
+    case WM_DESTROY: {
       PostQuitMessage(0);
-      break;
-    default:
-      result = DefWindowProcA(window, msg, wparam, lparam);
-      break;
+    } break;
+    default: {
+      result = DefWindowProcA(window, msg, wparam, lparam); 
+    } break;
   }
 
   return result;
@@ -231,14 +231,14 @@ SetupWindow(HINSTANCE inst)
   return window;
 }
 
-int WINAPI
-WinMain(HINSTANCE inst, HINSTANCE prev, LPSTR cmd_line, int show)
+int
+main(int argc, char** argv)
 {
-  HWND window = SetupWindow(inst);
+  HWND window = SetupWindow(GetModuleHandle(0));
   HDC gldc = GetDC(window);
   HGLRC glrc = InitOpenGL(gldc);
 
-  ShowWindow(window, show);
+  ShowWindow(window, 1);
   UpdateWindow(window);
 
   bool running = true;
