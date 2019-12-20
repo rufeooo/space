@@ -6,3 +6,5 @@ _tmp/
 EVENTS.bin
 *.swp
 *_generated.h
+*.obj
+*.exe
