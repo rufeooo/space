@@ -14,5 +14,5 @@ if [ -z "$SOURCE_DIR" ]; then
 fi
 
 GTEST_DIR='third_party/googletest/googletest/'
-echo $CXX $1
-$CXX -std=c++17 -I $SOURCE_DIR -I $GTEST_DIR -I $GTEST_DIR/include $1 -include $GTEST_DIR/src/gtest-all.cc -lpthread
+BIN_OUTPUT=$BIN_DIR/`basename -s .cc $1`
+$CXX -std=c++17 -I $SOURCE_DIR -I $GTEST_DIR -I $GTEST_DIR/include $1 -include $GTEST_DIR/src/gtest-all.cc -lpthread -o $BIN_OUTPUT
