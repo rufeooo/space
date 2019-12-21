@@ -7,6 +7,8 @@
 // Notably this module creates a single window and does not intend
 // on supporting making multiple.
 
+#include "math/vec.h"
+
 enum Key {
   KEY_NONE = 0,
   KEY_W    = 0x1,
@@ -24,6 +26,8 @@ void PollEvents();
 void SwapBuffers();
 
 bool ShouldClose();
+
+math::Vec2f GetWindowSize();
 
 bool IsKeyDown(Key key);
 }  // namespace window

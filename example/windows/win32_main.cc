@@ -1,5 +1,6 @@
 #include <iostream>
 #include "platform/win32_window.cc"
+#include "math/vec.h"
 
 int
 main(int argc, char** argv)
@@ -21,7 +22,8 @@ main(int argc, char** argv)
     }
 
     if (window::IsKeyDown(KEY_D)) {
-      std::cout << "D DOWN" << std::endl;
+      math::Vec2f size = window::GetWindowSize();
+      std::cout << size.x << " " << size.y << std::endl;
     }
 
 

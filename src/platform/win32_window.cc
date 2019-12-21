@@ -307,6 +307,12 @@ ShouldClose()
   return kWindow.should_close;
 }
 
+math::Vec2f GetWindowSize() {
+  RECT rect;
+  GetWindowRect(kWindow.hwnd, &rect);
+  return math::Vec2f((float)rect.right - rect.left, (float)rect.bottom - rect.top);
+}
+
 bool
 IsKeyDown(Key key) {
   return (kWindow.input_mask & (1 << key)) != 0;
