@@ -66,9 +66,6 @@ int main(int argc, const char * argv[]) {
   app = [[MacApp alloc] initWithContentRect:NSMakeRect(0, 0, 600, 600)
          styleMask:NSTitledWindowMask | NSClosableWindowMask |  NSMiniaturizableWindowMask
          backing:NSBackingStoreBuffered defer:YES];    
-
-  std::cout << glGetString(GL_VERSION) << std::endl;
-
   [application setDelegate:app];
 
   // Not really sure why I need this or if I need this.
@@ -76,23 +73,34 @@ int main(int argc, const char * argv[]) {
   bool shouldKeepRunning = true;
   do
   {
-    [pool release];
-    pool = [[NSAutoreleasePool alloc] init];
-
-    NSEvent *event =
-        [application
-            nextEventMatchingMask:NSAnyEventMask
-            untilDate:[NSDate distantFuture]
-            inMode:NSDefaultRunLoopMode
-            dequeue:YES];
-
-    [application sendEvent:event];
+    NSEvent* event;
+    while ((event =  [NSApp nextEventMatchingMask:NSEventMaskAny
+                                        untilDate:[NSDate distantPast]
+                                           inMode:NSDefaultRunLoopMode
+                                          dequeue:YES])) {
+      NSEventType event_type = [event type];
+      switch (event_type) {
+        case NSLeftMouseDown: {
+          // TODO: How to get mouse position?
+          NSLog(@"Left mouse down");
+        } break;
+        case NSKeyDown: {
+          NSString* characters; 
+          characters = [event charactersIgnoringModifiers];
+          unsigned int characterIndex, characterCount;
+          characterCount = [characters length]; 
+          for (characterIndex = 0; characterIndex < characterCount; characterIndex++) {
+            unichar c = [characters characterAtIndex:characterIndex];
+            std::cout << c << std::endl;
+          }
+        } break;
+        default:
+          break;
+      }
+      // Send event to application so the user can do things like close the window.
+      [application sendEvent:event];
+    }
     [application updateWindows];
-
-    glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
-    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
   } while (shouldKeepRunning);
 
   [pool release];
