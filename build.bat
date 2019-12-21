@@ -1,3 +1,4 @@
+@echo off
 call run_constants.bat
 
 set file_arg=%1
