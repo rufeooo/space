@@ -2,7 +2,6 @@
 
 #include "shader_cache.h"
 
-#include <glad/glad.c>
 #include <unordered_map>
 #include <unordered_set>
 

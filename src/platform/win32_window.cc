@@ -44,9 +44,36 @@ struct Window {
   HGLRC hglrc;
   // Whether the window should be closing or not.
   bool should_close = false;
+  // Bitfield where each bit represents whether a key is down or not.
+  // a bit value of 1 represents a key is pressed and 0 is down
+  uint32_t input_mask;
+  // Input mask from the previous frame.
+  uint32_t previous_input_mask;
 };
 
 static Window kWindow;
+
+void
+HandleKedownEvent(WPARAM wparam)
+{
+  // Capture key events here.
+  switch (wparam) {
+    case 'W':
+      kWindow.input_mask |= (1 << KEY_W);
+      break;
+    case 'A':
+      kWindow.input_mask |= (1 << KEY_A);
+      break;
+    case 'S':
+      kWindow.input_mask |= (1 << KEY_S);
+      break;
+    case 'D':
+      kWindow.input_mask |= (1 << KEY_D);
+      break;
+    default:
+      break;
+  }
+}
 
 LRESULT CALLBACK
 WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
@@ -57,6 +84,9 @@ WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_CLOSE:
     case WM_DESTROY: {
       PostQuitMessage(0);
+    } break;
+    case WM_KEYDOWN: {
+      HandleKedownEvent(wparam);
     } break;
     default: {
       result = DefWindowProcA(window, msg, wparam, lparam); 
@@ -81,7 +111,7 @@ SetupWindow(HINSTANCE inst, const char* name, int width, int height)
     assert("Failed to register window.");
   }
 
-  RECT rect;
+  RECT rect = {};
   rect.right = width;
   rect.bottom = height;
 
@@ -252,6 +282,8 @@ Create(const char* name, int width, int height)
 void
 PollEvents()
 {
+  kWindow.previous_input_mask = kWindow.input_mask;
+  kWindow.input_mask = 0;
   MSG msg;
   while (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
     if (msg.message == WM_QUIT) {
@@ -273,5 +305,10 @@ bool
 ShouldClose()
 {
   return kWindow.should_close;
+}
+
+bool
+IsKeyDown(Key key) {
+  return (kWindow.input_mask & (1 << key)) != 0;
 }
 }  // namespace window
