@@ -9,21 +9,26 @@ main(int argc, char** argv)
   while (!window::ShouldClose()) {
     window::PollEvents();
 
-    if (window::IsKeyDown(KEY_W)) {
+    if (window::HasInput(KEY_W)) {
       std::cout << "W DOWN" << std::endl;
     }
 
-    if (window::IsKeyDown(KEY_A)) {
+    if (window::HasInput(KEY_A)) {
       std::cout << "A DOWN" << std::endl;
     }
 
-    if (window::IsKeyDown(KEY_S)) {
+    if (window::HasInput(KEY_S)) {
       std::cout << "S DOWN" << std::endl;
     }
 
-    if (window::IsKeyDown(KEY_D)) {
+    if (window::HasInput(KEY_D)) {
       math::Vec2f size = window::GetWindowSize();
       std::cout << size.x << " " << size.y << std::endl;
+    }
+
+    if (window::HasInput(MOUSE_LEFT_CLICK)) {
+      math::Vec2f cursor = window::GetCursorPosition();
+      std::cout << cursor.x << " " << cursor.y << std::endl;
     }
 
 

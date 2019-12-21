@@ -9,12 +9,13 @@
 
 #include "math/vec.h"
 
-enum Key {
+enum Input {
   KEY_NONE = 0,
   KEY_W    = 0x1,
   KEY_A    = 0x2,
   KEY_S    = 0x4,
   KEY_D    = 0x8,
+  MOUSE_LEFT_CLICK = 0x10,
 };
 
 namespace window
@@ -29,5 +30,7 @@ bool ShouldClose();
 
 math::Vec2f GetWindowSize();
 
-bool IsKeyDown(Key key);
+math::Vec2f GetCursorPosition();
+
+bool HasInput(Input input);
 }  // namespace window

@@ -88,6 +88,9 @@ WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_KEYDOWN: {
       HandleKedownEvent(wparam);
     } break;
+    case WM_LBUTTONDOWN: {
+      kWindow.input_mask |= (1 << MOUSE_LEFT_CLICK);
+    } break;
     default: {
       result = DefWindowProcA(window, msg, wparam, lparam); 
     } break;
@@ -307,14 +310,26 @@ ShouldClose()
   return kWindow.should_close;
 }
 
-math::Vec2f GetWindowSize() {
+math::Vec2f
+GetWindowSize()
+{
   RECT rect;
   GetWindowRect(kWindow.hwnd, &rect);
   return math::Vec2f((float)rect.right - rect.left, (float)rect.bottom - rect.top);
 }
 
+
+math::Vec2f
+GetCursorPosition()
+{
+  POINT cursor;
+  GetCursorPos(&cursor);
+  ScreenToClient(kWindow.hwnd, &cursor);
+  return math::Vec2f((float)cursor.x, (float)cursor.y);
+}
+
 bool
-IsKeyDown(Key key) {
+HasInput(Input key) {
   return (kWindow.input_mask & (1 << key)) != 0;
 }
 }  // namespace window
