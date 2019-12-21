@@ -21,3 +21,11 @@ if [ -z "$CC" ]; then
 	echo "Failed to detect C compiler"
 	exit 1
 fi
+
+# Detect platform being run on.
+uname_out="$(uname -s)"
+case "${uname_out}" in
+    Linux*)     unix=1;;
+    Darwin*)    macosx=1;;
+    *)          platform="UNKNOWN:${uname_out}"
+esac
