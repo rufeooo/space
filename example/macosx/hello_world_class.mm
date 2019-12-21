@@ -17,7 +17,9 @@ SomeMethod
 }
 @end
 
-int main(int argc, char** argv) {
+int
+main(int argc, char** argv)
+{
   // Why no pool?
   // Memory management in Objective C has two methods -
   // MRR - Mutual Retail Release.
