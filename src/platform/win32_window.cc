@@ -329,7 +329,8 @@ GetCursorPosition()
 }
 
 bool
-HasInput(Input key) {
+HasInput(Input key)
+{
   return (kWindow.input_mask & (1 << key)) != 0;
 }
 }  // namespace window
