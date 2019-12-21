@@ -1,7 +1,9 @@
 // NSArray, NSDictionary, NSSet...
 #include <Foundation/Foundation.h>
 
-int main (int argc, const char** argv) {
+int
+main(int argc, const char** argv)
+{
   // Supports reference-counted memory management.
   // Even though I may not want to use it cocoa library uses it extensively
   // so I need to prepare the pool. Autoreleased objects will leak if I do
