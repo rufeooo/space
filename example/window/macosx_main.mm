@@ -15,13 +15,17 @@ NSApplication* application;
 
 @implementation MacApp
 
--(id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag{
-  if(self = [super initWithContentRect:contentRect styleMask:aStyle backing:bufferingType defer:flag]){
-    //sets the title of the window (Declared in Plist)
+-(id)initWithContentRect:(NSRect)contentRect
+                         styleMask:(NSUInteger)aStyle
+                         backing:(NSBackingStoreType)bufferingType
+                         defer:(BOOL)flag {
+  if(self = [super initWithContentRect:contentRect
+                   styleMask:aStyle
+                   backing:bufferingType
+                   defer:flag]) {
     [self setTitle:[[NSProcessInfo processInfo] processName]];
- 
-    //This is pretty important.. OS X starts always with a context that only supports openGL 2.1
-    //This will ditch the classic OpenGL and initialises openGL 4.1
+
+    // This initializes GL to 4.1 WHY.
     NSOpenGLPixelFormatAttribute pixelFormatAttributes[] ={
         NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
             NSOpenGLPFAColorSize, 24,
@@ -32,25 +36,22 @@ NSApplication* application;
             0
     };
 
-    NSOpenGLPixelFormat* format = [[NSOpenGLPixelFormat alloc]initWithAttributes:pixelFormatAttributes];
-    //Initialize the view 
-    _glView = [[NSOpenGLView alloc]initWithFrame:contentRect pixelFormat:format];
-    
-    //Set context and attach it to the window
+    NSOpenGLPixelFormat* format =
+        [[NSOpenGLPixelFormat alloc]initWithAttributes:pixelFormatAttributes];
+    _glView =
+        [[NSOpenGLView alloc]initWithFrame:contentRect pixelFormat:format];
     [[_glView openGLContext]makeCurrentContext];
   
-    //finishing off
     [self setContentView:_glView];
     [_glView prepareOpenGL];
     [self makeKeyAndOrderFront:self];
     [self setAcceptsMouseMovedEvents:YES];
     [self makeKeyWindow];
     [self setOpaque:YES];
-    //Start the c++ code
-    //appInstance = std::shared_ptr<Application>(new Application());
   }
   return self;
 }
+
 @end
 
 //@synthesize glView;
@@ -69,6 +70,32 @@ int main(int argc, const char * argv[]) {
   std::cout << glGetString(GL_VERSION) << std::endl;
 
   [application setDelegate:app];
-  [application run];
+
+  // Not really sure why I need this or if I need this.
+  NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
+  bool shouldKeepRunning = true;
+  do
+  {
+    [pool release];
+    pool = [[NSAutoreleasePool alloc] init];
+
+    NSEvent *event =
+        [application
+            nextEventMatchingMask:NSAnyEventMask
+            untilDate:[NSDate distantFuture]
+            inMode:NSDefaultRunLoopMode
+            dequeue:YES];
+
+    [application sendEvent:event];
+    [application updateWindows];
+
+    glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+
+  } while (shouldKeepRunning);
+
+  [pool release];
+
   return 0;
 }
