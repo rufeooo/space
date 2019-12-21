@@ -11,14 +11,9 @@ NSApplication* application;
 
 @property (nonatomic, retain) NSOpenGLView* glView;
 
--(void) drawLoop:(NSTimer*) timer;
-
 @end
 
 @implementation MacApp
-
--(void) drawLoop:(NSTimer*) timer {
-}
 
 -(id)initWithContentRect:(NSRect)contentRect styleMask:(NSUInteger)aStyle backing:(NSBackingStoreType)bufferingType defer:(BOOL)flag{
   if(self = [super initWithContentRect:contentRect styleMask:aStyle backing:bufferingType defer:flag]){
