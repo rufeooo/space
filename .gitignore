@@ -12,4 +12,6 @@ EVENTS.bin
 *.ipch
 *_generated.h
 *.obj
+*.o
 *.exe
+a.out
