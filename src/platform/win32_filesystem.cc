@@ -7,7 +7,7 @@ namespace filesystem
 bool
 MakeDirectory(const char* name)
 {
-  return CreateDirectory(name, nullptr);
+  return CreateDirectoryA(name, nullptr);
 }
 
 }  // namespace filesystem
