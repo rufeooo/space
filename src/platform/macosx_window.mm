@@ -159,10 +159,10 @@ void Create(const char* name, int width, int height) {
 void TransformEvent(NSEvent* nsevent, Event* event) {
   NSEventType nsevent_type = [nsevent type];
   switch (nsevent_type) {
-    case NSLeftMouseDown: {
+    case NSEventTypeLeftMouseDown: {
       event->type = MOUSE_LEFT_DOWN;
     } break;
-    case NSLeftMouseUp: {
+    case NSEventTypeLeftMouseUp: {
       event->type = MOUSE_LEFT_UP;
     } break;
     default:
