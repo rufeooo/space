@@ -9,7 +9,7 @@
 
 #include "math/vec.h"
 
-enum EventType {
+enum PlatformEventType {
   NOT_IMPLEMENTED, // Event does not have translation implemented yet.
   MOUSE_LEFT_UP,
   MOUSE_LEFT_DOWN,
@@ -17,9 +17,9 @@ enum EventType {
   KEY_UP,
 };
 
-struct Event {
+struct PlatformEvent {
   // Type of event.
-  EventType type;
+  PlatformEventType type;
   // Key pressed in regards to KEY_DOWN, KEY_UP event.
   char key;
   // Screen space the event took place in.
@@ -32,7 +32,7 @@ void Create(const char* name, int width, int height);
 
 // Returns true if an event existed. False otherwise.
 // Fully poll this queue at the top of each game loop.
-bool PollEvent(Event* event);
+bool PollEvent(PlatformEvent* event);
 
 void SwapBuffers();
 

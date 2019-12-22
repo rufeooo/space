@@ -163,7 +163,7 @@ void Create(const char* name, int width, int height) {
     TransformProcessType(&psn, kProcessTransformToForegroundApplication);
 }
 
-void TranslateEvent(NSEvent* nsevent, Event* event) {
+void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {
   NSEventType nsevent_type = [nsevent type];
   switch (nsevent_type) {
     case NSEventTypeLeftMouseDown: {
@@ -198,7 +198,7 @@ void TranslateEvent(NSEvent* nsevent, Event* event) {
   event->position.y = pos.y;
 }
 
-bool PollEvent(Event* event) {
+bool PollEvent(PlatformEvent* event) {
   event->type = NOT_IMPLEMENTED;
   event->key = 0;
   event->position = math::Vec2f(0.f, 0.f);

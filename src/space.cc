@@ -39,7 +39,7 @@ Initialize()
 bool
 ProcessInput()
 {
-  Event event;
+  PlatformEvent event;
   while (window::PollEvent(&event)) {
     switch (event.type) {
       case MOUSE_LEFT_DOWN: {
