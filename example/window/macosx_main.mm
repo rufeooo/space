@@ -4,7 +4,10 @@
 #import <Cocoa/Cocoa.h>
 #import <memory>
 
+
 NSApplication* application;
+
+static bool kTerminate = false;
 
 @interface MacApp : NSWindow <NSApplicationDelegate>{
 }
@@ -15,10 +18,13 @@ NSApplication* application;
 
 @implementation MacApp
 
--(id)initWithContentRect:(NSRect)contentRect
-                         styleMask:(NSUInteger)aStyle
-                         backing:(NSBackingStoreType)bufferingType
-                         defer:(BOOL)flag {
+-
+(id)
+initWithContentRect:(NSRect)contentRect
+                     styleMask:(NSUInteger)aStyle
+                     backing:(NSBackingStoreType)bufferingType
+                     defer:(BOOL)flag
+{
   if(self = [super initWithContentRect:contentRect
                    styleMask:aStyle
                    backing:bufferingType
@@ -52,13 +58,21 @@ NSApplication* application;
   return self;
 }
 
+- (BOOL)
+applicationShouldTerminateAfterLastWindowClosed:(NSApplication*)theApplication
+{
+  std::cout << "applicationShouldTerminateAfterLastWindowClosed" << std::endl;
+  kTerminate = true;
+  return YES;
+}
+
 @end
 
 //@synthesize glView;
 
-BOOL shouldStop = NO;
-
-int main(int argc, const char * argv[]) {
+int
+main(int argc, const char * argv[])
+{
   MacApp* app;
   application = [NSApplication sharedApplication];
   [NSApp setActivationPolicy:NSApplicationActivationPolicyRegular]; 
@@ -70,9 +84,7 @@ int main(int argc, const char * argv[]) {
 
   // Not really sure why I need this or if I need this.
   NSAutoreleasePool* pool = [[NSAutoreleasePool alloc] init];
-  bool shouldKeepRunning = true;
-  do
-  {
+  while (!kTerminate) {
     NSEvent* event;
     while ((event =  [NSApp nextEventMatchingMask:NSEventMaskAny
                                         untilDate:[NSDate distantPast]
@@ -100,8 +112,12 @@ int main(int argc, const char * argv[]) {
       // Send event to application so the user can do things like close the window.
       [application sendEvent:event];
     }
+
+    //glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
+    //glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
     [application updateWindows];
-  } while (shouldKeepRunning);
+  }
 
   [pool release];
 
