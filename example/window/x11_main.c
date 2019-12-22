@@ -17,6 +17,20 @@ signal_handler(int signal)
 }
 
 int
+x11_error_handler(Display* d, XErrorEvent* ev)
+{
+  printf("X11 Error! %d", ev ? ev->type : 0);
+  return 0;
+}
+
+int
+x11_ioerror_handler(Display* d)
+{
+  puts("X11 IO error!");
+  return 0;
+}
+
+int
 main(int argc, char** argv)
 {
   signal(SIGINT, signal_handler);
@@ -164,15 +178,28 @@ main(int argc, char** argv)
     exit(1);
   }
 
+  XSetErrorHandler(x11_error_handler);
+  XSetIOErrorHandler(x11_ioerror_handler);
+  eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+
   while (running) {
-    eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+    usleep(100);
     glClearColor(1.0, 1.0, 0.0, 1.0);
     glClear(GL_COLOR_BUFFER_BIT);
     glFlush();
     eglSwapBuffers(egl_display, egl_surface);
-    usleep(100);
-  }
 
+    XEvent xev;
+    while (XCheckWindowEvent(display, window_id, -1, &xev)) {
+      printf("Event %d %d\n", xev.type, LeaveNotify);
+
+      switch (xev.type) {
+      }
+    }
+  }
+  puts("goodbye");
+
+  XUnmapWindow(display, window_id);
   XDestroyWindow(display, window_id);
   XCloseDisplay(display);
 }
