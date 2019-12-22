@@ -4,6 +4,7 @@
 #include "camera.cc"
 #include "command.cc"
 #include "ecs.h"
+#include "platform/window.cc"
 #include "platform/platform.cc"
 #include "game/game.cc"
 #include "gfx.cc"
@@ -38,14 +39,17 @@ Initialize()
 bool
 ProcessInput()
 {
-  gfx::PollEvents();
-
-  if (gfx::LeftMouseClicked()) {
-    math::Vec2f cursor_pos = gfx::GetCursorPositionInScreenSpace();
-    command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
-    move->entity_id = 0;
-    // A bit of an optimization. Assume no zoom when converting to world space.
-    move->position = cursor_pos + camera::position().xy();
+  Event event;
+  while (window::PollEvent(&event)) {
+    switch (event.type) {
+      case MOUSE_LEFT_DOWN: {
+        command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
+        move->entity_id = 0;
+        // A bit of an optimization. Assume no zoom when converting to world space.
+        move->position = event.position;
+      } break;
+      default: break;
+    }
   }
 
   return true;
@@ -67,14 +71,6 @@ HandleEvent(game::Event event)
 bool
 UpdateGame()
 {
-  uint32_t input_mask = gfx::GetInputMask();
-  math::Vec3f camera_translation(0.f, 0.f, 0.f);
-  if ((input_mask & (1 << gfx::KEY_W)) != 0) camera_translation.y -= 1.f;
-  if ((input_mask & (1 << gfx::KEY_S)) != 0) camera_translation.y += 1.f;
-  if ((input_mask & (1 << gfx::KEY_A)) != 0) camera_translation.x -= 1.f;
-  if ((input_mask & (1 << gfx::KEY_D)) != 0) camera_translation.x += 1.f;
-  camera::Translate(camera_translation);
-
   TransformComponent* transform = kECS.Get<TransformComponent>(0);
   DestinationComponent* destination = kECS.Get<DestinationComponent>(0);
   if (destination) {

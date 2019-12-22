@@ -35,7 +35,6 @@ constexpr const char* kFragmentShaderName = "frag";
 constexpr const char* kProgramName = "prog";
 
 struct Gfx {
-  GLFWwindow* glfw = nullptr;
   renderer::GLShaderCache shader_cache;
 
   // References to shader programs.
@@ -64,11 +63,7 @@ static Gfx kGfx;
 bool
 Initialize()
 {
-  kGfx.glfw = renderer::InitGLAndCreateWindow(800, 800, "Space");
-  if (!kGfx.glfw) {
-    std::cout << "Unable to start GL and create window." << std::endl;
-    return false;
-  }
+  renderer::InitGLAndCreateWindow(800, 800, "Space");
 
   if (!kGfx.shader_cache.CompileShader(
           kVertexShaderName, renderer::ShaderType::VERTEX, kVertexShader)) {
@@ -114,36 +109,17 @@ Initialize()
   return true;
 }
 
-void
-PollEvents()
-{
-  glfwPollEvents();
-  kGfx.previous_input_mask = kGfx.input_mask;
-  kGfx.input_mask = 0;
-  int mouse_state = glfwGetMouseButton(kGfx.glfw, GLFW_MOUSE_BUTTON_LEFT);
-  if (mouse_state == GLFW_PRESS) kGfx.input_mask |= 1 << MOUSE_LEFT_CLICK;
-  int w_state = glfwGetKey(kGfx.glfw, GLFW_KEY_W);
-  if (w_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_W;
-  int a_state = glfwGetKey(kGfx.glfw, GLFW_KEY_A);
-  if (a_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_A;
-  int s_state = glfwGetKey(kGfx.glfw, GLFW_KEY_S);
-  if (s_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_S;
-  int d_state = glfwGetKey(kGfx.glfw, GLFW_KEY_D);
-  if (d_state == GLFW_PRESS) kGfx.input_mask |= 1 << KEY_D;
-}
-
 bool
 Render()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  math::Vec2f dims = GetWindowDims();
+  // TODO: dims not correct.
+  //math::Vec2f dims = window::GetWindowSize();
   // TODO: Take into consideration camera.
   math::Mat4f ortho = math::CreateOrthographicMatrix<float>(
-      dims.x, 0.f, 0.f, dims.y, /* 2d so leave near/far 0*/ 0.f, 0.f);
+      800, 0.f, 0.f, 800, /* 2d so leave near/far 0*/ 0.f, 0.f);
   math::Mat4f view = camera::view_matrix();
   math::Mat4f ortho_view = ortho * view;
-
-  // std::cout << view.String() << std::endl;
 
   // Draw all triangles
   glUseProgram(kGfx.program_reference);
@@ -173,44 +149,8 @@ Render()
         glDrawArrays(GL_LINE_LOOP, 0, 4);
       });
 
-  glfwSwapBuffers(kGfx.glfw);
-  return !glfwWindowShouldClose(kGfx.glfw);
-}
-
-math::Vec2f
-GetCursorPositionInScreenSpace()
-{
-  double xpos, ypos;
-  glfwGetCursorPos(kGfx.glfw, &xpos, &ypos);
-  math::Vec2f dims = GetWindowDims();
-  return math::Vec2f((float)xpos, (float)ypos);
-}
-
-math::Vec2f
-GetCursorPositionInWorldSpace()
-{
-  return GetCursorPositionInScreenSpace() / kGfx.meter_size;
-}
-
-math::Vec2f
-GetWindowDims()
-{
-  int width, height;
-  glfwGetWindowSize(kGfx.glfw, &width, &height);
-  return math::Vec2f((float)width, (float)height);
-}
-
-bool
-LeftMouseClicked()
-{
-  return ((kGfx.input_mask & (1 << MOUSE_LEFT_CLICK)) == 0) &&
-         ((kGfx.previous_input_mask & (1 << MOUSE_LEFT_CLICK)) != 0);
-}
-
-uint32_t
-GetInputMask()
-{
-  return kGfx.input_mask;
+  window::SwapBuffers();
+  return true;
 }
 
 }  // namespace gfx
