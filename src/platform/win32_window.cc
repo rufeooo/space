@@ -327,10 +327,4 @@ GetCursorPosition()
   ScreenToClient(kWindow.hwnd, &cursor);
   return math::Vec2f((float)cursor.x, (float)cursor.y);
 }
-
-bool
-HasInput(Input key)
-{
-  return (kWindow.input_mask & (1 << key)) != 0;
-}
 }  // namespace window

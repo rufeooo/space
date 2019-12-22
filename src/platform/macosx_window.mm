@@ -156,6 +156,42 @@ void Create(const char* name, int width, int height) {
   [kWindow.gl_context setView:kWindow.nsview];
 }
 
+void TransformEvent(NSEvent* nsevent, Event* event) {
+  NSEventType nsevent_type = [nsevent type];
+  switch (nsevent_type) {
+    case NSLeftMouseDown: {
+      event->type = MOUSE_LEFT_DOWN;
+    } break;
+    case NSLeftMouseUp: {
+      event->type = MOUSE_LEFT_UP;
+    } break;
+    default:
+      break;
+  }
+  // TODO: This is the wrong position. Need to get the exact position of
+  // the mouse event.
+  NSPoint pos = [NSEvent mouseLocation];
+  event->position.x = pos.x;
+  event->position.y = pos.y;
+}
+
+bool PollEvent(Event* event) {
+  event->type = NOT_IMPLEMENTED;
+  event->key = 0;
+  event->position = math::Vec2f(0.f, 0.f);
+
+  NSEvent* nsevent = [NSApp nextEventMatchingMask:NSEventMaskAny
+                                        untilDate:[NSDate distantPast]
+                                           inMode:NSDefaultRunLoopMode
+                                          dequeue:YES];
+  if (!nsevent) return false;
+  // Convert the NSEvent* to an Event*
+  TransformEvent(nsevent, event);
+  // Send the NSEvent nsevent to the app so it can handle it.
+  [NSApp sendEvent:nsevent];
+  return true;
+}
+
 void PollEvents() {
   NSEvent* event;
   // Drain event loop.
@@ -185,9 +221,5 @@ math::Vec2f GetCursorPosition() {
   NSPoint pos;
   pos = [kWindow.nswindow mouseLocationOutsideOfEventStream];
   return math::Vec2f(pos.x, pos.y);
-}
-
-bool HasInput(Input input) {
-  return false;
 }
 }  // namespace window

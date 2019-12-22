@@ -9,20 +9,30 @@
 
 #include "math/vec.h"
 
-enum Input {
-  KEY_NONE = 0,
-  KEY_W    = 0x1,
-  KEY_A    = 0x2,
-  KEY_S    = 0x4,
-  KEY_D    = 0x8,
-  MOUSE_LEFT_CLICK = 0x10,
+enum EventType {
+  NOT_IMPLEMENTED, // Event does not have translation implemented yet.
+  MOUSE_LEFT_UP,
+  MOUSE_LEFT_DOWN,
+  KEY_DOWN,
+  KEY_UP,
+};
+
+struct Event {
+  // Type of event.
+  EventType type;
+  // Key pressed in regards to KEY_DOWN, KEY_UP event.
+  char key;
+  // Screen space the event took place in.
+  math::Vec2f position;
 };
 
 namespace window
 {
 void Create(const char* name, int width, int height);
 
-void PollEvents();
+// Returns true if an event existed. False otherwise.
+// Fully poll this queue at the top of each game loop.
+bool PollEvent(Event* event);
 
 void SwapBuffers();
 
@@ -31,6 +41,4 @@ bool ShouldClose();
 math::Vec2f GetWindowSize();
 
 math::Vec2f GetCursorPosition();
-
-bool HasInput(Input input);
 }  // namespace window
