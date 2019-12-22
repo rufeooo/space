@@ -75,14 +75,9 @@ acceptsFirstResponder
   //@property (readonly, retain) NSOpenGLContext* gl_context;
 - (id) init;
 - (id) initWithFrame:(NSRect)rect glContext:(NSOpenGLContext*)ctx;
-- (void) drawRect:(NSRect)bounds;
 - (BOOL) isOpaque;
 - (BOOL) canBecomeKeyView;
 - (BOOL) acceptsFirstResponder;
-- (void) mouseDown:(NSEvent*)event;
-
-//! Call drawRect if space key is received.
-- (void) keyDown:(NSEvent*)event;
 @end
 
 @implementation OpenGLView
@@ -97,7 +92,7 @@ initWithFrame:(NSRect)rect glContext:(NSOpenGLContext*)ctx
 {
   self = [super initWithFrame:rect];
   if (self == nil)
-      return nil;
+    return nil;
   gl_context_ = ctx;
   return self;
 }
@@ -118,38 +113,6 @@ canBecomeKeyView
 acceptsFirstResponder
 {
   return YES;
-}
-
-- (void)
-mouseDown:(NSEvent*)event
-{
-  [self drawRect:[self frame]];
-}
-
-- (void)
-keyDown:(NSEvent*)event
-{
-  if ([event keyCode] == kSpaceKey) {
-    [self drawRect:[self frame]];
-  } else {
-    [super keyDown:event];
-  }
-}
-
-- (void)
-drawRect:(NSRect)bounds
-{
-  static int i = 0;
-  i = ++i % 3;
-
-  switch (i) {
-    case 0: glClearColor(1, 0, 0, 1); break;
-    case 1: glClearColor(0, 1, 0, 1); break;
-    case 2: glClearColor(0, 0, 1, 1); break;
-  }
-
-  glClear(GL_COLOR_BUFFER_BIT);
-  [gl_context_ flushBuffer];
 }
 @end
 
@@ -189,13 +152,26 @@ main(int argc, const char** argv)
   [window makeKeyAndOrderFront:nil];
 
   // Setup gl view.
+  // https://developer.apple.com/documentation/appkit/nsopenglcontext?language=objc 
   [gl_context makeCurrentContext];
   [gl_context setView:view];
-  [view display];
 
-  // This is required... This actually runs the event loop associated with my
-  // window.
-  [NSApp run];
+  while (true) {
+    NSEvent* event;
+    // Drain event loop.
+    while ((event =  [NSApp nextEventMatchingMask:NSEventMaskAny
+                                        untilDate:[NSDate distantPast]
+                                           inMode:NSDefaultRunLoopMode
+                                          dequeue:YES])) {
+      [NSApp sendEvent:event];
+    }
+
+    glClearColor(1.0f, 0.5f, 0.5f, 1.0f);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    [gl_context flushBuffer];
+  }
+
   [pool drain];
   return 0;
 }
