@@ -1,7 +1,7 @@
-#include <gflags/gflags.h>
 #include <cassert>
 #include <thread>
 
+#include "platform/window.cc"
 #include "asteroids/asteroids.cc"
 #include "asteroids/asteroids_commands.cc"
 #include "asteroids/asteroids_state.cc"
@@ -15,11 +15,11 @@
 #include "platform/platform.cc"
 #include "renderer/renderer.cc"
 
-DEFINE_string(hostname, "",
+/*DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
               "the game singleplayer otherwise.");
 DEFINE_string(port, "9845", "Port for this application.");
-DEFINE_string(replay_file, "", "Run game from replay file.");
+DEFINE_string(replay_file, "", "Run game from replay file.");*/
 
 void
 OnServerMsgReceived(uint8_t* msg, int size)
@@ -59,13 +59,13 @@ OnServerAuthorityRemoved(ecs::Entity entity)
 bool
 SetupClientConnection()
 {
-  if (FLAGS_hostname.empty()) return true;
+  /*if (FLAGS_hostname.empty()) return true;
 
   network::client::Setup(&OnServerMsgReceived);
   if (!network::client::Start(FLAGS_hostname.c_str(), FLAGS_port.c_str())) {
     std::cout << "Unable to start client." << std::endl;
     return false;
-  }
+  }*/
 
   return true;
 }
@@ -83,13 +83,13 @@ SetupClientConfiguration()
   // can be replayed using the --replay_file flag.
   game::SaveEventsToFile();
 
-  if (!FLAGS_replay_file.empty()) {
-    game::LoadEventsFromFile(FLAGS_replay_file.c_str());
-  }
+  //if (!FLAGS_replay_file.empty()) {
+  //  game::LoadEventsFromFile(FLAGS_replay_file.c_str());
+  //}
 
   auto& components = asteroids::GlobalGameState().components;
 
-  if (!FLAGS_hostname.empty()) {
+  /*if (!FLAGS_hostname.empty()) {
     components.AssignCallback<ServerAuthoritativeComponent>(
         &OnServerAuthorityCreated);
 
@@ -97,7 +97,7 @@ SetupClientConfiguration()
         &OnServerAuthorityRemoved);
 
     return;
-  }
+  }*/
 
   // Only the server has a game state component in a networked game.
   components.Assign<asteroids::GameStateComponent>(
@@ -117,12 +117,12 @@ SetupClientPlayer()
       asteroids::commands::PLAYER_ID_MUTATION);
   change_id->entity_id = create_player->entity_id;
 
-  if (FLAGS_hostname.empty()) return;
+  //if (FLAGS_hostname.empty()) return;
 
   // Inform the server of this player joining.
-  network::client::Send(
-      ((uint8_t*)create_player - game::kEventHeaderSize),
-      sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
+  //network::client::Send(
+  //    ((uint8_t*)create_player - game::kEventHeaderSize),
+  //    sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
 }
 
 bool
@@ -147,33 +147,50 @@ Initialize()
 bool
 ProcessInput()
 {
-  glfwPollEvents();
+  // hacky
+  bool w_pressed = false;
+  bool a_pressed = false;
+  bool s_pressed = false;
+  bool d_pressed = false;
+  Event event;
+  while (window::PollEvent(&event)) {
+    switch (event.type) {
+      case KEY_DOWN: {
+        if (event.key == 'w') w_pressed = true;
+        if (event.key == 'a') a_pressed = true;
+        if (event.key == 's') s_pressed = true;
+        if (event.key == 'd') d_pressed = true;
+      } break;
+      default: break;
+    } 
+  }
+
   static asteroids::commands::Input previous_player_input;
   static asteroids::commands::Input player_input;
   previous_player_input = player_input;
   auto& opengl = asteroids::GlobalOpenGL();
   player_input.previous_input_mask = player_input.input_mask;
   player_input.input_mask = 0;
-  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_W)) {
+  if (w_pressed) {
     player_input.input_mask =
         player_input.input_mask | (uint8_t)asteroids::commands::InputKey::W;
   }
-  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_A)) {
+  if (a_pressed) {
     player_input.input_mask =
         player_input.input_mask | (uint8_t)asteroids::commands::InputKey::A;
   }
-  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_S)) {
+  if (s_pressed) {
     player_input.input_mask =
         player_input.input_mask | (uint8_t)asteroids::commands::InputKey::S;
   }
-  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_D)) {
+  if (d_pressed) {
     player_input.input_mask =
         player_input.input_mask | (uint8_t)asteroids::commands::InputKey::D;
   }
-  if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
-    player_input.input_mask =
-        player_input.input_mask | (uint8_t)asteroids::commands::InputKey::SPACE;
-  }
+  //if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
+  //  player_input.input_mask =
+  //      player_input.input_mask | (uint8_t)asteroids::commands::InputKey::SPACE;
+  //}
   if (player_input.input_mask != previous_player_input.input_mask ||
       player_input.previous_input_mask !=
           previous_player_input.previous_input_mask) {
@@ -187,6 +204,7 @@ ProcessInput()
         ((uint8_t*)input_event - game::kEventHeaderSize),
         sizeof(asteroids::commands::Input) + game::kEventHeaderSize);
   }
+
   return true;
 }
 
@@ -201,7 +219,7 @@ OnEnd()
 int
 main(int argc, char** argv)
 {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+//  gflags::ParseCommandLineFlags(&argc, &argv, true);
   game::Setup(&Initialize, &ProcessInput, &asteroids::HandleEvent,
               &asteroids::UpdateGame, &asteroids::RenderGame, &OnEnd);
   if (!game::Run()) {

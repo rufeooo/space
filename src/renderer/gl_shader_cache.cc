@@ -1,5 +1,4 @@
 #include "gl_shader_cache.h"
-#include "glad/glad.c"
 
 #include <cstdio>
 #include <iostream>

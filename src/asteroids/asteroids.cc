@@ -45,11 +45,7 @@ InitializeGraphics()
 {
   auto& opengl = GlobalOpenGL();
   auto& components = GlobalGameState().components;
-  opengl.glfw_window = renderer::InitGLAndCreateWindow(800, 800, "Asteroids");
-  if (!opengl.glfw_window) {
-    std::cout << "Unable to start GL and create window." << std::endl;
-    return false;
-  }
+  renderer::InitGLAndCreateWindow(800, 800, "Asteroids");
   components.Assign<ViewComponent>(
       opengl.camera, math::Vec3f(0.0f, 0.0f, 1.5f),
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
@@ -447,13 +443,8 @@ RenderGame()
         glBindVertexArray(comp.vao_reference);
         glDrawArrays(GL_LINE_LOOP, 0, comp.vertex_count);
       });
-  glfwSwapBuffers(opengl.glfw_window);
-  /*char title[256];
-  sprintf(
-      title, "Asteroids MS Per Frame: %lld FPS: %.2f",
-      ms_per_frame().count(), fps());
-  glfwSetWindowTitle(opengl.glfw_window, title);*/
-  return !glfwWindowShouldClose(opengl.glfw_window);
+  window::SwapBuffers();
+  return true;
 }
 
 }  // namespace asteroids

@@ -57,6 +57,8 @@ main(int argc, char** argv)
   glAttachShader(shader_program, vs);
   glLinkProgram(shader_program);
 
+  //glGetUniformLocation();
+
   while (!window::ShouldClose()) {
     Event event;
     while (window::PollEvent(&event)) {

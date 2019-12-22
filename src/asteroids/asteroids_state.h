@@ -38,7 +38,6 @@ OpenGLGameReferences& GlobalOpenGLGameReferences();
 // Used for manipulating OpenGl state.
 struct OpenGL {
   ecs::Entity camera = 0;
-  GLFWwindow* glfw_window = nullptr;
   renderer::GLShaderCache shader_cache;
 };
 

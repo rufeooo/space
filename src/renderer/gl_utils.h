@@ -1,8 +1,6 @@
 #pragma once
 
-#include "glad/glad.c"
 
-#include <glfw/glfw3.h>
 #include <string>
 #include <vector>
 
@@ -10,14 +8,13 @@
 
 namespace renderer
 {
-GLFWwindow* InitGLAndCreateWindow(int window_width, int window_height,
-                                  const char* title);
+void InitGLAndCreateWindow(int window_width, int window_height, const char* title);
 
 // Given a GLenum returns a stringified version of it. For example -
 // GLTypeToString(GL_BOOL) = "bool"
 // GLTypeToString(GL_INT) = "int"
 // GLTypeToString(GL_FLOAT) = "float"
-std::string GLTypeToString(GLenum type);
+std::string GLTypeToString(int type);
 
 // Creates vbo for a triangle and binds a vao with those points.
 // Returns resulting  vao. A user should call those once and cache
@@ -25,7 +22,7 @@ std::string GLTypeToString(GLenum type);
 uint32_t CreateTriangleVAO();
 
 // Creates a vbo for a vert list and binds / returns a vao.
-uint32_t CreateGeometryVAO(const std::vector<GLfloat>& verts);
+uint32_t CreateGeometryVAO(const std::vector<float>& verts);
 
 // Creates a vbo for a vert list of 2d vectors.
 uint32_t CreateGeometryVAO(const std::vector<math::Vec2f>& verts);
