@@ -155,7 +155,7 @@ ProcessInput()
   bool s_pressed = false;
   bool d_pressed = false;
   bool space_pressed = false;
-  Event event;
+  PlatformEvent event;
   while (window::PollEvent(&event)) {
     switch (event.type) {
       case KEY_DOWN: {
