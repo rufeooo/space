@@ -2,7 +2,12 @@
 
 #import <Cocoa/Cocoa.h>
 #import <OpenGL/OpenGL.h>
+#import <OpenGL/gl.h>
 
+static const int kSpaceKey = 49;
+
+//https://developer.apple.com/library/archive/documentation/GraphicsImaging/Conceptual/OpenGL-MacProgGuide/opengl_pg_concepts/opengl_pg_concepts.html#//apple_ref/doc/uid/TP40001987-CH208-SW1 
+// Worthy read of OpenGL on this wonderful platform.
 NSOpenGLContext*
 CreateOpenGLContext()
 {
@@ -33,13 +38,13 @@ CreateOpenGLContext()
   return [[NSOpenGLContext alloc] initWithCGLContextObj:context];
 }
 
-@interface MyWindow : NSWindow
+@interface Window : NSWindow
 - (void) close;
 
 - (BOOL) acceptsFirstResponder;
 @end
 
-@implementation MyWindow
+@implementation Window
 // Close the window - https://developer.apple.com/documentation/appkit/nswindow/1419662-close?language=objc
 // This also terminates the NSApplication 
 - (void)
@@ -60,6 +65,94 @@ acceptsFirstResponder
 }
 @end
 
+//https://developer.apple.com/documentation/appkit/nsview?language=objc
+// Required to give the opengl context, or framebuffer, access to the windows view. 
+@interface OpenGLView : NSView {
+@private
+  NSOpenGLContext* gl_context_;
+}
+
+  //@property (readonly, retain) NSOpenGLContext* gl_context;
+- (id) init;
+- (id) initWithFrame:(NSRect)rect glContext:(NSOpenGLContext*)ctx;
+- (void) drawRect:(NSRect)bounds;
+- (BOOL) isOpaque;
+- (BOOL) canBecomeKeyView;
+- (BOOL) acceptsFirstResponder;
+- (void) mouseDown:(NSEvent*)event;
+
+//! Call drawRect if space key is received.
+- (void) keyDown:(NSEvent*)event;
+@end
+
+@implementation OpenGLView
+- (id)
+init
+{
+  return nil;
+}
+
+- (id)
+initWithFrame:(NSRect)rect glContext:(NSOpenGLContext*)ctx
+{
+  self = [super initWithFrame:rect];
+  if (self == nil)
+      return nil;
+  gl_context_ = ctx;
+  return self;
+}
+
+- (BOOL)
+isOpaque
+{
+  return YES;
+}
+
+- (BOOL)
+canBecomeKeyView
+{
+  return YES;
+}
+
+- (BOOL)
+acceptsFirstResponder
+{
+  return YES;
+}
+
+- (void)
+mouseDown:(NSEvent*)event
+{
+  [self drawRect:[self frame]];
+}
+
+- (void)
+keyDown:(NSEvent*)event
+{
+  if ([event keyCode] == kSpaceKey) {
+    [self drawRect:[self frame]];
+  } else {
+    [super keyDown:event];
+  }
+}
+
+- (void)
+drawRect:(NSRect)bounds
+{
+  static int i = 0;
+  i = ++i % 3;
+
+  switch (i) {
+    case 0: glClearColor(1, 0, 0, 1); break;
+    case 1: glClearColor(0, 1, 0, 1); break;
+    case 2: glClearColor(0, 0, 1, 1); break;
+  }
+
+  glClear(GL_COLOR_BUFFER_BIT);
+  [gl_context_ flushBuffer];
+}
+@end
+
 int
 main(int argc, const char** argv)
 {
@@ -77,19 +170,29 @@ main(int argc, const char** argv)
 
   NSOpenGLContext* gl_context = CreateOpenGLContext();
 
-  NSWindow* window = [[MyWindow alloc]
-                      initWithContentRect:NSMakeRect(0,0, 500, 500)
-                      styleMask:styleMask
-                      backing:NSBackingStoreBuffered
-                      defer:NO];
+  NSView* view = [[OpenGLView alloc]
+                  initWithFrame:NSMakeRect(0,0, 500, 500)
+                      glContext:gl_context];
+                  
+  NSWindow* window = [[Window alloc]
+                      initWithContentRect:[view frame]
+                                styleMask:styleMask
+                                  backing:NSBackingStoreBuffered
+                                    defer:NO];
 
-  //[application setDelegate:window];
-  [window makeKeyAndOrderFront:NSApp];
+  // Setup window
   [window autorelease];
   [window setTitle:@"Title"];
-  //[window setContentView:contentView];
-  //[window makeFirstResponder:contentView];
+  [window setContentView:view];
+  [window makeFirstResponder:view];
   [window center];
+  [window makeKeyAndOrderFront:nil];
+
+  // Setup gl view.
+  [gl_context makeCurrentContext];
+  [gl_context setView:view];
+  [view display];
+
   // This is required... This actually runs the event loop associated with my
   // window.
   [NSApp run];
