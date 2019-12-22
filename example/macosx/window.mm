@@ -1,4 +1,37 @@
+#include <cassert>
+
 #import <Cocoa/Cocoa.h>
+#import <OpenGL/OpenGL.h>
+
+NSOpenGLContext*
+CreateOpenGLContext()
+{
+  CGLError error;
+  CGLPixelFormatAttribute pixel_attrs[] = {
+      kCGLPFADoubleBuffer,
+      kCGLPFAOpenGLProfile, (CGLPixelFormatAttribute)kCGLOGLPVersion_3_2_Core,
+      kCGLPFAColorSize, (CGLPixelFormatAttribute)24,
+      kCGLPFAAlphaSize, (CGLPixelFormatAttribute)8,
+      kCGLPFADepthSize, (CGLPixelFormatAttribute)24,
+      kCGLPFAStencilSize, (CGLPixelFormatAttribute)8,
+      kCGLPFASampleBuffers, (CGLPixelFormatAttribute)0,
+      (CGLPixelFormatAttribute) 0,
+  };
+
+  int ignore;
+  CGLPixelFormatObj pixel_format;
+  error = CGLChoosePixelFormat(pixel_attrs, &pixel_format, &ignore);
+  assert(!error);
+  assert(pixel_format);
+
+  // Create the GL context.
+  CGLContextObj context;
+  error = CGLCreateContext(pixel_format, 0, &context);
+  assert(!error);
+  assert(context);
+
+  return [[NSOpenGLContext alloc] initWithCGLContextObj:context];
+}
 
 @interface MyWindow : NSWindow
 - (void) close;
@@ -42,6 +75,8 @@ main(int argc, const char** argv)
   unsigned int styleMask = NSTitledWindowMask
                            | NSClosableWindowMask;
 
+  NSOpenGLContext* gl_context = CreateOpenGLContext();
+
   NSWindow* window = [[MyWindow alloc]
                       initWithContentRect:NSMakeRect(0,0, 500, 500)
                       styleMask:styleMask
@@ -55,7 +90,6 @@ main(int argc, const char** argv)
   //[window setContentView:contentView];
   //[window makeFirstResponder:contentView];
   [window center];
-  [window makeKeyAndOrderFront:nil];
   // This is required... This actually runs the event loop associated with my
   // window.
   [NSApp run];
