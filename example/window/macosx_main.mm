@@ -64,6 +64,12 @@ main(int argc, char** argv)
         case MOUSE_LEFT_DOWN: {
           std::cout << event.position.x << " " << event.position.y << std::endl;
         } break;
+        case KEY_UP: {
+          std::cout << "KEY_UP: " << event.key << std::endl;
+        } break;
+        case KEY_DOWN: {
+          std::cout << "KEY_DOWN: " << event.key << std::endl;
+        } break;
         default: {
         } break;
       }

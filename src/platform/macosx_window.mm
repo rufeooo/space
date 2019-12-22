@@ -154,6 +154,13 @@ void Create(const char* name, int width, int height) {
 
   [kWindow.gl_context makeCurrentContext];
   [kWindow.gl_context setView:kWindow.nsview];
+
+  // No idea where these constants come from or why this isn't the default but
+  // this is required to allow the application to come to the foreground and
+  // receive key events.
+  ProcessSerialNumber psn = {0, kCurrentProcess};
+  OSStatus status =
+    TransformProcessType(&psn, kProcessTransformToForegroundApplication);
 }
 
 void TranslateEvent(NSEvent* nsevent, Event* event) {
@@ -164,6 +171,24 @@ void TranslateEvent(NSEvent* nsevent, Event* event) {
     } break;
     case NSEventTypeLeftMouseUp: {
       event->type = MOUSE_LEFT_UP;
+    } break;
+    case NSEventTypeKeyDown: {
+      event->type = KEY_DOWN;
+      // TODO: Unfortunately this indicates an event can be associated with
+      // multiple key events. I think an Event system that only has at most
+      // one character event per keyboard press makes more sense. It would be
+      // good to expand these to multiple events or change the Event api to
+      // accomdate multiple characters in one event.
+      //
+      // Or maybe this is not that big a deal. I wonder how often a single
+      // nsevent can have multiple key presses.
+      NSString* characters = [nsevent charactersIgnoringModifiers];
+      event->key = [characters characterAtIndex:0];
+    } break;
+    case NSEventTypeKeyUp: {
+      event->type = KEY_UP;
+      NSString* characters = [nsevent charactersIgnoringModifiers];
+      event->key = [characters characterAtIndex:0];
     } break;
     default:
       break;
