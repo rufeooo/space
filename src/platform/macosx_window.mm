@@ -145,7 +145,7 @@ void Create(const char* name, int width, int height) {
                                     defer:NO];
 
   [kWindow.nswindow autorelease];
-  [kWindow.nswindow setTitle:@"Title"];
+  [kWindow.nswindow setTitle:[NSString stringWithUTF8String:name]];
   [kWindow.nswindow setContentView:kWindow.nsview];
   [kWindow.nswindow makeFirstResponder:kWindow.nsview];
   [kWindow.nswindow center];
