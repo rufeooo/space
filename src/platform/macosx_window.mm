@@ -156,7 +156,7 @@ void Create(const char* name, int width, int height) {
   [kWindow.gl_context setView:kWindow.nsview];
 }
 
-void TransformEvent(NSEvent* nsevent, Event* event) {
+void TranslateEvent(NSEvent* nsevent, Event* event) {
   NSEventType nsevent_type = [nsevent type];
   switch (nsevent_type) {
     case NSEventTypeLeftMouseDown: {
@@ -184,7 +184,7 @@ bool PollEvent(Event* event) {
                                           dequeue:YES];
   if (!nsevent) return false;
   // Convert the NSEvent* to an Event*
-  TransformEvent(nsevent, event);
+  TranslateEvent(nsevent, event);
   // Send the NSEvent nsevent to the app so it can handle it.
   [NSApp sendEvent:nsevent];
   return true;
