@@ -168,9 +168,7 @@ void TransformEvent(NSEvent* nsevent, Event* event) {
     default:
       break;
   }
-  // TODO: This is the wrong position. Need to get the exact position of
-  // the mouse event.
-  NSPoint pos = [NSEvent mouseLocation];
+  NSPoint pos = [nsevent locationInWindow];
   event->position.x = pos.x;
   event->position.y = pos.y;
 }
