@@ -147,11 +147,14 @@ Initialize()
 bool
 ProcessInput()
 {
-  // hacky
+  // TODO: This is hacky. We used to sample input but now we have a polling
+  // based input system. This will return the behavior to what it used to be.
+  // probably worth updating this code to use new input style.
   bool w_pressed = false;
   bool a_pressed = false;
   bool s_pressed = false;
   bool d_pressed = false;
+  bool space_pressed = false;
   Event event;
   while (window::PollEvent(&event)) {
     switch (event.type) {
@@ -160,6 +163,7 @@ ProcessInput()
         if (event.key == 'a') a_pressed = true;
         if (event.key == 's') s_pressed = true;
         if (event.key == 'd') d_pressed = true;
+        if (event.key == 32) space_pressed = true;
       } break;
       default: break;
     } 
@@ -187,10 +191,10 @@ ProcessInput()
     player_input.input_mask =
         player_input.input_mask | (uint8_t)asteroids::commands::InputKey::D;
   }
-  //if (glfwGetKey(opengl.glfw_window, GLFW_KEY_SPACE)) {
-  //  player_input.input_mask =
-  //      player_input.input_mask | (uint8_t)asteroids::commands::InputKey::SPACE;
-  //}
+  if (space_pressed) {
+    player_input.input_mask =
+        player_input.input_mask | (uint8_t)asteroids::commands::InputKey::SPACE;
+  }
   if (player_input.input_mask != previous_player_input.input_mask ||
       player_input.previous_input_mask !=
           previous_player_input.previous_input_mask) {
