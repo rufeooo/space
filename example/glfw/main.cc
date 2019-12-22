@@ -1,4 +1,4 @@
-#include <glad/gl.h>
+#include <glad/glad.c>
 
 #include <glfw/glfw3.h>
 #include <stdio.h>
@@ -62,7 +62,7 @@ main()
   }
   glfwSetKeyCallback(window, key_callback);
   glfwMakeContextCurrent(window);
-  gladLoadGL(glfwGetProcAddress);
+  gladLoadGL();
   glfwSwapInterval(1);
   // NOTE: OpenGL error checks have been omitted for brevity
   glGenBuffers(1, &vertex_buffer);
