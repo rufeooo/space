@@ -43,7 +43,7 @@ flags = [
 '-x',
 'c++',
 '-I',
-DirectoryOfThisScript(),
+os.path.join(DirectoryOfThisScript(),'src'),
 ]
 
 if platform.system() != 'Linux':

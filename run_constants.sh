@@ -22,6 +22,8 @@ if [ -z "$CC" ]; then
 	exit 1
 fi
 
+CXXFLAG="-O1 -std=c++17"
+
 # Detect platform being run on.
 uname_out="$(uname -s)"
 case "${uname_out}" in
