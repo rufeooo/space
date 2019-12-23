@@ -42,11 +42,13 @@ ProcessInput()
   PlatformEvent event;
   while (window::PollEvent(&event)) {
     switch (event.type) {
-      case MOUSE_LEFT_DOWN: {
-        command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
-        move->entity_id = 0;
-        // A bit of an optimization. Assume no zoom when converting to world space.
-        move->position = event.position;
+      case MOUSE_DOWN: {
+        if (event.button == BUTTON_LEFT) {
+          command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
+          move->entity_id = 0;
+          // A bit of an optimization. Assume no zoom when converting to world space.
+          move->position = event.position;
+        }
       } break;
       default: break;
     }

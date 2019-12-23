@@ -168,10 +168,12 @@ void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {
   NSEventType nsevent_type = [nsevent type];
   switch (nsevent_type) {
     case NSEventTypeLeftMouseDown: {
-      event->type = MOUSE_LEFT_DOWN;
+      event->type = MOUSE_DOWN;
+      event->button = BUTTON_LEFT;
     } break;
     case NSEventTypeLeftMouseUp: {
-      event->type = MOUSE_LEFT_UP;
+      event->type = MOUSE_UP;
+      event->button = BUTTON_LEFT;
     } break;
     case NSEventTypeKeyDown: {
       event->type = KEY_DOWN;
