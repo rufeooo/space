@@ -11,6 +11,7 @@
 #include "math/intersection.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
+#include "platform/window.cc"
 #include "renderer/gl_utils.h"
 
 #include "ecs/internal.h"
@@ -155,11 +156,9 @@ bool
 ProjectileCollidesWithAsteroid(ecs::Entity projectile, ecs::Entity asteroid)
 {
   auto& components = GlobalGameState().components;
-  auto* projectile_transform =
-      components.Get<TransformComponent>(projectile);
+  auto* projectile_transform = components.Get<TransformComponent>(projectile);
   auto* projectile_physics = components.Get<PhysicsComponent>(projectile);
-  auto* asteroid_transform =
-      components.Get<TransformComponent>(asteroid);
+  auto* asteroid_transform = components.Get<TransformComponent>(asteroid);
   auto* asteroid_shape = components.Get<PolygonShape>(asteroid);
   assert(projectile_physics != nullptr);
   assert(asteroid_transform != nullptr);
@@ -307,15 +306,12 @@ UpdateGame()
   }
 
   // Provide ship control to the entity with Input (the player.)
-  components.Enumerate<PhysicsComponent, TransformComponent,
-                       InputComponent>(
+  components.Enumerate<PhysicsComponent, TransformComponent, InputComponent>(
       [](ecs::Entity ent, PhysicsComponent& physics,
-         TransformComponent& transform,
-         InputComponent& input) {
+         TransformComponent& transform, InputComponent& input) {
         UpdatePhysics(physics);
         // TODO: Make sure this doesn't happen too often???
-        if (IsKeyDown(input.previous_input_mask,
-                                 KEYBOARD_SPACE) &&
+        if (IsKeyDown(input.previous_input_mask, KEYBOARD_SPACE) &&
             IsKeyUp(input.input_mask, KEYBOARD_SPACE)) {
           auto* create_projectile =
               game::CreateEvent<commands::CreateProjectile>(
@@ -325,8 +321,7 @@ UpdateGame()
           projectile_transform = transform;
           // Unset input so two projectile will not shoot if the Update happens
           // to be called more than once for this frame.
-          SetKeyUp(input.previous_input_mask,
-                              KEYBOARD_SPACE);
+          SetKeyUp(input.previous_input_mask, KEYBOARD_SPACE);
         }
         if (IsKeyDown(input.input_mask, KEYBOARD_A)) {
           transform.orientation.Rotate(-kRotationSpeed);
@@ -344,55 +339,54 @@ UpdateGame()
         }
       });
 
-  components
-      .Enumerate<PhysicsComponent, TransformComponent, PolygonShape>(
-          [](ecs::Entity ent, PhysicsComponent& physics,
-             TransformComponent& transform, PolygonShape& shape) {
-            transform.prev_position = transform.position;
-            transform.position += physics.velocity;
-            // Get entity min/max x and y.
-            auto world_transform =
-                math::CreateTranslationMatrix(transform.position) *
-                math::CreateRotationMatrix(transform.orientation);
-            float min_x = 10000.f, max_x = -10000.f, min_y = 10000.f,
-                  max_y = -10000.f;
-            int min_x_idx, max_x_idx, min_y_idx, max_y_idx;
-            for (int i = 0; i < shape.points.size(); ++i) {
-              const auto& point = shape.points[i];
-              math::Vec3f world_point =
-                  world_transform * math::Vec3f(point.x, point.y, 0.f);
-              if (world_point.x < min_x) {
-                min_x = world_point.x;
-                min_x_idx = i;
-              }
-              if (world_point.x > max_x) {
-                max_x = world_point.x;
-                max_x_idx = i;
-              }
-              if (world_point.y < min_y) {
-                min_y = world_point.y;
-                min_y_idx = i;
-              }
-              if (world_point.y > max_y) {
-                max_y = world_point.y;
-                max_y_idx = i;
-              }
-            }
-            if (max_x <= -1.0f) {
-              transform.position.x = .99f;
-              transform.prev_position = transform.position;
-            } else if (min_x >= 1.0f) {
-              transform.position.x = -0.99f;
-              transform.prev_position = transform.position;
-            }
-            if (max_y <= -1.0f) {
-              transform.position.y = 0.99f;
-              transform.prev_position = transform.position;
-            } else if (min_y >= 1.0f) {
-              transform.position.y = -0.99f;
-              transform.prev_position = transform.position;
-            }
-          });
+  components.Enumerate<PhysicsComponent, TransformComponent, PolygonShape>(
+      [](ecs::Entity ent, PhysicsComponent& physics,
+         TransformComponent& transform, PolygonShape& shape) {
+        transform.prev_position = transform.position;
+        transform.position += physics.velocity;
+        // Get entity min/max x and y.
+        auto world_transform =
+            math::CreateTranslationMatrix(transform.position) *
+            math::CreateRotationMatrix(transform.orientation);
+        float min_x = 10000.f, max_x = -10000.f, min_y = 10000.f,
+              max_y = -10000.f;
+        int min_x_idx, max_x_idx, min_y_idx, max_y_idx;
+        for (int i = 0; i < shape.points.size(); ++i) {
+          const auto& point = shape.points[i];
+          math::Vec3f world_point =
+              world_transform * math::Vec3f(point.x, point.y, 0.f);
+          if (world_point.x < min_x) {
+            min_x = world_point.x;
+            min_x_idx = i;
+          }
+          if (world_point.x > max_x) {
+            max_x = world_point.x;
+            max_x_idx = i;
+          }
+          if (world_point.y < min_y) {
+            min_y = world_point.y;
+            min_y_idx = i;
+          }
+          if (world_point.y > max_y) {
+            max_y = world_point.y;
+            max_y_idx = i;
+          }
+        }
+        if (max_x <= -1.0f) {
+          transform.position.x = .99f;
+          transform.prev_position = transform.position;
+        } else if (min_x >= 1.0f) {
+          transform.position.x = -0.99f;
+          transform.prev_position = transform.position;
+        }
+        if (max_y <= -1.0f) {
+          transform.position.y = 0.99f;
+          transform.prev_position = transform.position;
+        } else if (min_y >= 1.0f) {
+          transform.position.y = -0.99f;
+          transform.prev_position = transform.position;
+        }
+      });
 
   components.Enumerate<GameStateComponent>([](ecs::Entity ent,
                                               GameStateComponent& game_state) {
@@ -424,14 +418,12 @@ RenderGame()
   auto& opengl = GlobalOpenGL();
   auto& components = GlobalGameState().components;
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  auto* view_component =
-      components.Get<ViewComponent>(opengl.camera);
+  auto* view_component = components.Get<ViewComponent>(opengl.camera);
   math::Mat4f view = math::CreateViewMatrix(view_component->position,
                                             view_component->orientation);
   math::Mat4f projection = math::CreatePerspectiveMatrix<float>(800, 800);
   auto projection_view = projection * view;
-  components.Enumerate<RenderingComponent,
-                       TransformComponent>(
+  components.Enumerate<RenderingComponent, TransformComponent>(
       [&](ecs::Entity ent, RenderingComponent& comp,
           TransformComponent& transform) {
         glUseProgram(comp.program_reference);

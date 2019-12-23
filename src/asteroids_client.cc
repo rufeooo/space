@@ -1,7 +1,6 @@
 #include <cassert>
 #include <thread>
 
-#include "platform/window.cc"
 #include "asteroids/asteroids.cc"
 #include "asteroids/asteroids_commands.cc"
 #include "asteroids/asteroids_state.cc"
@@ -13,6 +12,7 @@
 #include "math/math.cc"
 #include "network/client.cc"
 #include "platform/platform.cc"
+#include "platform/window.cc"
 #include "renderer/renderer.cc"
 
 /*DEFINE_string(hostname, "",
@@ -83,7 +83,7 @@ SetupClientConfiguration()
   // can be replayed using the --replay_file flag.
   game::SaveEventsToFile();
 
-  //if (!FLAGS_replay_file.empty()) {
+  // if (!FLAGS_replay_file.empty()) {
   //  game::LoadEventsFromFile(FLAGS_replay_file.c_str());
   //}
 
@@ -117,10 +117,10 @@ SetupClientPlayer()
       asteroids::commands::PLAYER_ID_MUTATION);
   change_id->entity_id = create_player->entity_id;
 
-  //if (FLAGS_hostname.empty()) return;
+  // if (FLAGS_hostname.empty()) return;
 
   // Inform the server of this player joining.
-  //network::client::Send(
+  // network::client::Send(
   //    ((uint8_t*)create_player - game::kEventHeaderSize),
   //    sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
 }
@@ -165,8 +165,9 @@ ProcessInput()
         if (event.key == 'd') d_pressed = true;
         if (event.key == 32) space_pressed = true;
       } break;
-      default: break;
-    } 
+      default:
+        break;
+    }
   }
 
   static asteroids::commands::Input previous_player_input;
@@ -223,7 +224,7 @@ OnEnd()
 int
 main(int argc, char** argv)
 {
-//  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  //  gflags::ParseCommandLineFlags(&argc, &argv, true);
   game::Setup(&Initialize, &ProcessInput, &asteroids::HandleEvent,
               &asteroids::UpdateGame, &asteroids::RenderGame, &OnEnd);
   if (!game::Run()) {

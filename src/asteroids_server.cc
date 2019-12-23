@@ -1,4 +1,3 @@
-#include <gflags/gflags.h>
 #include <array>
 #include <cassert>
 #include <mutex>
@@ -12,13 +11,13 @@
 #include "math/math.cc"
 #include "network/server.cc"
 #include "platform/platform.cc"
+#include "platform/window.cc"
 #include "renderer/renderer.cc"
-
-DEFINE_string(port, "9845", "Port for this application.");
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
 static std::vector<int> kConnectedClients;
 static std::mutex kMutex;
+static const char* port = "9845";
 
 void
 OnClientConnected(int client_id)
@@ -263,11 +262,9 @@ HandleEvent(game::Event event)
 bool
 Initialize()
 {
-  assert(!FLAGS_port.empty());
-
   network::server::Setup(&OnClientConnected, &OnClientMsgReceived);
 
-  if (!network::server::Start(FLAGS_port.c_str())) {
+  if (!network::server::Start(port)) {
     std::cout << "Unable to start server." << std::endl;
     return 0;
   }
@@ -285,7 +282,14 @@ Initialize()
 bool
 ProcessInput()
 {
-  glfwPollEvents();
+  PlatformEvent event;
+  while (window::PollEvent(&event)) {
+    int type = event.type;
+    switch (type) {
+      // ...
+    }
+  }
+
   return true;
 }
 
@@ -314,7 +318,7 @@ OnEnd()
 int
 main(int argc, char** argv)
 {
-  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  // gflags::ParseCommandLineFlags(&argc, &argv, true);
   game::Setup(&Initialize, &ProcessInput, &HandleEvent, &Update, &Render,
               &OnEnd);
 
