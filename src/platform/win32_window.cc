@@ -77,14 +77,15 @@ HandleKeyEvent(WPARAM wparam, bool is_down, PlatformEvent* event)
 }
 
 void
-HandleMouseEvent(bool is_down, PlatformEvent* event) {
+HandleMouseEvent(bool is_down, PlatformEvent* event, PlatformButton button) {
   DWORD message_pos = GetMessagePos();
   POINTS ps = MAKEPOINTS(message_pos);
   POINT p;
   p.x = ps.x; p.y = ps.y;
   ScreenToClient(kWindow.hwnd, &p);
   platform_event->position = math::Vec2f(p.x, p.y);
-  platform_event->type = is_down == true ? MOUSE_LEFT_DOWN : MOUSE_LEFT_UP;
+  platform_event->type = is_down? MOUSE_DOWN : MOUSE_UP;
+  platform_event->button = button;
 }
 
 LRESULT CALLBACK
@@ -105,10 +106,10 @@ WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
       HandleKeyEvent(wparam, true, platform_event);
     } break;
     case WM_LBUTTONDOWN: {
-      HandleMouseEvent(true, platform_event);
+      HandleMouseEvent(true, platform_event, BUTTON_LEFT);
     } break;
     case WM_LBUTTONUP: {
-      HandleMouseEvent(false, platform_event);
+      HandleMouseEvent(false, platform_event, BUTTON_LEFT);
     } break;
     default: {
       result = DefWindowProcA(window, msg, wparam, lparam); 

@@ -200,6 +200,20 @@ main(int argc, char** argv)
           printf("KeyPress 0x%lx\n", k);
           break;
         }
+        case KeyRelease: {
+          k = XLookupKeysym(&xev.xkey, 0);
+          printf("KeyRelease 0x%lx\n", k);
+          break;
+        }
+        case ButtonPress: {
+          printf("ButtonPress %d x %d y %d button\n", xev.xbutton.x,
+                 xev.xbutton.y, xev.xbutton.button);
+          break;
+        }
+        case ButtonRelease: {
+          printf("ButtonRelease %d x %d y %d button\n", xev.xbutton.x,
+                 xev.xbutton.y, xev.xbutton.button);
+        }
       }
     }
   }

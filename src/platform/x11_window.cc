@@ -177,7 +177,6 @@ PollEvent(PlatformEvent* event)
   XEvent xev;
   while (XCheckWindowEvent(display, window_id, -1, &xev)) {
     switch (xev.type) {
-      // TODO: populate PlatformEvent
       case KeyPress:
         event->type = KEY_DOWN;
         event->key = XLookupKeysym(&xev.xkey, 0);
@@ -185,6 +184,14 @@ PollEvent(PlatformEvent* event)
       case KeyRelease:
         event->type = KEY_UP;
         event->key = XLookupKeysym(&xev.xkey, 0);
+        break;
+      case ButtonPress:
+        event->type = MOUSE_DOWN;
+        event->button = (PlatformButton)xev.xbutton.button;
+        break;
+      case ButtonRelease:
+        event->type = MOUSE_UP;
+        event->button = (PlatformButton)xev.xbutton.button;
         break;
     }
 

@@ -3,27 +3,37 @@
 // Cross-platform window / opengl context abstraction. The purpose
 // of these functions are to setup a window on the screen and setup
 // the opengl context.
-// 
+//
 // Notably this module creates a single window and does not intend
 // on supporting making multiple.
 
 #include "math/vec.h"
 
 enum PlatformEventType {
-  NOT_IMPLEMENTED, // Event does not have translation implemented yet.
-  MOUSE_LEFT_UP,
-  MOUSE_LEFT_DOWN,
+  NOT_IMPLEMENTED,  // Event does not have translation implemented yet.
+  MOUSE_DOWN,
+  MOUSE_UP,
   KEY_DOWN,
   KEY_UP,
+};
+
+enum PlatformButton {
+  BUTTON_UNKNOWN,
+  BUTTON_LEFT = 1,
+  BUTTON_MIDDLE,
+  BUTTON_RIGHT,
 };
 
 struct PlatformEvent {
   // Type of event.
   PlatformEventType type;
-  // Key pressed in regards to KEY_DOWN, KEY_UP event.
-  char key;
   // Screen space the event took place in.
   math::Vec2f position;
+  // Event Detail
+  union {
+    char key;
+    PlatformButton button;
+  };
 };
 
 namespace window
