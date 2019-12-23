@@ -130,7 +130,9 @@ CreateOpenGLContext()
 }
 
 
-int Create(const char* name, int width, int height) {
+int
+Create(const char* name, int width, int height)
+{
   kWindow.gl_context = CreateOpenGLContext();
 
   unsigned int style_mask = NSTitledWindowMask   |
@@ -166,14 +168,18 @@ int Create(const char* name, int width, int height) {
   return 1;
 }
 
-void SetEventPosition(NSEvent* nsevent, PlatformEvent* event) {
+void
+SetEventPosition(NSEvent* nsevent, PlatformEvent* event)
+{
   NSPoint pos = [nsevent locationInWindow];
   event->position.x = pos.x;
   // Change origin of screen to be top left to be consistent with other platforms.
   event->position.y = GetWindowSize().y - pos.y;
 }
 
-void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {
+void
+TranslateEvent(NSEvent* nsevent, PlatformEvent* event)
+{
   NSEventType nsevent_type = [nsevent type];
   switch (nsevent_type) {
     case NSEventTypeLeftMouseDown: {
@@ -209,7 +215,9 @@ void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {
   }
 }
 
-bool PollEvent(PlatformEvent* event) {
+bool
+PollEvent(PlatformEvent* event)
+{
   event->type = NOT_IMPLEMENTED;
   event->key = 0;
   event->position = math::Vec2f(0.f, 0.f);
@@ -226,20 +234,28 @@ bool PollEvent(PlatformEvent* event) {
   return true;
 }
 
-void SwapBuffers() {
+void
+SwapBuffers()
+{
   [kWindow.gl_context flushBuffer];
 }
 
-bool ShouldClose() {
+bool
+ShouldClose()
+{
   return false;
 }
 
-math::Vec2f GetWindowSize() {
+math::Vec2f
+GetWindowSize()
+{
   NSRect frame = [kWindow.nswindow frame];
   return math::Vec2f(frame.size.width, frame.size.height);
 }
 
-math::Vec2f GetCursorPosition() {
+math::Vec2f
+GetCursorPosition()
+{
   NSPoint pos;
   pos = [kWindow.nswindow mouseLocationOutsideOfEventStream];
   // Change origin of screen to be top left to be consistent with other platforms.
