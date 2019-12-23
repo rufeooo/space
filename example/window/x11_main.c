@@ -191,9 +191,15 @@ main(int argc, char** argv)
 
     XEvent xev;
     while (XCheckWindowEvent(display, window_id, -1, &xev)) {
-      printf("Event %d %d\n", xev.type, LeaveNotify);
+      printf("Event %d\n", xev.type);
 
+      KeySym k;
       switch (xev.type) {
+        case KeyPress: {
+          k = XLookupKeysym(&xev.xkey, 0);
+          printf("KeyPress 0x%lx\n", k);
+          break;
+        }
       }
     }
   }

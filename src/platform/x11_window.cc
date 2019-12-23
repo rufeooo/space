@@ -162,14 +162,6 @@ Create(const char*, int width, int height)
 }
 
 void
-Destroy()
-{
-  XUnmapWindow(display, window_id);
-  XDestroyWindow(display, window_id);
-  XCloseDisplay(display);
-}
-
-void
 SwapBuffers()
 {
   eglSwapBuffers(egl_display, egl_surface);
@@ -186,6 +178,14 @@ PollEvent(PlatformEvent* event)
   while (XCheckWindowEvent(display, window_id, -1, &xev)) {
     switch (xev.type) {
       // TODO: populate PlatformEvent
+      case KeyPress:
+        event->type = KEY_DOWN;
+        event->key = XLookupKeysym(&xev.xkey, 0);
+        break;
+      case KeyRelease:
+        event->type = KEY_UP;
+        event->key = XLookupKeysym(&xev.xkey, 0);
+        break;
     }
 
     return true;
