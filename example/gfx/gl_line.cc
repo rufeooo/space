@@ -19,7 +19,7 @@ const char* fragment_shader =
 int
 main()
 {
-  int window_result = window::Create("Hello triangle", 640, 480);
+  int window_result = window::Create("Hello Line", 640, 480);
   std::cout << "Window create: " << window_result << std::endl;
   // Only for mac I need this?
   const GLubyte* renderer = glGetString(GL_RENDERER);
@@ -29,7 +29,7 @@ main()
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
   GLfloat points[] = {
-      0.0f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f,
+      0.0f, 0.5f, 0.0f, 0.0f, -0.5f, 0.0f,
   };
   // Create VBO.
   GLuint vbo = 0;
@@ -60,6 +60,8 @@ main()
   int running = 1;
   glClearColor(0.0, 0.0, 0.0, 1.0);
   while (running) {
+    PlatformEvent event;
+    while (window::PollEvent(&event)) {}
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Set the shader program.
     glUseProgram(shader_program);
@@ -72,7 +74,7 @@ main()
     // glDrawArrays(GL_LINES, 0, 3); // Only draws one line!
     // glDrawArrays(GL_LINE_STRIP, 0, 3); // Only draws two lines!
     // glDrawArrays(GL_LINE_LOOP, 0, 3); // Draws 3 lines making tri!
-    glDrawArrays(GL_TRIANGLES, 0, 3);  // Draws the triangle
+    glDrawArrays(GL_LINES, 0, 2);  // Draws the triangle
     // glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); // Draws the triangle
     // glDrawArrays(GL_TRIANGLE_FAN, 0, 3); // Draws the triangle
     window::SwapBuffers();
