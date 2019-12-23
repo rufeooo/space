@@ -197,22 +197,27 @@ main(int argc, char** argv)
       switch (xev.type) {
         case KeyPress: {
           k = XLookupKeysym(&xev.xkey, 0);
-          printf("KeyPress 0x%lx\n", k);
+          printf("KeyPress 0x%lx (%dx, %dy)\n", k, xev.xkey.x, xev.xkey.y);
           break;
         }
         case KeyRelease: {
           k = XLookupKeysym(&xev.xkey, 0);
-          printf("KeyRelease 0x%lx\n", k);
+          printf("KeyRelease 0x%lx (%dx, %dy)\n", k, xev.xkey.x, xev.xkey.y);
           break;
         }
         case ButtonPress: {
-          printf("ButtonPress %d x %d y %d button\n", xev.xbutton.x,
-                 xev.xbutton.y, xev.xbutton.button);
+          printf("ButtonPress [ %d button ] at (%dx, %dy)\n",
+                 xev.xbutton.button, xev.xbutton.x, xev.xbutton.y);
           break;
         }
         case ButtonRelease: {
-          printf("ButtonRelease %d x %d y %d button\n", xev.xbutton.x,
-                 xev.xbutton.y, xev.xbutton.button);
+          printf("ButtonRelease [ %d button ] (%dx, %dy)\n", xev.xbutton.button,
+                 xev.xbutton.x, xev.xbutton.y);
+          break;
+        }
+        case MotionNotify: {
+          printf("Motion (%dx, %dy)\n", xev.xmotion.x, xev.xmotion.y);
+          break;
         }
       }
     }

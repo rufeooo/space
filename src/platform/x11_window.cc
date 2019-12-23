@@ -180,18 +180,22 @@ PollEvent(PlatformEvent* event)
       case KeyPress:
         event->type = KEY_DOWN;
         event->key = XLookupKeysym(&xev.xkey, 0);
+        event->position = {xev.xkey.x, xev.xkey.y};
         break;
       case KeyRelease:
         event->type = KEY_UP;
         event->key = XLookupKeysym(&xev.xkey, 0);
+        event->position = {xev.xkey.x, xev.xkey.y};
         break;
       case ButtonPress:
         event->type = MOUSE_DOWN;
         event->button = (PlatformButton)xev.xbutton.button;
+        event->position = {xev.xbutton.x, xev.xbutton.y};
         break;
       case ButtonRelease:
         event->type = MOUSE_UP;
         event->button = (PlatformButton)xev.xbutton.button;
+        event->position = {xev.xbutton.x, xev.xbutton.y};
         break;
     }
 
@@ -206,8 +210,7 @@ GetWindowSize()
 {
   math::Vec2f size = {0, 0};
   XWindowAttributes window_attrib;
-  if (XGetWindowAttributes(display, window_id, &window_attrib))
-  {
+  if (XGetWindowAttributes(display, window_id, &window_attrib)) {
     size.x = window_attrib.width;
     size.y = window_attrib.height;
   }
