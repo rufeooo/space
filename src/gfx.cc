@@ -6,8 +6,8 @@
 #include "ecs.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
-#include "renderer/gl_shader_cache.h"
-#include "renderer/gl_utils.h"
+#include "gl/gl_shader_cache.h"
+#include "gl/gl_utils.h"
 
 namespace gfx
 {
