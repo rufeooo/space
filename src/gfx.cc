@@ -106,11 +106,10 @@ bool
 Render()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  // TODO: dims not correct.
-  //math::Vec2f dims = window::GetWindowSize();
+  math::Vec2f dims = window::GetWindowSize();
   // TODO: Take into consideration camera.
   math::Mat4f ortho = math::CreateOrthographicMatrix<float>(
-      800, 0.f, 0.f, 800, /* 2d so leave near/far 0*/ 0.f, 0.f);
+      dims.x, 0.f, 0.f, dims.y, /* 2d so leave near/far 0*/ 0.f, 0.f);
   math::Mat4f view = camera::view_matrix();
   math::Mat4f ortho_view = ortho * view;
 

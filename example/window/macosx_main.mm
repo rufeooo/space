@@ -19,7 +19,7 @@ const char* fragment_shader =
 int
 main(int argc, char** argv)
 {
-  window::Create("macosx is great", 1024, 768);
+  window::Create("macosx is great", 800, 800);
 
   const GLubyte* renderer = glGetString(GL_RENDERER);
   const GLubyte* version = glGetString(GL_VERSION);
@@ -60,22 +60,12 @@ main(int argc, char** argv)
   //glGetUniformLocation();
 
   while (!window::ShouldClose()) {
-    Event event;
+    PlatformEvent event;
     while (window::PollEvent(&event)) {
-      switch (event.type) {
-        case MOUSE_LEFT_DOWN: {
-          std::cout << event.position.x << " " << event.position.y << std::endl;
-        } break;
-        case KEY_UP: {
-          std::cout << "KEY_UP: " << event.key << std::endl;
-        } break;
-        case KEY_DOWN: {
-          std::cout << "KEY_DOWN: " << event.key << std::endl;
-        } break;
-        default: {
-        } break;
-      }
     }
+
+    math::Vec2f size = window::GetWindowSize();
+    std::cout << size.x << " " << size.y << std::endl;
 
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Set the shader program.

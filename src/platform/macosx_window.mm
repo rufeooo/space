@@ -133,14 +133,16 @@ CreateOpenGLContext()
 int Create(const char* name, int width, int height) {
   kWindow.gl_context = CreateOpenGLContext();
 
-  unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask;
+  unsigned int style_mask = NSTitledWindowMask   |
+                            NSClosableWindowMask |
+                            NSWindowStyleMaskResizable;
   kWindow.nsview = [[OpenGLView alloc]
                   initWithFrame:NSMakeRect(0,0, width, height)
                       glContext:kWindow.gl_context]; // TODO: Remove context.
 
   kWindow.nswindow = [[BaseWindow alloc]
                       initWithContentRect:[kWindow.nsview frame]
-                                styleMask:styleMask
+                                styleMask:style_mask
                                   backing:NSBackingStoreBuffered
                                     defer:NO];
 
@@ -227,9 +229,8 @@ bool ShouldClose() {
 }
 
 math::Vec2f GetWindowSize() {
-  // TODO: I have a feeling this is not the right size.
-  NSSize size = [kWindow.nswindow minSize];
-  return math::Vec2f(size.width, size.height);
+  NSRect frame = [kWindow.nswindow frame];
+  return math::Vec2f(frame.size.width, frame.size.height);
 }
 
 math::Vec2f GetCursorPosition() {
