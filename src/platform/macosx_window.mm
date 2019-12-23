@@ -215,17 +215,6 @@ bool PollEvent(PlatformEvent* event) {
   return true;
 }
 
-void PollEvents() {
-  NSEvent* event;
-  // Drain event loop.
-  while ((event =  [NSApp nextEventMatchingMask:NSEventMaskAny
-                                      untilDate:[NSDate distantPast]
-                                         inMode:NSDefaultRunLoopMode
-                                        dequeue:YES])) {
-    [NSApp sendEvent:event];
-  }
-}
-
 void SwapBuffers() {
   [kWindow.gl_context flushBuffer];
 }

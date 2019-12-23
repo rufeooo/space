@@ -47,13 +47,6 @@ struct Gfx {
   uint32_t triangle_vao_reference;
   uint32_t rectangle_vao_reference;
 
-  uint32_t previous_input_mask;
-  uint32_t input_mask;
-
-  // State the mouse click is currently and previously in.
-  // int current_mouse_state;
-  // int previous_mouse_state;
-
   // Number of pixels that correspond with a meter.
   int meter_size = 50;
 };
