@@ -10,8 +10,8 @@
 #include "ecs/ecs.h"
 #include "game/event.h"
 #include "math/vec.h"
-#include "renderer/gl_shader_cache.h"
-#include "renderer/gl_utils.h"
+#include "gl/shader_cache.h"
+#include "gl/utils.h"
 
 namespace asteroids
 {

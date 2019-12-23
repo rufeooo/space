@@ -11,8 +11,8 @@
 #include "components/rendering/view_component.h"
 #include "ecs/ecs.h"
 #include "math/vec.h"
-#include "renderer/gl_shader_cache.h"
-#include "renderer/gl_utils.h"
+#include "gl/shader_cache.h"
+#include "gl/utils.h"
 
 namespace asteroids
 {
@@ -38,7 +38,7 @@ OpenGLGameReferences& GlobalOpenGLGameReferences();
 // Used for manipulating OpenGl state.
 struct OpenGL {
   ecs::Entity camera = 0;
-  renderer::GLShaderCache shader_cache;
+  gl::ShaderCache shader_cache;
 };
 
 OpenGL& GlobalOpenGL();

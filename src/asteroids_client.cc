@@ -12,7 +12,7 @@
 #include "math/math.cc"
 #include "network/client.cc"
 #include "platform/platform.cc"
-#include "renderer/renderer.cc"
+#include "gl/renderer.cc"
 
 /*DEFINE_string(hostname, "",
               "If provided will connect to a game server. Will play "
@@ -146,13 +146,12 @@ Initialize()
 bool
 ProcessInput()
 {
-  // TODO: This is hacky. We used to sample input but now we have a polling
-  // based input system. This will return the behavior to what it used to be.
-  // probably worth updating this code to use new input style.
-  bool w_pressed = false;
-  bool a_pressed = false;
-  bool s_pressed = false;
-  bool d_pressed = false;
+  // Make static to give ship that floaty feel. Presses remain true
+  // until release occurs so movement is continuous.
+  static bool w_pressed = false;
+  static bool a_pressed = false;
+  static bool s_pressed = false;
+  static bool d_pressed = false;
   bool space_pressed = false;
   PlatformEvent event;
   while (window::PollEvent(&event)) {
@@ -164,6 +163,13 @@ ProcessInput()
         if (event.key == 'd') d_pressed = true;
         if (event.key == 32) space_pressed = true;
       } break;
+      case KEY_UP: {
+        if (event.key == 'w') w_pressed = false;
+        if (event.key == 'a') a_pressed = false;
+        if (event.key == 's') s_pressed = false;
+        if (event.key == 'd') d_pressed = false;
+      } break;
+
       default:
         break;
     }

@@ -12,7 +12,7 @@
 #include "math/mat_ops.h"
 #include "math/vec.h"
 #include "platform/platform.cc"
-#include "renderer/gl_utils.h"
+#include "gl/utils.h"
 
 #include "ecs/internal.h"
 
@@ -46,17 +46,17 @@ InitializeGraphics()
 {
   auto& opengl = GlobalOpenGL();
   auto& components = GlobalGameState().components;
-  renderer::InitGLAndCreateWindow(800, 800, "Asteroids");
+  gl::InitGLAndCreateWindow(800, 800, "Asteroids");
   components.Assign<ViewComponent>(
       opengl.camera, math::Vec3f(0.0f, 0.0f, 1.5f),
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
   if (!opengl.shader_cache.CompileShader(
-          kVertexShaderName, renderer::ShaderType::VERTEX, kVertexShader)) {
+          kVertexShaderName, gl::ShaderType::VERTEX, kVertexShader)) {
     std::cout << "Unable to compile " << kVertexShaderName << std::endl;
     return false;
   }
   if (!opengl.shader_cache.CompileShader(kFragmentShaderName,
-                                         renderer::ShaderType::FRAGMENT,
+                                         gl::ShaderType::FRAGMENT,
                                          kFragmentShader)) {
     std::cout << "Unable to compile " << kFragmentShaderName << std::endl;
     return false;
@@ -93,7 +93,7 @@ CreateAsteroidGeometry(const std::vector<math::Vec2f>& geometry, float scale)
   }
   GlobalEntityGeometry().asteroid_geometry.push_back(scaled_geometry);
   GlobalOpenGLGameReferences().asteroid_vao_references.push_back(
-      renderer::CreateGeometryVAO(scaled_geometry));
+      gl::CreateGeometryVAO(scaled_geometry));
 }
 
 void
@@ -186,7 +186,7 @@ Initialize()
   GlobalEntityGeometry().ship_geometry = {
       {0.0f, 0.08f}, {0.03f, -0.03f}, {0.00f, -0.005f}, {-0.03f, -0.03f}};
   GlobalOpenGLGameReferences().ship_vao_reference =
-      renderer::CreateGeometryVAO(GlobalEntityGeometry().ship_geometry);
+      gl::CreateGeometryVAO(GlobalEntityGeometry().ship_geometry);
 
   // For all asteroids:
   //   Create asteroid geometry.
@@ -241,7 +241,7 @@ Initialize()
   GlobalEntityGeometry().projectile_geometry = {
       {0.f, 0.005f}, {0.005f, 0.0f}, {0.f, -0.005f}, {-0.005f, 0.0}};
   GlobalOpenGLGameReferences().projectile_vao_reference =
-      renderer::CreateGeometryVAO(GlobalEntityGeometry().projectile_geometry);
+      gl::CreateGeometryVAO(GlobalEntityGeometry().projectile_geometry);
   return true;
 }
 
