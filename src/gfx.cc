@@ -122,6 +122,7 @@ Render()
           TriangleComponent&) {
         // Translate and rotate the triangle appropriately.
         math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
+                            math::CreateScaleMatrix(transform.scale) *
                             math::CreateRotationMatrix(transform.orientation);
         math::Mat4f matrix = ortho_view * model;
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
@@ -136,6 +137,7 @@ Render()
           RectangleComponent&) {
         // Translate and rotate the rectangle appropriately.
         math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
+                            math::CreateScaleMatrix(transform.scale) *
                             math::CreateRotationMatrix(transform.orientation);
         math::Mat4f matrix = ortho_view * model;
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);

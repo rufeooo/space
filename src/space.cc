@@ -21,6 +21,7 @@ Initialize()
   // Make a square. This thing moves around when clicking.
   auto* transform = kECS.Assign<TransformComponent>(0);
   transform->position = math::Vec3f(400.f, 400.f, 0.f);
+  transform->scale = math::Vec3f(2.f, 2.f, 2.f);
   kECS.Assign<RectangleComponent>(0);
 
   // Make a triangle. This doesn't really do anything.
