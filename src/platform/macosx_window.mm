@@ -166,21 +166,30 @@ int Create(const char* name, int width, int height) {
   return 1;
 }
 
+void SetEventPosition(NSEvent* nsevent, PlatformEvent* event) {
+  NSPoint pos = [nsevent locationInWindow];
+  event->position.x = pos.x;
+  // Change origin of screen to be top left to be consistent with other platforms.
+  event->position.y = GetWindowSize().y - pos.y;
+}
+
 void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {
   NSEventType nsevent_type = [nsevent type];
   switch (nsevent_type) {
     case NSEventTypeLeftMouseDown: {
       event->type = MOUSE_DOWN;
       event->button = BUTTON_LEFT;
+      SetEventPosition(nsevent, event);
     } break;
     case NSEventTypeLeftMouseUp: {
       event->type = MOUSE_UP;
       event->button = BUTTON_LEFT;
+      SetEventPosition(nsevent, event);
     } break;
     case NSEventTypeKeyDown: {
       event->type = KEY_DOWN;
       // TODO: Unfortunately this indicates an event can be associated with
-      // multiple key events. I think an Event system that only has at most
+      // multiple characters. I think an Event system that only has at most
       // one character event per keyboard press makes more sense. It would be
       // good to expand these to multiple events or change the Event api to
       // accomdate multiple characters in one event.
@@ -198,10 +207,6 @@ void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {
     default:
       break;
   }
-  NSPoint pos = [nsevent locationInWindow];
-  event->position.x = pos.x;
-  // Change origin of screen to be top left to be consistent with other platforms.
-  event->position.y = GetWindowSize().y - pos.y;
 }
 
 bool PollEvent(PlatformEvent* event) {
