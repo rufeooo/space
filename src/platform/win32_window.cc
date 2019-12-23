@@ -83,7 +83,8 @@ HandleMouseEvent(bool is_down, PlatformEvent* event, PlatformButton button) {
   POINT p;
   p.x = ps.x; p.y = ps.y;
   ScreenToClient(kWindow.hwnd, &p);
-  platform_event->position = math::Vec2f(p.x, p.y);
+  math::Vec2f dims = GetWindowSize();
+  platform_event->position = math::Vec2f(p.x, dims.y - p.y);
   platform_event->type = is_down? MOUSE_DOWN : MOUSE_UP;
   platform_event->button = button;
 }
@@ -351,6 +352,7 @@ GetCursorPosition()
   POINT cursor;
   GetCursorPos(&cursor);
   ScreenToClient(kWindow.hwnd, &cursor);
-  return math::Vec2f((float)cursor.x, (float)cursor.y);
+  math::Vec2f dims = GetWindowSize();
+  return math::Vec2f((float)cursor.x, dims.y - (float)cursor.y);
 }
 }  // namespace window

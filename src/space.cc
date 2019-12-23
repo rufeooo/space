@@ -26,7 +26,7 @@ Initialize()
   // Make a triangle. This doesn't really do anything.
   transform = kECS.Assign<TransformComponent>(1);
   transform->position = math::Vec3f(200.f, 200.f, 0.f);
-  transform->orientation.Set(0.f, math::Vec3f(0.f, 0.f, 1.f));
+  //transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
   kECS.Assign<TriangleComponent>(1);
 
   camera::MoveTo(math::Vec3f(0.f, 0.f, 0.f));

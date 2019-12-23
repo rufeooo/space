@@ -171,8 +171,7 @@ SetEventPosition(NSEvent* nsevent, PlatformEvent* event)
 {
   NSPoint pos = [nsevent locationInWindow];
   event->position.x = pos.x;
-  // Change origin of screen to be top left to be consistent with other platforms.
-  event->position.y = GetWindowSize().y - pos.y;
+  event->position.y = pos.y;
 }
 
 void
@@ -257,6 +256,6 @@ GetCursorPosition()
   NSPoint pos;
   pos = [kWindow.nswindow mouseLocationOutsideOfEventStream];
   // Change origin of screen to be top left to be consistent with other platforms.
-  return math::Vec2f(pos.x, GetWindowSize().y - pos.y);
+  return math::Vec2f(pos.x, pos.y);
 }
 }  // namespace window
