@@ -7,7 +7,8 @@ namespace renderer
 
 void InitGLAndCreateWindow(int window_width, int window_height, const char* title)
 {
-  window::Create(title, window_width, window_height);
+  int window_result = window::Create(title, window_width, window_height);
+  std::cout << "window create result: " << window_result << std::endl;
   const GLubyte* renderer = glGetString(GL_RENDERER);
   const GLubyte* version = glGetString(GL_VERSION);
   std::cout << renderer << std::endl;

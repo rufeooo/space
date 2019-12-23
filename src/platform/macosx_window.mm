@@ -130,7 +130,7 @@ CreateOpenGLContext()
 }
 
 
-void Create(const char* name, int width, int height) {
+int Create(const char* name, int width, int height) {
   kWindow.gl_context = CreateOpenGLContext();
 
   unsigned int styleMask = NSTitledWindowMask | NSClosableWindowMask;
@@ -161,6 +161,7 @@ void Create(const char* name, int width, int height) {
   ProcessSerialNumber psn = {0, kCurrentProcess};
   OSStatus status =
     TransformProcessType(&psn, kProcessTransformToForegroundApplication);
+  return 1;
 }
 
 void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {

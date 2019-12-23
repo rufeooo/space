@@ -9,6 +9,8 @@
 static int last_window_error;
 Display* display;
 int window_id;
+EGLDisplay egl_display;
+EGLSurface egl_surface;
 
 namespace window
 {
@@ -24,10 +26,10 @@ x11_ioerror_handler(Display*)
   return 0;
 }
 
-void
+int
 Create(const char*, int width, int height)
 {
-  if (window_id) return;
+  if (window_id) return 0;
 
   display = XOpenDisplay(NULL);
   int screen = DefaultScreen(display);
@@ -35,16 +37,16 @@ Create(const char*, int width, int height)
 
   int egl_major = 0;
   int egl_minor = 0;
-  EGLDisplay egl_display = eglGetDisplay(display);
+  egl_display = eglGetDisplay(display);
   int egl_version_ok = eglInitialize(egl_display, &egl_major, &egl_minor);
   if (!egl_version_ok) {
-    return;
+    return 0;
   }
 
   // egl config
   int egl_config_count;
   if (!eglGetConfigs(egl_display, NULL, 0, &egl_config_count)) {
-    return;
+    return 0;
   }
 
 #define MAX_EGL_CONFIG 40
@@ -55,9 +57,10 @@ Create(const char*, int width, int height)
   EGLConfig egl_config[MAX_EGL_CONFIG];
   if (!eglGetConfigs(egl_display, egl_config, egl_config_count,
                      &egl_config_count)) {
-    return;
+    return 0;
   }
 
+  int selected_config = 0;
   for (int i = 0; i < egl_config_count; ++i) {
     int color_type;
     int renderable_type;
@@ -83,27 +86,37 @@ Create(const char*, int width, int height)
 
     int egl_samples;
     eglGetConfigAttrib(egl_display, egl_config[i], EGL_SAMPLES, &egl_samples);
+
+    if (red_bits + green_bits + blue_bits != 24) continue;
+    if (alpha_bits != 8) continue;
+    if (depth_bits != 24) continue;
+    if (stencil_bits != 8) continue;
+    selected_config = i;
+    break;
   }
 
   if (!eglBindAPI(EGL_OPENGL_API)) {
-    return;
+    return 0;
   }
 #define MAX_EGL_ATTRIB 16
   int attrib[MAX_EGL_ATTRIB] = {0};
   int* write_attrib = attrib;
-  *write_attrib++ = EGL_CONTEXT_MAJOR_VERSION_KHR;
-  *write_attrib++ = 3;
-  *write_attrib++ = EGL_CONTEXT_MINOR_VERSION_KHR;
-  *write_attrib++ = 3;
-  *write_attrib++ = EGL_CONTEXT_FLAGS_KHR;
+  *write_attrib++ = EGL_CONTEXT_MAJOR_VERSION;
+  *write_attrib++ = 4;
+  *write_attrib++ = EGL_CONTEXT_MINOR_VERSION;
+  *write_attrib++ = 1;
+  *write_attrib++ = EGL_CONTEXT_OPENGL_PROFILE_MASK_KHR;
   *write_attrib++ = EGL_CONTEXT_OPENGL_CORE_PROFILE_BIT_KHR;
+  *write_attrib++ = EGL_CONTEXT_FLAGS_KHR;
+  *write_attrib++ = EGL_CONTEXT_OPENGL_FORWARD_COMPATIBLE_BIT_KHR |
+                    EGL_CONTEXT_OPENGL_DEBUG_BIT_KHR;
   *write_attrib++ = EGL_NONE;
   *write_attrib++ = EGL_NONE;
 
   EGLContext egl_context =
-      eglCreateContext(egl_display, egl_config[1], NULL, attrib);
+      eglCreateContext(egl_display, egl_config[selected_config], NULL, attrib);
   if (!egl_context) {
-    return;
+    return 0;
   }
 
   // X11 window create
@@ -128,22 +141,24 @@ Create(const char*, int width, int height)
                             depth, InputOutput, CopyFromParent, wamask, &wa);
 
   if (!window_id) {
-    return;
+    return 0;
   }
 
   XMapWindow(display, window_id);
 
   attrib[0] = EGL_NONE;
   attrib[1] = EGL_NONE;
-  EGLSurface egl_surface =
-      eglCreateWindowSurface(egl_display, egl_config[1], window_id, attrib);
+  egl_surface = eglCreateWindowSurface(egl_display, egl_config[selected_config],
+                                       window_id, attrib);
   if (!egl_surface) {
-    return;
+    return 0;
   }
 
   XSetErrorHandler(x11_error_handler);
   XSetIOErrorHandler(x11_ioerror_handler);
   eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+
+  return 1;
 }
 
 void
@@ -157,10 +172,11 @@ Destroy()
 void
 SwapBuffers()
 {
+  eglSwapBuffers(egl_display, egl_surface);
 }
 
 bool
-PollEvent(Event* event)
+PollEvent(PlatformEvent* event)
 {
   event->type = NOT_IMPLEMENTED;
   event->key = 0;
@@ -169,6 +185,7 @@ PollEvent(Event* event)
   XEvent xev;
   while (XCheckWindowEvent(display, window_id, -1, &xev)) {
     switch (xev.type) {
+      // TODO: populate PlatformEvent
     }
 
     return true;
