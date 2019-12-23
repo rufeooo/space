@@ -9,3 +9,9 @@ struct Udp4 {
   // Family, address, port of destination
   char socket_address[16];
 };
+
+
+#ifdef __APPLE__
+// TODO: Verify this value is correct.
+#define MSG_NOSIGNAL 0x4000
+#endif
