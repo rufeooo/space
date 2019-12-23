@@ -1,6 +1,5 @@
-#include <glad/glad.c>
+#include "platform/window.cc"
 
-#include <glfw/glfw3.h>
 #include <iostream>
 
 const char* vertex_shader =
@@ -20,25 +19,9 @@ const char* fragment_shader =
 int
 main()
 {
-  if (!glfwInit()) {
-    std::cerr << "Cound not start GLFW3" << std::endl;
-    return 1;
-  }
+  int window_result = window::Create("Hello triangle", 640, 480);
+  std::cout << "Window create: " << window_result << std::endl;
   // Only for mac I need this?
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
-  glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 1);
-  glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-  glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
-  GLFWwindow* window = glfwCreateWindow(640, 480, "Hello Triangle", NULL, NULL);
-  if (!window) {
-    std::cout << "Failed to open window with GLFW3" << std::endl;
-    return 1;
-  }
-  glfwMakeContextCurrent(window);  // glad must be called after this.
-  if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
-    std::cout << "Failed to initialize OpenGL context" << std::endl;
-    return 1;
-  }
   const GLubyte* renderer = glGetString(GL_RENDERER);
   const GLubyte* version = glGetString(GL_VERSION);
   std::cout << renderer << std::endl;
@@ -74,7 +57,9 @@ main()
   glAttachShader(shader_program, vs);
   glLinkProgram(shader_program);
 
-  while (!glfwWindowShouldClose(window)) {
+  int running = 1;
+  glClearColor(0.0, 0.0, 0.0, 1.0);
+  while (running) {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Set the shader program.
     glUseProgram(shader_program);
@@ -90,9 +75,8 @@ main()
     glDrawArrays(GL_TRIANGLES, 0, 3);  // Draws the triangle
     // glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); // Draws the triangle
     // glDrawArrays(GL_TRIANGLE_FAN, 0, 3); // Draws the triangle
-    glfwPollEvents();
-    glfwSwapBuffers(window);
+    window::SwapBuffers();
   }
-  glfwTerminate();
+  window::Destroy();
   return 0;
 }
