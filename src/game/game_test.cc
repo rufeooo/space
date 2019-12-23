@@ -1,6 +1,5 @@
 #include <iostream>
 
-#include "platform/unix_filesystem.cc"
 #include "game.cc"
 #include "gtest/gtest.h"
 

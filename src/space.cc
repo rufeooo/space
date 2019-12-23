@@ -4,7 +4,6 @@
 #include "camera.cc"
 #include "command.cc"
 #include "ecs.h"
-#include "platform/window.cc"
 #include "platform/platform.cc"
 #include "game/game.cc"
 #include "gfx.cc"

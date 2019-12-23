@@ -11,7 +11,6 @@
 #include "math/math.cc"
 #include "network/server.cc"
 #include "platform/platform.cc"
-#include "platform/window.cc"
 #include "renderer/renderer.cc"
 
 static uint64_t kClientPlayers[network::server::kMaxClients];

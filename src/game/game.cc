@@ -10,7 +10,7 @@
 #include <thread>
 
 #include "event_buffer.cc"
-#include "platform/filesystem.h"
+#include "platform/platform.cc"
 
 namespace game
 {

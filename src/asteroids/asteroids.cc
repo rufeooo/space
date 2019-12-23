@@ -11,7 +11,7 @@
 #include "math/intersection.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
-#include "platform/window.cc"
+#include "platform/platform.cc"
 #include "renderer/gl_utils.h"
 
 #include "ecs/internal.h"

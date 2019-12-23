@@ -12,7 +12,6 @@
 #include "math/math.cc"
 #include "network/client.cc"
 #include "platform/platform.cc"
-#include "platform/window.cc"
 #include "renderer/renderer.cc"
 
 /*DEFINE_string(hostname, "",
