@@ -67,16 +67,7 @@ main()
     glUseProgram(shader_program);
     // Bind the vertex array object.
     glBindVertexArray(vao);
-    // glPolygonMode(GL_FRONT, GL_LINE);
-    // Draw them points.
-    // glDrawArrays(ENUM, starting_index, number_indices_to_draw)
-    // glDrawArrays(GL_POINTS, 0, 3); // Can't see anything!
-    // glDrawArrays(GL_LINES, 0, 3); // Only draws one line!
-    // glDrawArrays(GL_LINE_STRIP, 0, 3); // Only draws two lines!
-    // glDrawArrays(GL_LINE_LOOP, 0, 3); // Draws 3 lines making tri!
     glDrawArrays(GL_LINES, 0, 2);  // Draws the triangle
-    // glDrawArrays(GL_TRIANGLE_STRIP, 0, 3); // Draws the triangle
-    // glDrawArrays(GL_TRIANGLE_FAN, 0, 3); // Draws the triangle
     window::SwapBuffers();
   }
   return 0;

@@ -30,6 +30,10 @@ Initialize()
   //transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
   kECS.Assign<TriangleComponent>(1);
 
+  auto* line = kECS.Assign<LineComponent>(2);
+  line->start = math::Vec3f(50.f, 0.f, 0.f);
+  line->end = math::Vec3f(50.f, 500.f, 0.f);
+
   camera::MoveTo(math::Vec3f(0.f, 0.f, 0.f));
   camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
 

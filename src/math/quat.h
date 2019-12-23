@@ -4,9 +4,10 @@
 
 #include "vec.h"
 
+#define PI 3.14159265359
+
 namespace math
 {
-#define PI 3.14159265359
 
 template <typename T>
 struct Quat {

@@ -46,6 +46,7 @@ struct Gfx {
   // References to vertex data on GPU.
   uint32_t triangle_vao_reference;
   uint32_t rectangle_vao_reference;
+  uint32_t line_vao_reference;
 
   // Number of pixels that correspond with a meter.
   int meter_size = 50;
@@ -100,6 +101,10 @@ Initialize()
       {math::Vec2f(-m / 2.f, m / 2.f), math::Vec2f(m / 2.f, m / 2.f),
        math::Vec2f(m / 2.f, -m / 2.f), math::Vec2f(-m / 2.f, -m / 2.f)});
 
+  // Line is flat on the x-axis with distance m.
+  kGfx.line_vao_reference = gl::CreateGeometryVAO(
+      {math::Vec2f(-m / 2.f, 0.f), math::Vec2f(m / 2.f, 0.f)});
+
   return true;
 }
 
@@ -143,6 +148,40 @@ Render()
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINE_LOOP, 0, 4);
       });
+
+  // Draw all lines.
+  // TODO: This should eventually work with 3d too.
+  glUseProgram(kGfx.program_reference);
+  glBindVertexArray(kGfx.line_vao_reference);
+  kECS.Enumerate<LineComponent>(
+      [&](ecs::Entity entity, LineComponent& line) {
+        // Line is the length of a meter on the horizontal axis.
+        //
+        // It must be translated / rotated / scaled to be properly moved
+        // to meet the start / end nature of the line component.
+        
+        // Position is the midpoint of the start and end.
+        math::Vec3f midpoint = line.start + ((line.end - line.start) / 2.f);
+        // The scaling  factor is the distance between the start and end.
+        // Divide by kGfx.meter_size since the line is defined in terms of the
+        // meter.
+        float distance = math::Length(line.end - line.start) / kGfx.meter_size;
+        // Angle between the two points in 2d.
+        float angle = std::atan2(line.end.y - line.start.y,
+                                 line.end.x - line.start.x) * 180.f / PI;
+
+        // Translate and rotate the rectangle appropriately.
+        math::Mat4f model = math::CreateTranslationMatrix(midpoint) *
+                            math::CreateScaleMatrix(
+                                math::Vec3f(distance, distance, 1.f)) *
+                            math::CreateRotationMatrix(
+                                math::Quatf(angle, math::Vec3f(0.f, 0.f, -1.f)));
+
+        math::Mat4f matrix = ortho_view * model;
+        glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
+        glDrawArrays(GL_LINES, 0, 2);
+      });
+
 
   window::SwapBuffers();
   return true;
