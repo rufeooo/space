@@ -6,8 +6,8 @@
 #include "ecs.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
-#include "gl/gl_shader_cache.h"
-#include "gl/gl_utils.h"
+#include "gl/shader_cache.h"
+#include "gl/utils.h"
 
 namespace gfx
 {
@@ -35,7 +35,7 @@ constexpr const char* kFragmentShaderName = "frag";
 constexpr const char* kProgramName = "prog";
 
 struct Gfx {
-  renderer::GLShaderCache shader_cache;
+  gl::ShaderCache shader_cache;
 
   // References to shader programs.
   uint32_t program_reference;
@@ -56,16 +56,16 @@ static Gfx kGfx;
 bool
 Initialize()
 {
-  renderer::InitGLAndCreateWindow(800, 800, "Space");
+  gl::InitGLAndCreateWindow(800, 800, "Space");
 
   if (!kGfx.shader_cache.CompileShader(
-          kVertexShaderName, renderer::ShaderType::VERTEX, kVertexShader)) {
+          kVertexShaderName, gl::ShaderType::VERTEX, kVertexShader)) {
     std::cout << "Unable to compile " << kVertexShaderName << std::endl;
     return false;
   }
 
   if (!kGfx.shader_cache.CompileShader(kFragmentShaderName,
-                                       renderer::ShaderType::FRAGMENT,
+                                       gl::ShaderType::FRAGMENT,
                                        kFragmentShader)) {
     std::cout << "Unable to compile " << kFragmentShaderName << std::endl;
     return false;
@@ -90,13 +90,13 @@ Initialize()
 
   // Triangle.
   float m = kGfx.meter_size;
-  kGfx.triangle_vao_reference = renderer::CreateGeometryVAO(
+  kGfx.triangle_vao_reference = gl::CreateGeometryVAO(
       {math::Vec2f(0.0f, m / 2.f),
        math::Vec2f(m / 2.f, -m / 2.f),
        math::Vec2f(-m / 2.f, -m / 2.f)});
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
-  kGfx.rectangle_vao_reference = renderer::CreateGeometryVAO(
+  kGfx.rectangle_vao_reference = gl::CreateGeometryVAO(
       {math::Vec2f(-m / 2.f, m / 2.f), math::Vec2f(m / 2.f, m / 2.f),
        math::Vec2f(m / 2.f, -m / 2.f), math::Vec2f(-m / 2.f, -m / 2.f)});
 

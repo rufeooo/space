@@ -1,12 +1,12 @@
-#include "gl_shader_cache.h"
+#include "shader_cache.h"
 
 #include <cstdio>
 #include <iostream>
 #include <sstream>
 
-#include "gl_utils.h"
+#include "utils.h"
 
-namespace renderer
+namespace gl
 {
 GLenum
 ToGLEnum(ShaderType shader_type)
@@ -45,7 +45,7 @@ GetProgramInfoLog(uint32_t program_reference)
 // namespace
 
 bool
-GLShaderCache::CompileShader(const std::string& shader_name,
+ShaderCache::CompileShader(const std::string& shader_name,
                              ShaderType shader_type,
                              const std::string& shader_src)
 {
@@ -81,7 +81,7 @@ GLShaderCache::CompileShader(const std::string& shader_name,
 }
 
 bool
-GLShaderCache::GetShaderReference(const std::string& shader_name,
+ShaderCache::GetShaderReference(const std::string& shader_name,
                                   uint32_t* shader_reference)
 {
   auto found = shader_reference_map_.find(shader_name);
@@ -93,7 +93,7 @@ GLShaderCache::GetShaderReference(const std::string& shader_name,
 }
 
 bool
-GLShaderCache::LinkProgram(const std::string& program_name,
+ShaderCache::LinkProgram(const std::string& program_name,
                            const std::vector<std::string>& shader_names)
 {
   if (program_reference_map_.find(program_name) !=
@@ -121,7 +121,7 @@ GLShaderCache::LinkProgram(const std::string& program_name,
 }
 
 bool
-GLShaderCache::UseProgram(const std::string& program_name)
+ShaderCache::UseProgram(const std::string& program_name)
 {
   auto found = program_reference_map_.find(program_name);
   if (found == program_reference_map_.end()) {
@@ -132,7 +132,7 @@ GLShaderCache::UseProgram(const std::string& program_name)
 }
 
 bool
-GLShaderCache::GetProgramReference(const std::string& program_name,
+ShaderCache::GetProgramReference(const std::string& program_name,
                                    uint32_t* program_reference)
 {
   auto found = program_reference_map_.find(program_name);
@@ -144,7 +144,7 @@ GLShaderCache::GetProgramReference(const std::string& program_name,
 }
 
 std::string
-GLShaderCache::GetProgramInfo(const std::string& program_name)
+ShaderCache::GetProgramInfo(const std::string& program_name)
 {
   uint32_t program_reference;
   if (!GetProgramReference(program_name, &program_reference)) {

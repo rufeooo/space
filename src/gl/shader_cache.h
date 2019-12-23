@@ -1,33 +1,43 @@
 #pragma once
 
-#include <string>
-#include <vector>
+#include "shader_cache.h"
 
-namespace renderer
+#include <unordered_map>
+#include <unordered_set>
+
+namespace gl
 {
-enum class ShaderType { VERTEX, FRAGMENT };
+enum ShaderType {
+  VERTEX,
+  FRAGMENT
+};
 
 class ShaderCache
 {
  public:
-  virtual ~ShaderCache() = default;
+  bool CompileShader(const std::string& shader_name, ShaderType shader_type,
+                     const std::string& shader_src);
 
-  virtual bool CompileShader(const std::string& shader_name,
-                             ShaderType shader_type,
-                             const std::string& shader_src) = 0;
+  bool GetShaderReference(const std::string& shader_name,
+                          uint32_t* shader_reference);
 
-  virtual bool GetShaderReference(const std::string& shader_name,
-                                  uint32_t* shader_reference) = 0;
+  bool LinkProgram(const std::string& program_name,
+                   const std::vector<std::string>& shader_names);
 
-  virtual bool LinkProgram(const std::string& program_name,
-                           const std::vector<std::string>& shader_names) = 0;
+  bool UseProgram(const std::string& program_name);
 
-  virtual bool UseProgram(const std::string& program_name) = 0;
+  bool GetProgramReference(const std::string& program_name,
+                           uint32_t* program_reference);
 
-  virtual bool GetProgramReference(const std::string& program_name,
-                                   uint32_t* program_reference) = 0;
+  // TODO This would probably be nice returned as a ProgramInfo struct
+  // and stringified by a helper function in gl_utils.
+  std::string GetProgramInfo(const std::string& program_name);
 
-  virtual std::string GetProgramInfo(const std::string& program_name) = 0;
+ private:
+  std::unordered_map<std::string, uint32_t> shader_reference_map_;
+  std::unordered_map<std::string, uint32_t> program_reference_map_;
+  // A set of all shader sources that have been compiled.
+  std::unordered_set<std::string> compiled_shader_sources_;
 };
 
-}  // namespace renderer
+}  // namespace gl

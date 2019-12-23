@@ -1,8 +1,8 @@
-#include "gl_utils.h"
+#include "utils.h"
 
 #include <iostream>
 
-namespace renderer
+namespace gl
 {
 
 void InitGLAndCreateWindow(int window_width, int window_height, const char* title)

@@ -5,7 +5,7 @@
 
 #include "math/vec.h"
 
-namespace renderer
+namespace gl
 {
 void InitGLAndCreateWindow(int window_width, int window_height, const char* title);
 
