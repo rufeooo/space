@@ -43,9 +43,9 @@ void
 RunClientLoop()
 {
   uint16_t bytes_received;
-  if (!udp::Receive(kClientState.client_socket,
-                    sizeof(ClientState::receive_buffer),
-                    kClientState.receive_buffer, &bytes_received)) {
+  if (!udp::ReceiveFrom(kClientState.client_socket,
+                        sizeof(ClientState::receive_buffer),
+                        kClientState.receive_buffer, &bytes_received)) {
     if (udp_errno) {
       std::cout << "network failed: " << udp_errno << std::endl;
       kClientState.client_running = false;

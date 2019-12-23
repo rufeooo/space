@@ -2,7 +2,7 @@
 
 #include "network.h"
 
-#include "stdint.h"
+#include <cstdint>
 
 namespace network
 {
@@ -29,7 +29,7 @@ bool Start(const char* port);
 void Stop();
 
 // Send a message to a specific client.
-void Send(int client_id, uint8_t* buffer, int size);
+void Send(int client_id, uint8_t* buffer, uint16_t size);
 
 }  // namespace server
 

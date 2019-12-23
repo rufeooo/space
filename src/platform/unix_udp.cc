@@ -22,6 +22,18 @@ Init()
 }
 
 bool
+Bind(Udp4 location)
+{
+  if (bind(location.socket, (const struct sockaddr*)location.socket_address,
+           sizeof(Udp4::socket_address)) != 0) {
+    udp_errno = errno;
+    return false;
+  }
+
+  return true;
+}
+
+bool
 Send(Udp4 peer, const void* buffer, uint16_t len)
 {
   ssize_t bytes = sendto(peer.socket, buffer, len, MSG_NOSIGNAL | MSG_DONTWAIT,
@@ -31,8 +43,18 @@ Send(Udp4 peer, const void* buffer, uint16_t len)
 }
 
 bool
-Receive(Udp4 peer, uint16_t buffer_len, uint8_t* buffer,
-        uint16_t* bytes_received)
+SendTo(Udp4 location, Udp4 peer, const void* buffer, uint16_t len)
+{
+  ssize_t bytes =
+      sendto(location.socket, buffer, len, MSG_NOSIGNAL | MSG_DONTWAIT,
+             (const struct sockaddr*)peer.socket_address,
+             sizeof(Udp4::socket_address));
+  return bytes == len;
+}
+
+bool
+ReceiveFrom(Udp4 peer, uint16_t buffer_len, uint8_t* buffer,
+            uint16_t* bytes_received)
 {
   sockaddr_in remote_addr;
   socklen_t remote_len;
@@ -51,6 +73,29 @@ Receive(Udp4 peer, uint16_t buffer_len, uint8_t* buffer,
     // filter packets from unexpected peers
   } while (memcmp(&remote_addr, peer.socket_address,
                   sizeof(Udp4::socket_address)) != 0);
+
+  return true;
+}
+
+bool
+ReceiveAny(Udp4 location, uint16_t buffer_len, uint8_t* buffer,
+           uint16_t* bytes_received, Udp4* from_peer)
+{
+  sockaddr_in remote_addr;
+  socklen_t remote_len;
+
+  ssize_t bytes = recvfrom(location.socket, buffer, buffer_len, MSG_DONTWAIT,
+                           (struct sockaddr*)&remote_addr, &remote_len);
+  *bytes_received = bytes;
+  if (bytes < 0) {
+    udp_errno = (errno == EAGAIN) ? 0 : errno;
+    return false;
+  }
+
+  if (sizeof(Udp4::socket_address) != remote_len) return false;
+
+  from_peer->socket = -1;
+  memcpy(from_peer->socket_address, &remote_addr, sizeof(Udp4::socket_address));
 
   return true;
 }
