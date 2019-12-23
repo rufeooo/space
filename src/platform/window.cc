@@ -1,4 +1,4 @@
-// TODO - Needs to work for macosx as well....
+#pragma once
 
 #if _WIN32
 #include "win32_window.cc"

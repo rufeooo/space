@@ -201,4 +201,17 @@ PollEvent(PlatformEvent* event)
   return false;
 }
 
+math::Vec2f
+GetWindowSize()
+{
+  math::Vec2f size = {0, 0};
+  XWindowAttributes window_attrib;
+  if (XGetWindowAttributes(display, window_id, &window_attrib))
+  {
+    size.x = window_attrib.width;
+    size.y = window_attrib.height;
+  }
+  return size;
+}
+
 }  // namespace window
