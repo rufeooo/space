@@ -1,13 +1,13 @@
 #pragma once
 
+#include "math/vec.h"
+
 // Cross-platform window / opengl context abstraction. The purpose
 // of these functions are to setup a window on the screen and setup
 // the opengl context.
 //
 // Notably this module creates a single window and does not intend
 // on supporting making multiple.
-
-#include "math/vec.h"
 
 enum PlatformEventType {
   NOT_IMPLEMENTED,  // Event does not have translation implemented yet.

@@ -5,7 +5,7 @@
 #include <iostream>
 #include <thread>
 
-#include "network.cc"
+#include "platform/platform.cc"
 
 namespace network
 {
@@ -21,109 +21,46 @@ struct ClientState {
 
   std::atomic<bool> client_running = false;
 
-  addrinfo* host_address;
+  const char* hostname;
 
-  std::string hostname;
+  const char* port;
 
-  std::string port;
+  Udp4 client_socket;
 
-  char address_buffer[100];
-
-  char service_buffer[100];
-
-  SOCKET client_socket;
-
-  fd_set master_fd;
-
-  char read_buffer[kMaxPacketSize];
+  uint8_t receive_buffer[kMaxPacketSize];
 };
 
 static ClientState kClientState;
 
 bool
-SetupHostAddressInfo()
-{
-  struct addrinfo hints = {0};
-  hints.ai_socktype = SOCK_DGRAM;  // UDP - use SOCK_STREAM for UDP
-  auto& host_address = kClientState.host_address;
-  if (getaddrinfo(kClientState.hostname.c_str(), kClientState.port.c_str(),
-                  &hints, &host_address)) {
-    std::cout << "getaddrinfo() failed: " << network::SocketErrno()
-              << std::endl;
-    return false;
-  }
-
-  if (getnameinfo(host_address->ai_addr, host_address->ai_addrlen,
-                  kClientState.address_buffer,
-                  sizeof(kClientState.address_buffer),
-                  kClientState.service_buffer,
-                  sizeof(kClientState.service_buffer), NI_NUMERICHOST)) {
-    std::cout << "getnameinfo() failed: " << network::SocketErrno()
-              << std::endl;
-    return false;
-  }
-
-  return true;
-}
-
-bool
 SetupClientSocket()
 {
-  auto& client_socket = kClientState.client_socket;
-  auto& host_address = kClientState.host_address;
-
-  client_socket = socket(host_address->ai_family, host_address->ai_socktype,
-                         host_address->ai_protocol);
-
-  if (!network::SocketIsValid(client_socket)) {
-    std::cout << "socket() failed: " << network::SocketErrno() << std::endl;
-    return false;
-  }
-
-  return true;
+  return udp::GetAddr4(kClientState.hostname, kClientState.port,
+                       &kClientState.client_socket);
 }
 
 void
-RunClientLoop(timeval timeout, SOCKET max_socket)
+RunClientLoop()
 {
-  fd_set reads;
-  reads = kClientState.master_fd;
-
-  if (select(max_socket + 1, &reads, 0, 0, &timeout) < 0) {
-    std::cout << "select() failed: " << network::SocketErrno() << std::endl;
-    kClientState.client_running = false;
-    return;
-  }
-
-  auto& client_socket = kClientState.client_socket;
-  if (FD_ISSET(client_socket, &reads)) {
-    int bytes_received = recvfrom(client_socket, kClientState.read_buffer,
-                                  kMaxPacketSize, 0, nullptr, nullptr);
-
-    assert(bytes_received < kMaxPacketSize);
-    if (bytes_received < 1) {
-      std::cout << "connection closed." << std::endl;
+  uint16_t bytes_received;
+  if (!udp::Receive(kClientState.client_socket,
+                    sizeof(ClientState::receive_buffer),
+                    kClientState.receive_buffer, &bytes_received)) {
+    if (udp_errno) {
+      std::cout << "network failed: " << udp_errno << std::endl;
       kClientState.client_running = false;
       return;
     }
-
-    _OnMsgReceived((uint8_t*)&kClientState.read_buffer[0], bytes_received);
   }
+
+  _OnMsgReceived((uint8_t*)&kClientState.receive_buffer[0], bytes_received);
 }
 
 void
 RunClient()
 {
-  FD_ZERO(&kClientState.master_fd);
-  FD_SET(kClientState.client_socket, &kClientState.master_fd);
-  SOCKET max_socket = kClientState.client_socket;
-
-  struct timeval timeout = {};
-  timeout.tv_sec = 0;
-  timeout.tv_usec = 5000;
-
   while (kClientState.client_running) {
-    RunClientLoop(timeout, max_socket);
+    RunClientLoop();
   }
 }
 
@@ -139,17 +76,13 @@ Setup(OnMsgReceived on_msg_received_callback)
 bool
 Start(const char* hostname, const char* port)
 {
-  if (!SocketInit()) {
+  if (!udp::Init()) {
     std::cout << "Failed to initialize." << std::endl;
     return false;
   }
 
   kClientState.hostname = hostname;
   kClientState.port = port;
-
-  if (!SetupHostAddressInfo()) {
-    return false;
-  }
 
   if (!SetupClientSocket()) {
     return false;
@@ -174,9 +107,7 @@ void
 Send(uint8_t* buffer, int size)
 {
   if (!kClientState.client_running) return;
-  sendto(kClientState.client_socket, (const char*)buffer, size, 0,
-         kClientState.host_address->ai_addr,
-         kClientState.host_address->ai_addrlen);
+  udp::Send(kClientState.client_socket, buffer, size);
 }
 
 }  // namespace client
