@@ -200,7 +200,8 @@ void TranslateEvent(NSEvent* nsevent, PlatformEvent* event) {
   }
   NSPoint pos = [nsevent locationInWindow];
   event->position.x = pos.x;
-  event->position.y = pos.y;
+  // Change origin of screen to be top left to be consistent with other platforms.
+  event->position.y = GetWindowSize().y - pos.y;
 }
 
 bool PollEvent(PlatformEvent* event) {
@@ -236,6 +237,7 @@ math::Vec2f GetWindowSize() {
 math::Vec2f GetCursorPosition() {
   NSPoint pos;
   pos = [kWindow.nswindow mouseLocationOutsideOfEventStream];
-  return math::Vec2f(pos.x, pos.y);
+  // Change origin of screen to be top left to be consistent with other platforms.
+  return math::Vec2f(pos.x, GetWindowSize().y - pos.y);
 }
 }  // namespace window
