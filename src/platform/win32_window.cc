@@ -44,40 +44,53 @@ struct Window {
   HGLRC hglrc;
   // Whether the window should be closing or not.
   bool should_close = false;
-  // Bitfield where each bit represents whether a key is down or not.
-  // a bit value of 1 represents a key is pressed and 0 is down
-  uint32_t input_mask;
-  // Input mask from the previous frame.
-  uint32_t previous_input_mask;
+  // This is a pointer to the current platform event being
+  // called with PollEvent. It is unsafe to modify this outside
+  // of the context of WindowProc.
+  PlatformEvent* platform_event;
 };
 
 static Window kWindow;
 
 void
-HandleKedownEvent(WPARAM wparam)
+HandleKeyEvent(WPARAM wparam, bool is_down, PlatformEvent* event)
 {
+  event->type = is_down == true ? KEY_DOWN : KEY_UP;
   // Capture key events here.
+  // TODO: Automatically convert to lowercase if character between A-Z.
   switch (wparam) {
     case 'W':
-      kWindow.input_mask |= (1 << KEY_W);
+      event->key = 'w';
       break;
     case 'A':
-      kWindow.input_mask |= (1 << KEY_A);
+      event->key = 'a';
       break;
     case 'S':
-      kWindow.input_mask |= (1 << KEY_S);
+      event->key = 's';
       break;
     case 'D':
-      kWindow.input_mask |= (1 << KEY_D);
+      event->key = 'd';
       break;
     default:
       break;
   }
 }
 
+void
+HandleMouseEvent(bool is_down, PlatformEvent* event) {
+  DWORD message_pos = GetMessagePos();
+  POINTS ps = MAKEPOINTS(message_pos);
+  POINT p;
+  p.x = ps.x; p.y = ps.y;
+  ScreenToClient(kWindow.hwnd, &p);
+  platform_event->position = math::Vec2f(p.x, p.y);
+  platform_event->type = is_down == true ? MOUSE_LEFT_DOWN : MOUSE_LEFT_UP;
+}
+
 LRESULT CALLBACK
 WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
 {
+  PlatformEvent* platform_event = kWindow.platform_event;
   LRESULT result = 0;
 
   switch (msg) {
@@ -85,18 +98,24 @@ WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
     case WM_DESTROY: {
       PostQuitMessage(0);
     } break;
+    case WM_KEYUP: {
+      HandleKeyEvent(wparam, false, platform_event);
+    } break;
     case WM_KEYDOWN: {
-      HandleKedownEvent(wparam);
+      HandleKeyEvent(wparam, true, platform_event);
     } break;
     case WM_LBUTTONDOWN: {
-      kWindow.input_mask |= (1 << MOUSE_LEFT_CLICK);
+      HandleMouseEvent(true, platform_event);
+    } break;
+    case WM_LBUTTONUP: {
+      HandleMouseEvent(false, platform_event);
     } break;
     default: {
       result = DefWindowProcA(window, msg, wparam, lparam); 
     } break;
   }
 
-  return result;
+    return result;
 }
 
 HWND
@@ -145,11 +164,8 @@ SetupWindow(HINSTANCE inst, const char* name, int width, int height)
 void
 InitOpenGLExtensions(void)
 {
-  // Before we can load extensions, we need a dummy OpenGL context, created using a dummy window.
-  // We use a dummy window because you can only set the pixel format for a window once. For the
-  // real window, we want to use wglChoosePixelFormatARB (so we can potentially specify options
-  // that aren't available in PIXELFORMATDESCRIPTOR), but we can't load and use that before we
-  // have a context.
+  // https://www.khronos.org/opengl/wiki/Creating_an_OpenGL_Context_(WGL)
+  // See "Create a False Context" for why this is necessary.
   WNDCLASSA wc = {};
   wc.style = CS_HREDRAW | CS_VREDRAW | CS_OWNDC;
   wc.lpfnWndProc = DefWindowProcA;
@@ -271,7 +287,7 @@ InitOpenGL(HDC real_dc)
   return gl33_context;
 }
 
-void
+int
 Create(const char* name, int width, int height)
 {
   kWindow.hwnd = SetupWindow(GetModuleHandle(0), name, width, height);
@@ -280,22 +296,31 @@ Create(const char* name, int width, int height)
 
   ShowWindow(kWindow.hwnd, 1);
   UpdateWindow(kWindow.hwnd);
+
+  return 1;
 }
 
-void
-PollEvents()
+bool
+PollEvent(PlatformEvent* event)
 {
-  kWindow.previous_input_mask = kWindow.input_mask;
-  kWindow.input_mask = 0;
+  event->type = NOT_IMPLEMENTED;
+  event->key = 0;
+  event->position = math::Vec2f(0.f, 0.f);
+  kWindow.platform_event = event;
+
   MSG msg;
-  while (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
+  if (PeekMessageA(&msg, 0, 0, 0, PM_REMOVE)) {
     if (msg.message == WM_QUIT) {
       kWindow.should_close = true;
     } else {
       TranslateMessage(&msg);
+      // This dispatches messages to the WindowProc function.
       DispatchMessageA(&msg);
     }
+    return true;
   }
+
+  return false;
 }
 
 void
