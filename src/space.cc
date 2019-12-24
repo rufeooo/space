@@ -55,6 +55,7 @@ bool
 ProcessInput()
 {
   PlatformEvent event;
+  static math::Vec2f camera_translate(0.f, 0.f);
   while (window::PollEvent(&event)) {
     switch (event.type) {
       case MOUSE_DOWN: {
@@ -62,12 +63,47 @@ ProcessInput()
           command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
           move->entity_id = 0;
           // A bit of an optimization. Assume no zoom when converting to world space.
-          move->position = event.position;
+          move->position = event.position + camera::position().xy();
+        }
+      } break;
+      case KEY_DOWN: {
+        switch (event.key) {
+          case 'w': {
+            camera_translate.y = 1.f;
+          } break;
+          case 'a': {
+            camera_translate.x = -1.f;
+          } break;
+          case 's': {
+            camera_translate.y = -1.f;
+          } break;
+          case 'd': {
+            camera_translate.x = 1.f;
+          } break;
+          default: break;
+        }
+      } break;
+      case KEY_UP: {
+        switch (event.key) {
+          case 'w': {
+            camera_translate.y = 0.f;
+          } break;
+          case 'a': {
+            camera_translate.x = 0.f;
+          } break;
+          case 's': {
+            camera_translate.y = 0.f;
+          } break;
+          case 'd': {
+            camera_translate.x = 0.f;
+          } break;
+          default: break;
         }
       } break;
       default: break;
     }
   }
+  camera::Translate(camera_translate);
 
   return true;
 }
