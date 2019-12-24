@@ -21,7 +21,6 @@ Initialize()
   // Make a square. This thing moves around when clicking.
   auto* transform = kECS.Assign<TransformComponent>(0);
   transform->position = math::Vec3f(400.f, 400.f, 0.f);
-  transform->scale = math::Vec3f(2.f, 2.f, 2.f);
   kECS.Assign<RectangleComponent>(0);
 
   // Make a triangle. This doesn't really do anything.
@@ -32,7 +31,19 @@ Initialize()
 
   auto* line = kECS.Assign<LineComponent>(2);
   line->start = math::Vec3f(50.f, 0.f, 0.f);
-  line->end = math::Vec3f(50.f, 500.f, 0.f);
+  line->end = math::Vec3f(50.f, 800.f, 0.f);
+
+  line = kECS.Assign<LineComponent>(3);
+  line->start = math::Vec3f(100.f, 0.f, 0.f);
+  line->end = math::Vec3f(100.f, 800.f, 0.f);
+
+  line = kECS.Assign<LineComponent>(4);
+  line->start = math::Vec3f(150.f, 0.f, 0.f);
+  line->end = math::Vec3f(150.f, 800.f, 0.f);
+
+  line = kECS.Assign<LineComponent>(5);
+  line->start = math::Vec3f(200.f, 0.f, 0.f);
+  line->end = math::Vec3f(200.f, 800.f, 0.f);
 
   camera::MoveTo(math::Vec3f(0.f, 0.f, 0.f));
   camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));

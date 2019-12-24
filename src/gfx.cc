@@ -103,7 +103,7 @@ Initialize()
 
   // Line is flat on the x-axis with distance m.
   kGfx.line_vao_reference = gl::CreateGeometryVAO(
-      {math::Vec2f(-m / 2.f, 0.f), math::Vec2f(m / 2.f, 0.f)});
+      {math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)});
 
   return true;
 }
@@ -161,19 +161,14 @@ Render()
         // to meet the start / end nature of the line component.
         
         // Position is the midpoint of the start and end.
-        math::Vec3f midpoint = line.start + ((line.end - line.start) / 2.f);
-        // The scaling  factor is the distance between the start and end.
-        // Divide by kGfx.meter_size since the line is defined in terms of the
-        // meter.
-        float distance = math::Length(line.end - line.start) / kGfx.meter_size;
+        math::Vec3f translation = (line.start + line.end) / 2.f;
         // Angle between the two points in 2d.
-        float angle = std::atan2(line.end.y - line.start.y,
-                                 line.end.x - line.start.x) * 180.f / PI;
-
-        // Translate and rotate the rectangle appropriately.
-        math::Mat4f model = math::CreateTranslationMatrix(midpoint) *
+        math::Vec3f diff = line.end - line.start; 
+        float angle = std::atan2(diff.y, diff.x) * (180.f / PI);
+        float distance = math::Length(diff);
+        math::Mat4f model = math::CreateTranslationMatrix(translation) *
                             math::CreateScaleMatrix(
-                                math::Vec3f(distance, distance, 1.f)) *
+                                math::Vec3f(distance / 2.f, distance / 2.f, 1.f)) *
                             math::CreateRotationMatrix(
                                 math::Quatf(angle, math::Vec3f(0.f, 0.f, -1.f)));
 
