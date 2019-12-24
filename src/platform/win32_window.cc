@@ -84,9 +84,9 @@ HandleMouseEvent(bool is_down, PlatformEvent* event, PlatformButton button) {
   p.x = ps.x; p.y = ps.y;
   ScreenToClient(kWindow.hwnd, &p);
   math::Vec2f dims = GetWindowSize();
-  platform_event->position = math::Vec2f(p.x, dims.y - p.y);
-  platform_event->type = is_down? MOUSE_DOWN : MOUSE_UP;
-  platform_event->button = button;
+  event->position = math::Vec2f(p.x, dims.y - p.y);
+  event->type = is_down? MOUSE_DOWN : MOUSE_UP;
+  event->button = button;
 }
 
 LRESULT CALLBACK
