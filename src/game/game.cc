@@ -180,7 +180,6 @@ Run(uint64_t loop_count)
       _Update();
 
       lag -= kGameState.ns_per_update;
-      if (lag < 0) lag = 0;
       kGameState.game_ns += kGameState.ns_per_update;
       ++kGameState.game_updates;
     }
