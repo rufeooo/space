@@ -60,6 +60,8 @@ main()
   int running = 1;
   glClearColor(0.0, 0.0, 0.0, 1.0);
   while (running) {
+    PlatformEvent event;
+    while (window::PollEvent(&event)) {}
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Set the shader program.
     glUseProgram(shader_program);

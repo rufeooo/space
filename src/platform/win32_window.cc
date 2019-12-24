@@ -5,6 +5,48 @@
 #include <gl/gl.h>
 #include <stdbool.h>
 
+// https://www.khronos.org/registry/OpenGL/api/GL/glext.h
+
+// GL types.
+typedef size_t GLsizeiptr;
+typedef char GLchar;
+
+// GL functions loaded using wglGetProcAddress.
+typedef void glGenBuffers_Func(GLsizei, GLuint*);
+glGenBuffers_Func* glGenBuffers;
+typedef void glBindBuffer_Func(GLenum, GLuint);
+glBindBuffer_Func* glBindBuffer;
+typedef void glBufferData_Func(GLenum, GLsizeiptr, const void*, GLenum);
+glBufferData_Func* glBufferData;
+typedef void glGenVertexArrays_Func(GLsizei, GLuint*);
+glGenVertexArrays_Func* glGenVertexArrays;
+typedef void glBindVertexArray_Func(GLuint);
+glBindVertexArray_Func* glBindVertexArray;
+typedef void glEnableVertexAttribArray_Func(GLuint);
+glEnableVertexAttribArray_Func* glEnableVertexAttribArray;
+typedef void glVertexAttribPointer_Func(GLuint, GLint, GLenum, GLboolean, GLsizei, const void*);
+glVertexAttribPointer_Func* glVertexAttribPointer;
+typedef GLuint glCreateShader_Func(GLenum);
+glCreateShader_Func* glCreateShader;
+typedef void glShaderSource_Func(GLuint, GLsizei, const GLchar* const*, const GLint*);
+glShaderSource_Func* glShaderSource;
+typedef void glCompileShader_Func(GLuint);
+glCompileShader_Func* glCompileShader;
+typedef GLuint glCreateProgram_Func(void);
+glCreateProgram_Func* glCreateProgram;
+typedef void glAttachShader_Func(GLuint, GLuint);
+glAttachShader_Func* glAttachShader;
+typedef void glLinkProgram_Func(GLuint);
+glLinkProgram_Func* glLinkProgram;
+typedef void glUseProgram_Func(GLuint);
+glUseProgram_Func* glUseProgram;
+
+// GL defines.
+#define GL_ARRAY_BUFFER                   0x8892
+#define GL_STATIC_DRAW                    0x88E4
+#define GL_VERTEX_SHADER                  0x8B31
+#define GL_FRAGMENT_SHADER                0x8B30
+
 namespace window {
 
 typedef HGLRC WINAPI wglCreateContextAttribsARB_type(HDC hdc, HGLRC hShareContext,
@@ -289,12 +331,44 @@ InitOpenGL(HDC real_dc)
   return gl33_context;
 }
 
+void*
+GetGLFunction(const char* name)
+{
+  void *p = (void *)wglGetProcAddress(name);
+  if(p == 0 || (p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) ||
+    (p == (void*)-1)) {
+    static HMODULE module = LoadLibraryA("opengl32.dll");
+    p = (void *)GetProcAddress(module, name);
+  }
+  assert(p);
+  return p;
+}
+
+void
+SetupGLFunctions() {
+  glGenBuffers = (glGenBuffers_Func*)GetGLFunction("glGenBuffers");
+  glBindBuffer = (glBindBuffer_Func*)GetGLFunction("glBindBuffer");
+  glBufferData = (glBufferData_Func*)GetGLFunction("glBufferData");
+  glGenVertexArrays = (glGenVertexArrays_Func*)GetGLFunction("glGenVertexArrays");
+  glBindVertexArray = (glBindVertexArray_Func*)GetGLFunction("glBindVertexArray");
+  glEnableVertexAttribArray = (glEnableVertexAttribArray_Func*)GetGLFunction("glEnableVertexAttribArray");
+  glVertexAttribPointer = (glVertexAttribPointer_Func*)GetGLFunction("glVertexAttribPointer");
+  glCreateShader = (glCreateShader_Func*)GetGLFunction("glCreateShader");
+  glShaderSource = (glShaderSource_Func*)GetGLFunction("glShaderSource");
+  glCompileShader = (glCompileShader_Func*)GetGLFunction("glCompileShader");
+  glCreateProgram = (glCreateProgram_Func*)GetGLFunction("glCreateProgram");
+  glAttachShader = (glAttachShader_Func*)GetGLFunction("glAttachShader");
+  glLinkProgram = (glLinkProgram_Func*)GetGLFunction("glLinkProgram");
+  glUseProgram = (glUseProgram_Func*)GetGLFunction("glUseProgram");
+}
+
 int
 Create(const char* name, int width, int height)
 {
   kWindow.hwnd = SetupWindow(GetModuleHandle(0), name, width, height);
   kWindow.hdc = GetDC(kWindow.hwnd);
   kWindow.hglrc = InitOpenGL(kWindow.hdc);
+  SetupGLFunctions();
 
   ShowWindow(kWindow.hwnd, 1);
   UpdateWindow(kWindow.hwnd);
