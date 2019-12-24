@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <time.h>
 
+#define USEC_PER_CLOCK (1000.f / 1000.f / CLOCKS_PER_SEC)
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 
 #if defined(__i386__) || defined(__x86_64__)
@@ -33,6 +34,7 @@ int
 main()
 {
   printf("%lu clocks_per_sec\n", CLOCKS_PER_SEC);
+  printf("%f clocks_per_usec\n", USEC_PER_CLOCK);
   printf("%lu clocks_per_ms\n", CLOCKS_PER_MS);
 
   clock_t c = clock();
@@ -41,7 +43,7 @@ main()
   uint64_t rp;
 
 #define MAX_SAMPLES 10
-  uint64_t tsc_per_ms[MAX_SAMPLES];
+  uint64_t tsc_per_usec[MAX_SAMPLES];
   for (int i = 0; i < MAX_SAMPLES; ++i) {
     p = c;
     rp = rc;
@@ -49,16 +51,16 @@ main()
       // clock measures time spent in the application
       // a tight loop will push the scheduler to spend time in the application
       c = clock();
-    } while (c - p < CLOCKS_PER_MS);
+    } while (c - p < (CLOCKS_PER_MS));
     rc = rdtsc();
 
-    tsc_per_ms[i] = (rc - rp) / (c - p);
-    printf("%lu clock delta %lu tsc delta %lu tsc_per_ms\n", c - p, rc - rp,
-           tsc_per_ms[i]);
+    tsc_per_usec[i] = (rc - rp) * ((c - p) * USEC_PER_CLOCK);
+    printf("%lu clock delta %lu raw tsc_per_usec %lu weighted tsc_per_usec\n",
+           c - p, rc - rp, tsc_per_usec[i]);
   }
 
-  qsort(tsc_per_ms, MAX_SAMPLES, sizeof(tsc_per_ms[0]), cmp);
-  printf("median tsc_per_ms %lu\n", tsc_per_ms[MAX_SAMPLES / 2]);
+  qsort(tsc_per_usec, MAX_SAMPLES, sizeof(tsc_per_usec[0]), cmp);
+  printf("median tsc_per_usec %lu\n", tsc_per_usec[MAX_SAMPLES / 2]);
 
   return 0;
 }
