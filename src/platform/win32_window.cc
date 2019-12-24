@@ -460,7 +460,7 @@ math::Vec2f
 GetWindowSize()
 {
   RECT rect;
-  GetWindowRect(kWindow.hwnd, &rect);
+  GetClientRect(kWindow.hwnd, &rect);
   return math::Vec2f((float)rect.right - rect.left, (float)rect.bottom - rect.top);
 }
 
