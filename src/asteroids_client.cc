@@ -1,6 +1,7 @@
 #include <cassert>
 #include <thread>
 
+#include "platform/platform.cc" // Needs to come first for windows defines.
 #include "asteroids/asteroids.cc"
 #include "asteroids/asteroids_commands.cc"
 #include "asteroids/asteroids_state.cc"
@@ -12,7 +13,6 @@
 #include "gl/renderer.cc"
 #include "math/math.cc"
 #include "network/client.cc"
-#include "platform/platform.cc"
 
 static const char* hostname;
 static const char* port = ASTEROIDS_PORT;

@@ -1,5 +1,5 @@
+@echo off
 call run_constants.bat
-@echo on
 set file_arg=%1
 for /F "delims=" %%i in ("%file_arg%") do set filename="%%~ni"
 
