@@ -3,7 +3,7 @@
 
 namespace platform
 {
-long
+uint64_t
 now_ns()
 {
   timespec time;

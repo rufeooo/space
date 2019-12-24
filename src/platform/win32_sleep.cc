@@ -1,10 +1,11 @@
 #include <cstdint>
+#include "synchapi.h"
 
 namespace platform
 {
 void
 sleep_ms(uint64_t duration)
 {
-  // TODO: Yield cpu time
+  Sleep(duration);
 }
 }  // namespace platform
