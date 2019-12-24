@@ -1,5 +1,9 @@
-
 #pragma once
+
+#if _WIN32
+// Windows #defines min/max. This stops it from doing so.
+#define NOMINMAX
+#endif
 
 #include "platform_getopt.cc"
 #include "window.cc"

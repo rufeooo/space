@@ -10,6 +10,7 @@
 // GL types.
 typedef size_t GLsizeiptr;
 typedef char GLchar;
+typedef float GLfloat;
 
 // GL functions loaded using wglGetProcAddress.
 typedef void glGenBuffers_Func(GLsizei, GLuint*);
@@ -40,12 +41,46 @@ typedef void glLinkProgram_Func(GLuint);
 glLinkProgram_Func* glLinkProgram;
 typedef void glUseProgram_Func(GLuint);
 glUseProgram_Func* glUseProgram;
+typedef GLint glGetUniformLocation_Func(GLuint, const GLchar*);
+glGetUniformLocation_Func* glGetUniformLocation;
+typedef void glUniformMatrix4fv_Func(GLint, GLsizei, GLboolean, const GLfloat*);
+glUniformMatrix4fv_Func* glUniformMatrix4fv;
+typedef void glGetShaderInfoLog_Func(GLuint, GLsizei, GLsizei*, GLchar*);
+glGetShaderInfoLog_Func* glGetShaderInfoLog;
+typedef void glGetProgramInfoLog_Func(GLuint, GLsizei, GLsizei*, GLchar*);
+glGetProgramInfoLog_Func* glGetProgramInfoLog;
+typedef void glGetShaderiv_Func(GLuint, GLenum, GLint*);
+glGetShaderiv_Func* glGetShaderiv;
+typedef void glGetProgramiv_Func(GLuint, GLenum, GLint*);
+glGetProgramiv_Func* glGetProgramiv;
+typedef void glGetActiveAttrib_Func(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*);
+glGetActiveAttrib_Func* glGetActiveAttrib;
+typedef GLint glGetAttribLocation_Func(GLuint, const GLchar*);
+glGetAttribLocation_Func* glGetAttribLocation;
+typedef void glGetActiveUniform_Func(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*);
+glGetActiveUniform_Func* glGetActiveUniform;
 
 // GL defines.
 #define GL_ARRAY_BUFFER                   0x8892
 #define GL_STATIC_DRAW                    0x88E4
 #define GL_VERTEX_SHADER                  0x8B31
 #define GL_FRAGMENT_SHADER                0x8B30
+#define GL_COMPILE_STATUS                 0x8B81
+#define GL_LINK_STATUS                    0x8B82
+#define GL_ACTIVE_ATTRIBUTES              0x8B89
+#define GL_ATTACHED_SHADERS               0x8B85
+#define GL_ACTIVE_UNIFORMS                0x8B86
+#define GL_BOOL                           0x8B56
+#define GL_FLOAT_VEC2                     0x8B50
+#define GL_FLOAT_VEC3                     0x8B51
+#define GL_FLOAT_VEC4                     0x8B52
+#define GL_FLOAT_MAT2                     0x8B5A
+#define GL_FLOAT_MAT3                     0x8B5B
+#define GL_FLOAT_MAT4                     0x8B5C
+#define GL_SAMPLER_2D                     0x8B5E
+#define GL_SAMPLER_3D                     0x8B5F
+#define GL_SAMPLER_CUBE                   0x8B60
+#define GL_SAMPLER_2D_SHADOW              0x8B62
 
 namespace window {
 
@@ -361,6 +396,15 @@ SetupGLFunctions() {
   glAttachShader = (glAttachShader_Func*)GetGLFunction("glAttachShader");
   glLinkProgram = (glLinkProgram_Func*)GetGLFunction("glLinkProgram");
   glUseProgram = (glUseProgram_Func*)GetGLFunction("glUseProgram");
+  glGetUniformLocation  = (glGetUniformLocation_Func*)GetGLFunction("glGetUniformLocation");
+  glUniformMatrix4fv = (glUniformMatrix4fv_Func*)GetGLFunction("glUniformMatrix4fv");
+  glGetShaderInfoLog = (glGetShaderInfoLog_Func*)GetGLFunction("glGetShaderInfoLog");
+  glGetProgramInfoLog = (glGetProgramInfoLog_Func*)GetGLFunction("glGetProgramInfoLog");
+  glGetShaderiv = (glGetShaderiv_Func*)GetGLFunction("glGetShaderiv");
+  glGetProgramiv = (glGetProgramiv_Func*)GetGLFunction("glGetProgramiv");
+  glGetActiveAttrib = (glGetActiveAttrib_Func*)GetGLFunction("glGetActiveAttrib");
+  glGetAttribLocation = (glGetAttribLocation_Func*)GetGLFunction("glGetAttribLocation");
+  glGetActiveUniform = (glGetActiveUniform_Func*)GetGLFunction("glGetActiveUniform");
 }
 
 int
