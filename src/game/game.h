@@ -32,17 +32,11 @@ void Setup(Initialize init_callback, ProcessInput input_callback,
 // Runs the game.
 bool Run(uint64_t loop_count = 0);
 
-// Pause the game.
-void Pause();
-
-// Resumes a paused game.
-void Resume();
-
 // End the game.
 void End();
 
 // Elapsed game milliseconds since start
-uint64_t GameMS();
+uint64_t GameUsec();
 
 // Game update since game start.
 int Updates();

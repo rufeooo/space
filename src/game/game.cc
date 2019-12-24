@@ -13,22 +13,19 @@
 namespace game
 {
 struct State {
-  // Run each game logic update with a delta_time of ms_per_update.
-  uint64_t ns_per_update = 15000000;
-  // Run a frame every min_ms_per_frame if the time it takes to run
-  // update / render  is under this value the system will sleep until
-  // it reaches min_ms_per_frame. This is really just to save battery
-  // on my laptop at the moment. I'm not really sure it's worth always
-  // doing.
-  uint64_t min_ns_per_frame = 15000000;
-  uint64_t game_ns;
-  uint64_t clock_ns;
-  uint64_t ns_per_frame;
-  bool paused = false;
+  // Game and render updates per second
+  uint64_t framerate = 60;
+  // Calculated available microseconds per game_update
+  uint64_t frame_target_usec;
+  // Game Halt variable
   bool end = false;
-  bool sleep_on_loop_end = true;
+  // Allow yielding idle cycles to kernel
+  bool sleep_on_loop = true;
   // Number of times the game has been updated.
   uint64_t game_updates = 0;
+  // Number of times the game frame was exceptionally delayed
+  uint64_t game_jerk = 0;
+  // ...
   std::ofstream output_event_file;
   std::ifstream input_event_file;
   EventBuffer event_buffer;
@@ -136,12 +133,10 @@ Run(uint64_t loop_count)
     return false;
   }
 
-  uint64_t previous = platform::now_ns();
-  uint64_t lag(0);
   kGameState.game_updates = 0;
-  kGameState.game_ns = 0;
-  kGameState.clock_ns = 0;
-  uint64_t current, elapsed, endloop;
+  kGameState.game_jerk = 0;
+  kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
+  platform::clock_init();
 
   while (loop_count == 0 || kGameState.game_updates < loop_count) {
     if (kGameState.end) {
@@ -149,14 +144,9 @@ Run(uint64_t loop_count)
       return true;
     }
 
-    current = platform::now_ns();
-    elapsed = current - previous;
-    if (!kGameState.paused) lag += elapsed;
-
     _ProcessInput();
-    kGameState.clock_ns += elapsed;
 
-    while (!kGameState.paused && lag >= kGameState.ns_per_update) {
+    {
       // Pump the event queue if a replay is coming from file.
       OptionallyPumpEventsFromFile();
 
@@ -179,27 +169,19 @@ Run(uint64_t loop_count)
       // a fixed delta so no need to provide a delta time.
       _Update();
 
-      lag -= kGameState.ns_per_update;
-      kGameState.game_ns += kGameState.ns_per_update;
       ++kGameState.game_updates;
     }
 
     if (!_Render()) {
       _OnEnd();
-      return true;  // Returns ??
+      return true;
     }
 
-    endloop = platform::now_ns();
-    previous = current;
-    auto ns = endloop - current;
-
-    // sleep s.t. we only do min_ns_per_frame.
-    if (kGameState.sleep_on_loop_end && ns < kGameState.min_ns_per_frame) {
-      auto sleep_ns = kGameState.min_ns_per_frame - ns;
-      platform::sleep_ms(sleep_ns / 1000000);
+    uint64_t sleep_usec = 0;
+    while (!platform::elapse_usec(kGameState.frame_target_usec, &sleep_usec,
+                                  &kGameState.game_jerk)) {
+      if (kGameState.sleep_on_loop) platform::sleep_usec(sleep_usec);
     }
-
-    kGameState.ns_per_frame = platform::now_ns() - current;
   }
 
   _OnEnd();
@@ -209,27 +191,15 @@ Run(uint64_t loop_count)
 }
 
 void
-Pause()
-{
-  kGameState.paused = true;
-}
-
-void
-Resume()
-{
-  kGameState.paused = false;
-}
-
-void
 End()
 {
   kGameState.end = true;
 }
 
 uint64_t
-GameMS()
+GameUsec()
 {
-  return kGameState.game_ns / 1000000;
+  return kGameState.game_updates * kGameState.frame_target_usec;
 }
 
 int
