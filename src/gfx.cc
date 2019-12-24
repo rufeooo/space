@@ -108,17 +108,9 @@ Initialize()
   return true;
 }
 
-bool
-Render()
+void
+RenderTriangles(const math::Mat4f& ortho_view)
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-  math::Vec2f dims = window::GetWindowSize();
-  // TODO: Take into consideration camera.
-  math::Mat4f ortho = math::CreateOrthographicMatrix<float>(
-      dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
-  math::Mat4f view = camera::view_matrix();
-  math::Mat4f ortho_view = ortho * view;
-
   // Draw all triangles
   glUseProgram(kGfx.program_reference);
   glBindVertexArray(kGfx.triangle_vao_reference);
@@ -133,7 +125,11 @@ Render()
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINE_LOOP, 0, 3);
       });
+}
 
+void
+RenderRectangles(const math::Mat4f& ortho_view)
+{
   // Draw all rectangles.
   glUseProgram(kGfx.program_reference);
   glBindVertexArray(kGfx.rectangle_vao_reference);
@@ -148,7 +144,11 @@ Render()
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINE_LOOP, 0, 4);
       });
+}
 
+void
+RenderLines(const math::Mat4f& ortho_view)
+{
   // Draw all lines.
   // TODO: This should eventually work with 3d too.
   glUseProgram(kGfx.program_reference);
@@ -176,7 +176,28 @@ Render()
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINES, 0, 2);
       });
+}
 
+void
+RenderGrids(const math::Mat4f& ortho_view)
+{
+}
+
+bool
+Render()
+{
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  math::Vec2f dims = window::GetWindowSize();
+  // TODO: Take into consideration camera.
+  math::Mat4f ortho = math::CreateOrthographicMatrix<float>(
+      dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  math::Mat4f view = camera::view_matrix();
+  math::Mat4f ortho_view = ortho * view;
+
+  RenderTriangles(ortho_view);
+  RenderRectangles(ortho_view);
+  RenderLines(ortho_view);
+  RenderGrids(ortho_view);
 
   window::SwapBuffers();
   return true;

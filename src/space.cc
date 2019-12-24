@@ -28,25 +28,10 @@ Initialize()
   transform->position = math::Vec3f(200.f, 200.f, 0.f);
   //transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
   kECS.Assign<TriangleComponent>(1);
-
-  auto* line = kECS.Assign<LineComponent>(2);
-  line->start = math::Vec3f(50.f, 0.f, 0.f);
-  line->end = math::Vec3f(50.f, 800.f, 0.f);
-
-  line = kECS.Assign<LineComponent>(3);
-  line->start = math::Vec3f(100.f, 0.f, 0.f);
-  line->end = math::Vec3f(100.f, 800.f, 0.f);
-
-  line = kECS.Assign<LineComponent>(4);
-  line->start = math::Vec3f(150.f, 0.f, 0.f);
-  line->end = math::Vec3f(150.f, 800.f, 0.f);
-
-  line = kECS.Assign<LineComponent>(5);
-  line->start = math::Vec3f(200.f, 0.f, 0.f);
-  line->end = math::Vec3f(200.f, 800.f, 0.f);
-
-  camera::MoveTo(math::Vec3f(0.f, 0.f, 0.f));
-  camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
+  
+  auto* grid = kECS.Assign<GridComponent>(2);
+  grid->width = 50.f;
+  grid->height = 50.f;
 
   return true;
 }
