@@ -2,6 +2,7 @@
 #pragma once
 
 #include "platform_getopt.cc"
+#include "platform_clock.cc"
 #include "window.cc"
 
 #if _WIN32
