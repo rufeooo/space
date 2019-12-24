@@ -80,13 +80,13 @@ RunServerLoop()
 {
   uint16_t bytes_received;
   Udp4 remote;
-  udp::ReceiveAny(kServerState.server_socket,
-                  sizeof(ServerState::receive_buffer),
-                  kServerState.receive_buffer, &bytes_received, &remote);
-
-  if (udp_errno) {
-    fprintf(stderr, "connection closed. (%d)\n\n", udp_errno);
-    kServerState.server_running = false;
+  if (!udp::ReceiveAny(kServerState.server_socket,
+                       sizeof(ServerState::receive_buffer),
+                       kServerState.receive_buffer, &bytes_received, &remote)) {
+    if (udp_errno) {
+      fprintf(stderr, "connection closed. (%d)\n\n", udp_errno);
+      kServerState.server_running = false;
+    }
     return;
   }
 

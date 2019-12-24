@@ -49,8 +49,8 @@ RunClientLoop()
     if (udp_errno) {
       std::cout << "network failed: " << udp_errno << std::endl;
       kClientState.client_running = false;
-      return;
     }
+    return;
   }
 
   _OnMsgReceived((uint8_t*)&kClientState.receive_buffer[0], bytes_received);
