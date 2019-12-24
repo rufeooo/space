@@ -15,8 +15,8 @@
 #include "platform/platform.cc"
 
 static const char* hostname;
+static const char* port = ASTEROIDS_PORT;
 static const char* replay_file;
-static const char* port;
 
 void
 OnServerMsgReceived(uint8_t* msg, int size)

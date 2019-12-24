@@ -17,6 +17,8 @@
 #define INVALID_SOCKET (-1)
 #endif
 
+#define ASTEROIDS_PORT "9845"
+
 #include <stdio.h>
 
 namespace network

@@ -123,14 +123,14 @@ Setup(OnClientConnected on_client_connected_callback,
 }
 
 bool
-Start(const char* port)
+Start(const char* ip, const char* port)
 {
   if (!udp::Init()) {
     std::cout << "Failed to initialize." << std::endl;
     return false;
   }
 
-  kServerState.server_address = "0.0.0.0";
+  kServerState.server_address = ip;
   kServerState.port = port;
 
   if (!SetupListenSocket()) {

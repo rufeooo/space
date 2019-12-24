@@ -8,15 +8,16 @@
 #include "asteroids/asteroids_commands.cc"
 #include "asteroids/asteroids_state.cc"
 #include "game/game.cc"
+#include "gl/renderer.cc"
 #include "math/math.cc"
 #include "network/server.cc"
 #include "platform/platform.cc"
-#include "gl/renderer.cc"
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
 static std::vector<int> kConnectedClients;
 static std::mutex kMutex;
-static const char* port = "9845";
+static const char* ip = "0.0.0.0";
+static const char* port = ASTEROIDS_PORT;
 
 void
 OnClientConnected(int client_id)
@@ -263,7 +264,7 @@ Initialize()
 {
   network::server::Setup(&OnClientConnected, &OnClientMsgReceived);
 
-  if (!network::server::Start(port)) {
+  if (!network::server::Start(ip, port)) {
     std::cout << "Unable to start server." << std::endl;
     return 0;
   }
@@ -317,6 +318,20 @@ OnEnd()
 int
 main(int argc, char** argv)
 {
+  while (1) {
+    int opt = platform_getopt(argc, argv, "i:p:");
+    if (opt == -1) break;
+
+    switch (opt) {
+      case 'i':
+        ip = platform_optarg;
+        break;
+      case 'p':
+        port = platform_optarg;
+        break;
+    }
+  }
+
   game::Setup(&Initialize, &ProcessInput, &HandleEvent, &Update, &Render,
               &OnEnd);
 
