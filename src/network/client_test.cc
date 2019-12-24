@@ -1,10 +1,9 @@
 #include "gtest/gtest.h"
 
-#include <chrono>
 #include <iostream>
-#include <thread>
 
 #include "client.cc"
+#include "platform/platform.cc"
 #include "server.cc"
 
 static int kCallbacksCalled = 0;
@@ -35,12 +34,10 @@ OnClientMsgReceived(uint8_t* data, int size)
 
 TEST(Server, ClientHappyPath)
 {
-  using namespace std::chrono_literals;
-
   network::server::Setup(&OnClientConnected, &OnServerMsgReceived);
   ASSERT_TRUE(network::server::Start("7890"));
 
-  std::this_thread::sleep_for(1s);
+  platform::sleep_ms(1000);
 
   network::client::Setup(&OnClientMsgReceived);
   ASSERT_TRUE(network::client::Start("127.0.0.1", "7890"));
@@ -49,11 +46,11 @@ TEST(Server, ClientHappyPath)
 
   // Client says hi to server!
   network::client::Send((uint8_t*)&msg[0], 5);
-  std::this_thread::sleep_for(1s);
+  platform::sleep_ms(1000);
 
   // Server says hi to client!
   network::server::Send(0, (uint8_t*)&msg[0], 5);
-  std::this_thread::sleep_for(1s);
+  platform::sleep_ms(1000);
 
   ASSERT_EQ(kCallbacksCalled, 3);
 

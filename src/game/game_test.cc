@@ -48,7 +48,7 @@ TEST(Game, HappyPathGameTest)
   ASSERT_EQ(game::Updates(), count);
   // Total game time should be game updates * milliseconds_per_update.
   // 500 * 15 = 7500
-  ASSERT_EQ(game::Time(), std::chrono::milliseconds(7500));
+  ASSERT_EQ(game::GameMs(), 7500);
 }
 
 int

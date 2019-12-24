@@ -1,6 +1,5 @@
 #pragma once
 
-#include <chrono>
 #include <cstdint>
 
 #include "event.h"
@@ -42,8 +41,8 @@ void Resume();
 // End the game.
 void End();
 
-// Milliseconds since game start.
-std::chrono::milliseconds Time();
+// Elapsed game milliseconds since start
+uint64_t GameMS();
 
 // Game update since game start.
 int Updates();

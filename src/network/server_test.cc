@@ -1,8 +1,8 @@
 #include "gtest/gtest.h"
 
 #include <iostream>
-#include <thread>
 
+#include "platform/platform.cc"
 #include "server.cc"
 
 struct Client {
@@ -69,7 +69,6 @@ OnMsgReceived(int client_id, uint8_t* data, int size)
 
 TEST(Server, ServerHappyPath)
 {
-  using namespace std::chrono_literals;
   network::server::Setup(&OnClientConnected, &OnMsgReceived);
   ASSERT_TRUE(network::server::Start("7890"));
   // Create a client connection which the server will respond to when
@@ -77,7 +76,7 @@ TEST(Server, ServerHappyPath)
   Client client = CreateSimpleClient("127.0.0.1", "7890");
   SendData(client, "hello");
   ASSERT_TRUE(network::SocketIsValid(client.socket));
-  std::this_thread::sleep_for(2s);
+  platform::sleep_ms(2*1000);
   ASSERT_EQ(kStuffCalled, 2);
   network::server::Stop();
 }

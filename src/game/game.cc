@@ -1,13 +1,11 @@
 #include "game.h"
 
 #include <cassert>
-#include <ctime>
 #include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <sstream>
 #include <string>
-#include <thread>
 
 #include "event_buffer.cc"
 #include "platform/platform.cc"
@@ -16,16 +14,16 @@ namespace game
 {
 struct State {
   // Run each game logic update with a delta_time of ms_per_update.
-  std::chrono::milliseconds ms_per_update = std::chrono::milliseconds(15);
+  uint64_t ms_per_update = 15;
   // Run a frame every min_ms_per_frame if the time it takes to run
   // update / render  is under this value the system will sleep until
   // it reaches min_ms_per_frame. This is really just to save battery
   // on my laptop at the moment. I'm not really sure it's worth always
   // doing.
-  std::chrono::milliseconds min_ms_per_frame = std::chrono::milliseconds(15);
-  std::chrono::milliseconds game_time;
-  std::chrono::milliseconds real_time;
-  std::chrono::milliseconds ms_per_frame;
+  uint64_t min_ms_per_frame = 15;
+  uint64_t game_ms;
+  uint64_t clock_ms;
+  uint64_t ms_per_frame;
   bool paused = false;
   bool end = false;
   bool sleep_on_loop_end = true;
@@ -50,13 +48,6 @@ static OnEnd _OnEnd;
 // when a client joins this event buffer can actually get quite big.
 // TODO: Come up with a better solution for that.
 constexpr int kEventBufferSize = 20 * 1024;
-
-inline std::chrono::milliseconds
-NowMS()
-{
-  return std::chrono::duration_cast<std::chrono::milliseconds>(
-      std::chrono::high_resolution_clock::now().time_since_epoch());
-}
 
 void
 OptionallyPumpEventsFromFile()
@@ -145,11 +136,12 @@ Run(uint64_t loop_count)
     return false;
   }
 
-  auto previous = NowMS();
-  std::chrono::milliseconds lag(0);
+  auto previous = platform::now_ms();
+  uint64_t lag(0);
   kGameState.game_updates = 0;
-  kGameState.game_time = std::chrono::milliseconds(0);
-  std::chrono::milliseconds current, elapsed, endloop;
+  kGameState.game_ms = 0;
+  kGameState.clock_ms = 0;
+  uint64_t current, elapsed, endloop;
 
   while (loop_count == 0 || kGameState.game_updates < loop_count) {
     if (kGameState.end) {
@@ -157,12 +149,12 @@ Run(uint64_t loop_count)
       return true;
     }
 
-    current = NowMS();
+    current = platform::now_ms();
     elapsed = current - previous;
     if (!kGameState.paused) lag += elapsed;
 
     _ProcessInput();
-    kGameState.real_time += elapsed;
+    kGameState.clock_ms += elapsed;
 
     while (!kGameState.paused && lag >= kGameState.ms_per_update) {
       // Pump the event queue if a replay is coming from file.
@@ -188,7 +180,7 @@ Run(uint64_t loop_count)
       _Update();
 
       lag -= kGameState.ms_per_update;
-      kGameState.game_time += kGameState.ms_per_update;
+      kGameState.game_ms += kGameState.ms_per_update;
       ++kGameState.game_updates;
     }
 
@@ -197,17 +189,17 @@ Run(uint64_t loop_count)
       return true;  // Returns ??
     }
 
-    endloop = NowMS();
+    endloop = platform::now_ms();
     previous = current;
     auto ms = endloop - current;
 
     // sleep s.t. we only do min_ms_per_frame.
     if (kGameState.sleep_on_loop_end && ms < kGameState.min_ms_per_frame) {
-      auto sleep_time = kGameState.min_ms_per_frame - ms;
-      std::this_thread::sleep_for(sleep_time);
+      auto sleep_ms = kGameState.min_ms_per_frame - ms;
+      platform::sleep_ms(sleep_ms);
     }
 
-    kGameState.ms_per_frame = NowMS() - current;
+    kGameState.ms_per_frame = platform::now_ms() - current;
   }
 
   _OnEnd();
@@ -234,10 +226,10 @@ End()
   kGameState.end = true;
 }
 
-std::chrono::milliseconds
-Time()
+uint64_t
+GameMS()
 {
-  return kGameState.game_time;
+  return kGameState.game_ms;
 }
 
 int
