@@ -28,11 +28,6 @@ AI -
 
 engine - 
 
-  anthony: Flip coordinate system to have positive y-axis pointing up on the screen.
-           Currently pixel space is being used directly as world space.
-  anthony: Use 16:9 aspect ratio when scaling. This can be used to define our meter.
-           Currently we are using pixel width and height when performing an orthographic projection.
-           This has the nice property that squares remain squares under screen size mutation.
   anthony: Render a graph. By default this should be a graph showing our world space.
            as in the width / height of each square will be our 'meter'.
   anthony: Implement texture rendering. This should be as simple as attaching a component
