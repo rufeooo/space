@@ -57,9 +57,8 @@ main()
   glAttachShader(shader_program, vs);
   glLinkProgram(shader_program);
 
-  int running = 1;
   glClearColor(0.0, 0.0, 0.0, 1.0);
-  while (running) {
+  while (!window::ShouldClose()) {
     PlatformEvent event;
     while (window::PollEvent(&event)) {}
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);

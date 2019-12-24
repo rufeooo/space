@@ -138,7 +138,9 @@ WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
   LRESULT result = 0;
 
   switch (msg) {
-    case WM_CLOSE:
+    case WM_CLOSE: {
+      kWindow.should_close = true;
+    } break;
     case WM_DESTROY: {
       PostQuitMessage(0);
     } break;
@@ -158,8 +160,7 @@ WindowProc(HWND window, UINT msg, WPARAM wparam, LPARAM lparam)
       result = DefWindowProcA(window, msg, wparam, lparam); 
     } break;
   }
-
-    return result;
+  return result;
 }
 
 HWND
@@ -335,8 +336,8 @@ void*
 GetGLFunction(const char* name)
 {
   void *p = (void *)wglGetProcAddress(name);
-  if(p == 0 || (p == (void*)0x1) || (p == (void*)0x2) || (p == (void*)0x3) ||
-    (p == (void*)-1)) {
+  if(p == 0 || (p == (void*)0x1) || (p == (void*)0x2) ||
+               (p == (void*)0x3) || (p == (void*)-1)) {
     static HMODULE module = LoadLibraryA("opengl32.dll");
     p = (void *)GetProcAddress(module, name);
   }
