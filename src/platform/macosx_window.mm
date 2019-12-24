@@ -246,7 +246,7 @@ ShouldClose()
 math::Vec2f
 GetWindowSize()
 {
-  NSRect frame = [kWindow.nswindow frame];
+  NSRect frame = [kWindow.nsview frame];
   return math::Vec2f(frame.size.width, frame.size.height);
 }
 
