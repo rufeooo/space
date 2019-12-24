@@ -15,6 +15,8 @@ void InitGLAndCreateWindow(int window_width, int window_height, const char* titl
   std::cout << version << std::endl;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
   // Should these be enabled?
   // glEnable(GL_CULL_FACE);
   // glCullFace(GL_BACK);
@@ -58,7 +60,8 @@ GLTypeToString(int type)
 }
 
 uint32_t
-CreateTriangleVAO()
+CreateTriangleVAO(
+    )
 {
   GLfloat points[] = {
       0.0f, 0.1f, 0.0f, 0.1f, -0.1f, 0.0f, -0.1f, -0.1f, 0.0f,

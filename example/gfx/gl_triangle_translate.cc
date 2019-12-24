@@ -6,21 +6,21 @@
 const char* vertex_shader = R"(
   #version 410
   layout (location = 0) in vec3 vertex_position;
-  layout (location = 1) in vec3 vertex_color;
-  uniform mat4 matrix;
-  out vec3 color; 
+  uniform mat4 matrix_uniform;
+  uniform vec4 color_uniform;
+  out vec4 color; 
   void main() {
-    color = vertex_color; 
-    gl_Position = matrix * vec4(vertex_position, 1.0);
+    color = color_uniform; 
+    gl_Position = matrix_uniform * vec4(vertex_position, 1.0);
   }
 )";
 
 const char* fragment_shader = R"(
   #version 410
-  in vec3 color;
+  in vec4 color;
 	out vec4 frag_color;
   void main() {
-   frag_color = vec4(color, 1.0);
+   frag_color = color;
   }
 )";
 
@@ -34,6 +34,9 @@ main()
   std::cout << version << std::endl;
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);
+  // Enable alpha transparency.
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
 
   glEnable(GL_CULL_FACE);  // cull face
   glCullFace(GL_BACK);     // cull back face
@@ -41,9 +44,6 @@ main()
 
   GLfloat points[] = {
       0.0f, 0.5f, 0.0f, 0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f,
-  };
-  GLfloat colors[] = {
-      1.0f, 0.0f, 0.0f, 0.0f, 1.0f, 0.0f, 0.0f, 0.0f, 1.0f,
   };
   math::Mat4f matrix{
       1.0f, 0.0f, 0.0f, 0.0f,
@@ -58,22 +58,14 @@ main()
   glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
   glBufferData(GL_ARRAY_BUFFER, 9 * sizeof(GLfloat), points, GL_STATIC_DRAW);
 
-  // Create colors VBO.
-  GLuint colors_vbo = 0;
-  glGenBuffers(1, &colors_vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(colors), colors, GL_STATIC_DRAW);
-
   GLuint vao = 0;
   glGenVertexArrays(1, &vao);
   glBindVertexArray(vao);
+
   // This needs to be done for each bound vao
   glEnableVertexAttribArray(0);
-  glEnableVertexAttribArray(1);
   glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
   glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, NULL);
-  glBindBuffer(GL_ARRAY_BUFFER, colors_vbo);
-  glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 0, NULL);
 
   // Create and compile vertex shader.
   GLuint vs = glCreateShader(GL_VERTEX_SHADER);
@@ -90,8 +82,14 @@ main()
   glLinkProgram(shader_program);
 
   int matrix_location = -1;
-  matrix_location = glGetUniformLocation(shader_program, "matrix");
+  matrix_location = glGetUniformLocation(shader_program, "matrix_uniform");
   std::cout << "matrix_location: " << matrix_location << std::endl;
+
+  int color_location = -1;
+  color_location = glGetUniformLocation(shader_program, "color_uniform");
+  std::cout << "color_location: " << color_location << std::endl;
+
+  math::Vec4f color(1.f, 0.f, 1.f, 0.25f);
 
   while (!window::ShouldClose()) {
     PlatformEvent event;
@@ -99,6 +97,7 @@ main()
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Set the shader program.
     glUseProgram(shader_program);
+    glUniform4f(color_location, color.x, color.y, color.z, color.w);
     glUniformMatrix4fv(matrix_location, 1, GL_FALSE, &matrix[0]);
     // Bind the vertex array object.
     glBindVertexArray(vao);

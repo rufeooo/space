@@ -327,6 +327,149 @@ Cross(const Vec3<T>& lhs, const Vec3<T>& rhs)
                  lhs.x * rhs.y - lhs.y * rhs.x);
 }
 
+template <typename T>
+struct Vec4 {
+  Vec4()
+  {
+    // Worth default init?
+    x = T(0);
+    y = T(0);
+    z = T(0);
+    w = T(0);
+  }
+
+  Vec4(const T& x, const T& y, const T& z, const T& w) : x(x), y(y), z(z), w(w) {}
+
+  void
+  operator+=(const Vec4<T>& rhs)
+  {
+    x += rhs.x;
+    y += rhs.y;
+    z += rhs.z;
+    w += rhs.w;
+  }
+
+  Vec4<T>
+  operator+(const Vec4<T>& rhs) const
+  {
+    Vec4<T> t = *this;
+    t += rhs;
+    return t;
+  }
+
+  void
+  operator-=(const Vec4<T>& rhs)
+  {
+    x -= rhs.x;
+    y -= rhs.y;
+    z -= rhs.z;
+    w -= rhs.w;
+  }
+
+  Vec4<T>
+  operator-(const Vec4<T>& rhs) const
+  {
+    Vec4<T> t = *this;
+    t -= rhs;
+    return t;
+  }
+
+  void
+  operator*=(const T& rhs)
+  {
+    x *= rhs;
+    y *= rhs;
+    z *= rhs;
+    w *= rhs;
+  }
+
+  Vec4<T> operator*(const T& rhs) const
+  {
+    Vec4<T> t = *this;
+    t *= rhs;
+    return t;
+  }
+
+  void
+  operator/=(const T& rhs)
+  {
+    x /= rhs;
+    y /= rhs;
+    z /= rhs;
+    w /= rhs;
+  }
+
+  Vec4<T>
+  operator/(const T& rhs) const
+  {
+    Vec4<T> t = *this;
+    t /= rhs;
+    return t;
+  }
+
+  void
+  operator/=(const Vec4<T>& rhs)
+  {
+    x /= rhs.x;
+    y /= rhs.y;
+    z /= rhs.z;
+    w /= rhs.w;
+  }
+
+  Vec4<T>
+  operator/(const Vec4<T>& rhs) const
+  {
+    Vec4<T> t = *this;
+    t /= rhs;
+    return t;
+  }
+
+  bool
+  operator==(const Vec4<T>& rhs) const
+  {
+    return x == rhs.x && y == rhs.y && z == rhs.z && w == rhs.w;
+  }
+
+  bool
+  operator!=(const Vec4<T>& rhs) const
+  {
+    return !(*this == rhs);
+  }
+
+  T x;
+  T y;
+  T z;
+  T w;
+};
+
+template <class T>
+T
+Dot(const Vec4<T>& lhs, const Vec4<T>& rhs)
+{
+  return lhs.x * rhs.x + lhs.y * rhs.y + lhs.z * rhs.z + lhs.w * rhs.w;
+}
+
+template <typename T>
+float
+LengthSquared(const Vec4<T>& v)
+{
+  return Dot(v, v);
+}
+
+template <typename T>
+float
+Length(const Vec4<T>& v)
+{
+  return std::sqrt(Dot(v, v));
+}
+
+template <class T>
+Vec4<T>
+Normalize(const Vec4<T>& v)
+{
+  return v / Length(v);
+}
+
 using Vec2i = Vec2<int>;
 using Vec2u = Vec2<uint32_t>;
 using Vec2f = Vec2<float>;
@@ -336,5 +479,7 @@ using Vec3i = Vec3<int>;
 using Vec3u = Vec3<uint32_t>;
 using Vec3f = Vec3<float>;
 using Vec3d = Vec3<double>;
+
+using Vec4f = Vec4<float>;
 
 }  // namespace math
