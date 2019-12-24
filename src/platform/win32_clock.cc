@@ -7,6 +7,7 @@ now_ns()
 {
   FILETIME time;
   GetSystemTimeAsFileTime(&time);
-  return ((uint64_t)(time.dwHighDateTime) << 32) | (uint64_t)time.dwLowDateTime;
+  // TODO: Not sure this is correct. Windows behaves quicker than I'd expect it to.
+  return (((uint64_t)(time.dwHighDateTime) << 32) | (uint64_t)time.dwLowDateTime) * 1000;
 }
 }  // namespace platform
