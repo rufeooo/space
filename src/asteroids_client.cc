@@ -131,6 +131,7 @@ Initialize()
   }
 
   if (!SetupClientConnection()) {
+    std::cout << "Failed to setup client connection." << std::endl;
     return false;
   }
 

@@ -85,6 +85,7 @@ Start(const char* hostname, const char* port)
   kClientState.port = port;
 
   if (!SetupClientSocket()) {
+    std::cout << "Failed to setup client socket" << std::endl;
     return false;
   }
 
@@ -107,7 +108,9 @@ void
 Send(uint8_t* buffer, int size)
 {
   if (!kClientState.client_running) return;
-  udp::Send(kClientState.client_socket, buffer, size);
+  if (!udp::Send(kClientState.client_socket, buffer, size)) {
+    std::cout << "udp::Send failed" << std::endl;
+  }
 }
 
 }  // namespace client
