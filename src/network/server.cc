@@ -62,12 +62,17 @@ GetClientId(Udp4* peer)
 bool
 SetupListenSocket()
 {
-  udp::GetAddr4(kServerState.server_address, kServerState.port,
-                &kServerState.server_socket);
+  if (!udp::GetAddr4(kServerState.server_address, kServerState.port,
+                     &kServerState.server_socket)) {
+    return false;
+  }
 
-  if (!udp::Bind(kServerState.server_socket))
+  if (!udp::Bind(kServerState.server_socket)) {
     std::cout << "bind failed: " << udp_errno << std::endl;
-  return false;
+    return false;
+  }
+
+  return true;
 }
 
 void

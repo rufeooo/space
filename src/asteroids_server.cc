@@ -11,7 +11,7 @@
 #include "math/math.cc"
 #include "network/server.cc"
 #include "platform/platform.cc"
-#include "renderer/renderer.cc"
+#include "gl/renderer.cc"
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
 static std::vector<int> kConnectedClients;
@@ -317,7 +317,6 @@ OnEnd()
 int
 main(int argc, char** argv)
 {
-  // gflags::ParseCommandLineFlags(&argc, &argv, true);
   game::Setup(&Initialize, &ProcessInput, &HandleEvent, &Update, &Render,
               &OnEnd);
 

@@ -9,16 +9,14 @@
 #include "components/network/server_authoritative_component.h"
 #include "ecs/internal.h"
 #include "game/game.cc"
+#include "gl/renderer.cc"
 #include "math/math.cc"
 #include "network/client.cc"
 #include "platform/platform.cc"
-#include "gl/renderer.cc"
 
-/*DEFINE_string(hostname, "",
-              "If provided will connect to a game server. Will play "
-              "the game singleplayer otherwise.");
-DEFINE_string(port, "9845", "Port for this application.");
-DEFINE_string(replay_file, "", "Run game from replay file.");*/
+static const char* hostname;
+static const char* replay_file;
+static const char* port;
 
 void
 OnServerMsgReceived(uint8_t* msg, int size)
@@ -58,13 +56,13 @@ OnServerAuthorityRemoved(ecs::Entity entity)
 bool
 SetupClientConnection()
 {
-  /*if (FLAGS_hostname.empty()) return true;
+  if (!hostname) return true;
 
   network::client::Setup(&OnServerMsgReceived);
-  if (!network::client::Start(FLAGS_hostname.c_str(), FLAGS_port.c_str())) {
+  if (!network::client::Start(hostname, port)) {
     std::cout << "Unable to start client." << std::endl;
     return false;
-  }*/
+  }
 
   return true;
 }
@@ -79,16 +77,16 @@ SetupClientConfiguration()
   asteroids::SetEntityIncrement(-1);
 
   // Writes all events to file in _tmp/<timestamp>. That way a session
-  // can be replayed using the --replay_file flag.
+  // can be replayed using the -r flag.
   game::SaveEventsToFile();
 
-  // if (!FLAGS_replay_file.empty()) {
-  //  game::LoadEventsFromFile(FLAGS_replay_file.c_str());
-  //}
+  if (replay_file) {
+    game::LoadEventsFromFile(replay_file);
+  }
 
   auto& components = asteroids::GlobalGameState().components;
 
-  /*if (!FLAGS_hostname.empty()) {
+  if (hostname) {
     components.AssignCallback<ServerAuthoritativeComponent>(
         &OnServerAuthorityCreated);
 
@@ -96,7 +94,7 @@ SetupClientConfiguration()
         &OnServerAuthorityRemoved);
 
     return;
-  }*/
+  }
 
   // Only the server has a game state component in a networked game.
   components.Assign<asteroids::GameStateComponent>(
@@ -116,12 +114,12 @@ SetupClientPlayer()
       asteroids::commands::PLAYER_ID_MUTATION);
   change_id->entity_id = create_player->entity_id;
 
-  // if (FLAGS_hostname.empty()) return;
+  if (!hostname) return;
 
   // Inform the server of this player joining.
-  // network::client::Send(
-  //    ((uint8_t*)create_player - game::kEventHeaderSize),
-  //    sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
+  network::client::Send(
+      ((uint8_t*)create_player - game::kEventHeaderSize),
+      sizeof(asteroids::commands::CreatePlayer) + game::kEventHeaderSize);
 }
 
 bool
@@ -229,7 +227,23 @@ OnEnd()
 int
 main(int argc, char** argv)
 {
-  //  gflags::ParseCommandLineFlags(&argc, &argv, true);
+  while (1) {
+    int opt = platform_getopt(argc, argv, "h:r:p:");
+    if (opt == -1) break;
+
+    switch (opt) {
+      case 'h':
+        hostname = platform_optarg;
+        break;
+      case 'r':
+        replay_file = platform_optarg;
+        break;
+      case 'p':
+        port = platform_optarg;
+        break;
+    }
+  }
+
   game::Setup(&Initialize, &ProcessInput, &asteroids::HandleEvent,
               &asteroids::UpdateGame, &asteroids::RenderGame, &OnEnd);
   if (!game::Run()) {
