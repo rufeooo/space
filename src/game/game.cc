@@ -14,16 +14,16 @@ namespace game
 {
 struct State {
   // Run each game logic update with a delta_time of ms_per_update.
-  uint64_t ms_per_update = 15;
+  uint64_t ns_per_update = 15000000;
   // Run a frame every min_ms_per_frame if the time it takes to run
   // update / render  is under this value the system will sleep until
   // it reaches min_ms_per_frame. This is really just to save battery
   // on my laptop at the moment. I'm not really sure it's worth always
   // doing.
-  uint64_t min_ms_per_frame = 15;
-  uint64_t game_ms;
-  uint64_t clock_ms;
-  uint64_t ms_per_frame;
+  uint64_t min_ns_per_frame = 15000000;
+  uint64_t game_ns;
+  uint64_t clock_ns;
+  uint64_t ns_per_frame;
   bool paused = false;
   bool end = false;
   bool sleep_on_loop_end = true;
@@ -136,11 +136,11 @@ Run(uint64_t loop_count)
     return false;
   }
 
-  auto previous = platform::now_ms();
+  uint64_t previous = platform::now_ns();
   uint64_t lag(0);
   kGameState.game_updates = 0;
-  kGameState.game_ms = 0;
-  kGameState.clock_ms = 0;
+  kGameState.game_ns = 0;
+  kGameState.clock_ns = 0;
   uint64_t current, elapsed, endloop;
 
   while (loop_count == 0 || kGameState.game_updates < loop_count) {
@@ -149,14 +149,14 @@ Run(uint64_t loop_count)
       return true;
     }
 
-    current = platform::now_ms();
+    current = platform::now_ns();
     elapsed = current - previous;
     if (!kGameState.paused) lag += elapsed;
 
     _ProcessInput();
-    kGameState.clock_ms += elapsed;
+    kGameState.clock_ns += elapsed;
 
-    while (!kGameState.paused && lag >= kGameState.ms_per_update) {
+    while (!kGameState.paused && lag >= kGameState.ns_per_update) {
       // Pump the event queue if a replay is coming from file.
       OptionallyPumpEventsFromFile();
 
@@ -179,8 +179,9 @@ Run(uint64_t loop_count)
       // a fixed delta so no need to provide a delta time.
       _Update();
 
-      lag -= kGameState.ms_per_update;
-      kGameState.game_ms += kGameState.ms_per_update;
+      lag -= kGameState.ns_per_update;
+      if (lag < 0) lag = 0;
+      kGameState.game_ns += kGameState.ns_per_update;
       ++kGameState.game_updates;
     }
 
@@ -189,17 +190,17 @@ Run(uint64_t loop_count)
       return true;  // Returns ??
     }
 
-    endloop = platform::now_ms();
+    endloop = platform::now_ns();
     previous = current;
-    auto ms = endloop - current;
+    auto ns = endloop - current;
 
-    // sleep s.t. we only do min_ms_per_frame.
-    if (kGameState.sleep_on_loop_end && ms < kGameState.min_ms_per_frame) {
-      auto sleep_ms = kGameState.min_ms_per_frame - ms;
-      platform::sleep_ms(sleep_ms);
+    // sleep s.t. we only do min_ns_per_frame.
+    if (kGameState.sleep_on_loop_end && ns < kGameState.min_ns_per_frame) {
+      auto sleep_ns = kGameState.min_ns_per_frame - ns;
+      platform::sleep_ms(sleep_ns / 1000000);
     }
 
-    kGameState.ms_per_frame = platform::now_ms() - current;
+    kGameState.ns_per_frame = platform::now_ns() - current;
   }
 
   _OnEnd();
@@ -229,7 +230,7 @@ End()
 uint64_t
 GameMS()
 {
-  return kGameState.game_ms;
+  return kGameState.game_ns / 1000000;
 }
 
 int
