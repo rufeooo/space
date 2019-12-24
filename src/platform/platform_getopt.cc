@@ -14,8 +14,8 @@ platform_getopt(int argc, char* const argv[], const char* optstring)
     const char* optiter = optstring;
     for (; *optiter; ++optiter) {
       int val_param = *(optiter + 1) == ':';
-      if (!val_param) platform_optarg = nullptr;
       if (arg[0] == '-' && *optiter == arg[1]) {
+        if (!val_param) platform_optarg = nullptr;
         ++platform_optind;
         return *optiter;
       }
