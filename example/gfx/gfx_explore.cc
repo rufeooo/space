@@ -1,8 +1,8 @@
 
 #include "platform/platform.cc"
-#include "camera.cc"
+#include "space/camera.cc"
 #include "gl/renderer.cc"
-#include "gfx.cc"
+#include "space/gfx.cc"
 
 // ORTHO:
 //0.002500,0.000000,0.000000,-1.000000
