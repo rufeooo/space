@@ -179,7 +179,8 @@ main(int argc, char** argv)
   kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
   platform::clock_init();
 
-  while (loop_count == 0 || kGameState.game_updates < loop_count) {
+  while (!window::ShouldClose() &&
+         (loop_count == 0 || kGameState.game_updates < loop_count)) {
     if (kGameState.end) {
       OnEnd();
       return 1;
