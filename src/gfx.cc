@@ -246,7 +246,6 @@ RenderGrids(const math::Mat4f& ortho_view, const math::Vec2f& dims)
           glDrawArrays(GL_LINES, 0, 2);
         }
       });
-
 }
 
 bool
