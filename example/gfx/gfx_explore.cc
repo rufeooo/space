@@ -4,14 +4,34 @@
 #include "gl/renderer.cc"
 #include "gfx.cc"
 
+// ORTHO:
+//0.002500,0.000000,0.000000,-1.000000
+//0.000000,0.002500,0.000000,-1.000000
+//0.000000,0.000000,-2.000000,-0.000000
+//0.000000,0.000000,0.000000,1.000000/
+//
+// PERSPECTIVE:
+//1.510835,0.000000,0.000000,0.000000
+//0.000000,1.510835,0.000000,0.000000
+//0.000000,0.000000,-1.002002,-0.200200
+//0.000000,0.000000,-1.000000,0.000000/
+
+math::Mat4f PerspectiveProjection() {
+  auto sz = window::GetWindowSize();
+  return math::CreatePerspectiveMatrix<float>(sz.x, sz.y);
+}
+
 int
 main(int argc, char** argv)
 {
   if (!gfx::Initialize()) return 1;
 
+  gfx::SetProjection(&PerspectiveProjection);
+
   math::Vec2f dims = window::GetWindowSize();
   // Orient camera to the screens (0, 0) position.
-  camera::Translate(math::Vec3f(dims / -2.f));
+  //camera::Translate(math::Vec3f(dims.x / -2.f, dims.y / -2.f, 5.0f));
+  camera::Translate(math::Vec3f(0.f, 0.f, 5.0f));
   // Aim it down the z axis.
   camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
 

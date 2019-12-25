@@ -58,6 +58,14 @@ struct Gfx {
 
 static Gfx kGfx;
 
+CreateProjectionFunctor* _custom_projection = nullptr;
+
+void
+SetProjection(CreateProjectionFunctor* projection)
+{
+  _custom_projection = projection;
+}
+
 bool
 Initialize()
 {
@@ -254,10 +262,15 @@ Render()
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
   math::Vec2f dims = window::GetWindowSize();
   // TODO: Take into consideration camera.
-  math::Mat4f ortho = math::CreateOrthographicMatrix<float>(
-      dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  math::Mat4f projection;
+  if (!_custom_projection) {
+    projection = math::CreateOrthographicMatrix<float>(
+        dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  } else {
+    projection = _custom_projection();
+  }
   math::Mat4f view = camera::view_matrix();
-  math::Mat4f ortho_view = ortho * view;
+  math::Mat4f ortho_view = projection * view;
 
   // For now draw all primitives as wireframe.
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
