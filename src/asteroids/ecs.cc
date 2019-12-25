@@ -5,6 +5,7 @@
 #include "ecs/common.cc"
 #include "ecs/internal.h"
 
+#include "components/input_component.h"
 #include "components/server_authoritative_component.h"
 
 #include "math/vec.h"
