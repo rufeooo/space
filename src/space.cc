@@ -1,4 +1,5 @@
 #include <cassert>
+#include <cstdio>
 
 #include "math/math.cc"
 
@@ -27,6 +28,8 @@ struct State {
   // Network resources
   Udp4 socket;
   uint8_t netbuffer[PAGE];
+  const char* server_ip = "localhost";
+  const char* server_port = "9845";
 };
 
 static State kGameState;
@@ -66,7 +69,9 @@ Connect()
 {
   if (!udp::Init()) return false;
 
-  if (!udp::GetAddr4("localhost", "9845", &kGameState.socket)) return false;
+  if (!udp::GetAddr4(kGameState.server_ip, kGameState.server_port,
+                     &kGameState.socket))
+    return false;
 
   return true;
 }
@@ -202,9 +207,25 @@ UpdateGame()
 constexpr int kEventBufferSize = 20 * 1024;
 
 int
-main()
+main(int argc, char** argv)
 {
   uint64_t loop_count = 0;
+
+  while (1) {
+    int opt = platform_getopt(argc, argv, "i:p:");
+    if (opt == -1) break;
+
+    switch (opt) {
+      case 'i':
+        kGameState.server_ip = platform_optarg;
+        break;
+      case 'p':
+        kGameState.server_port = platform_optarg;
+        break;
+    }
+  }
+  printf("Client will connect to game at %s:%s\n", kGameState.server_ip,
+         kGameState.server_port);
 
   if (!Initialize()) {
     return 1;
