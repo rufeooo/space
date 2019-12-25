@@ -38,17 +38,26 @@ Initialize()
   // Make a square. This thing moves around when clicking.
   auto* transform = kECS.Assign<TransformComponent>(0);
   transform->position = math::Vec3f(400.f, 400.f, 0.f);
-  kECS.Assign<RectangleComponent>(0);
+  auto rect = kECS.Assign<RectangleComponent>(0);
+  rect->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
 
   // Make a triangle. This doesn't really do anything.
   transform = kECS.Assign<TransformComponent>(1);
   transform->position = math::Vec3f(200.f, 200.f, 0.f);
   // transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
-  kECS.Assign<TriangleComponent>(1);
+  auto* tri = kECS.Assign<TriangleComponent>(1);
+  tri->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
 
   auto* grid = kECS.Assign<GridComponent>(2);
+  grid->width = 50.f;
+  grid->height = 50.f;
+  grid->color = math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f);
+
+  grid = kECS.Assign<GridComponent>(3);
   grid->width = 25.f;
   grid->height = 25.f;
+  grid->color = math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f);
+
 
   return true;
 }

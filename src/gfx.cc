@@ -16,7 +16,10 @@ constexpr const char* kVertexShader = R"(
   #version 410
   layout (location = 0) in vec3 vertex_position;
   uniform mat4 matrix;
+  uniform vec4 color;
+  out vec4 color_out;
   void main() {
+    color_out = color;
     gl_Position = matrix * vec4(vertex_position, 1.0);
   }
 )";
@@ -25,9 +28,10 @@ constexpr const char* kVertexShaderName = "vert";
 
 constexpr const char* kFragmentShader = R"(
   #version 410
+  in vec4 color_out;
 	out vec4 frag_color;
   void main() {
-   frag_color = vec4(1.0, 1.0, 1.0, 1.0);
+   frag_color = color_out;
   }
 )";
 
@@ -42,7 +46,8 @@ struct Gfx {
   uint32_t program_reference;
 
   // References to uniforms.
-  uint32_t matrix_uniform;
+  uint32_t matrix_uniform = -1;
+  uint32_t color_uniform = -1;
 
   // References to vertex data on GPU.
   uint32_t triangle_vao_reference;
@@ -87,6 +92,9 @@ Initialize()
   }
 
   kGfx.matrix_uniform = glGetUniformLocation(kGfx.program_reference, "matrix");
+  assert(kGfx.matrix_uniform != uint32_t(-1));
+  kGfx.color_uniform = glGetUniformLocation(kGfx.program_reference, "color");
+  assert(kGfx.color_uniform != uint32_t(-1));
 
   // Create the geometry for basic shapes.
 
@@ -117,12 +125,14 @@ RenderTriangles(const math::Mat4f& ortho_view)
   glBindVertexArray(kGfx.triangle_vao_reference);
   kECS.Enumerate<TransformComponent, TriangleComponent>(
       [&](ecs::Entity entity, TransformComponent& transform,
-          TriangleComponent&) {
+          TriangleComponent& tri) {
         // Translate and rotate the triangle appropriately.
         math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
                             math::CreateScaleMatrix(transform.scale) *
                             math::CreateRotationMatrix(transform.orientation);
         math::Mat4f matrix = ortho_view * model;
+        glUniform4f(kGfx.color_uniform, tri.color.x, tri.color.y,
+                    tri.color.z, tri.color.w);
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINE_LOOP, 0, 3);
       });
@@ -136,12 +146,14 @@ RenderRectangles(const math::Mat4f& ortho_view)
   glBindVertexArray(kGfx.rectangle_vao_reference);
   kECS.Enumerate<TransformComponent, RectangleComponent>(
       [&](ecs::Entity entity, TransformComponent& transform,
-          RectangleComponent&) {
+          RectangleComponent& rect) {
         // Translate and rotate the rectangle appropriately.
         math::Mat4f model = math::CreateTranslationMatrix(transform.position) *
                             math::CreateScaleMatrix(transform.scale) *
                             math::CreateRotationMatrix(transform.orientation);
         math::Mat4f matrix = ortho_view * model;
+        glUniform4f(kGfx.color_uniform, rect.color.x, rect.color.y,
+                    rect.color.z, rect.color.w);
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINE_LOOP, 0, 4);
       });
@@ -178,6 +190,8 @@ RenderLines(const math::Mat4f& ortho_view)
   kECS.Enumerate<LineComponent>(
       [&](ecs::Entity entity, LineComponent& line) {
         math::Mat4f matrix = ortho_view * CreateLineTransform(line.start, line.end);
+        glUniform4f(kGfx.color_uniform, line.color.x, line.color.y,
+                    line.color.z, line.color.w);
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINES, 0, 2);
       });
@@ -212,6 +226,9 @@ RenderGrids(const math::Mat4f& ortho_view, const math::Vec2f& dims)
           top_right + math::Vec3f(right_most_grid_x, top_most_grid_y, 0.f);
         math::Vec3f bottom_left_transformed =
           bottom_left + math::Vec3f(left_most_grid_x, bottom_most_grid_y, 0.f);
+    
+        glUniform4f(kGfx.color_uniform, grid.color.x, grid.color.y,
+                    grid.color.z, grid.color.w);
 
         // Draw horizontal lines.
         for (float y = bottom_left_transformed.y; y < top_right.y; y += grid.height) {
@@ -247,10 +264,14 @@ Render()
   math::Mat4f view = camera::view_matrix();
   math::Mat4f ortho_view = ortho * view;
 
+  // For now draw all primitives as wireframe.
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   RenderTriangles(ortho_view);
   RenderRectangles(ortho_view);
   RenderLines(ortho_view);
   RenderGrids(ortho_view, dims);
+  // Undo wireframe drawing.
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   window::SwapBuffers();
   return true;

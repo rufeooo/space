@@ -51,6 +51,8 @@ main()
       0.0f, 0.0f, 1.0f, 0.0f,
       0.5f, 0.0f, 0.0f, 1.0f, // translation matrix.
   };
+  
+  glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 
   // Create points VBO.
   GLuint points_vbo = 0;

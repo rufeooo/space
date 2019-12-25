@@ -331,11 +331,10 @@ template <typename T>
 struct Vec4 {
   Vec4()
   {
-    // Worth default init?
     x = T(0);
     y = T(0);
     z = T(0);
-    w = T(0);
+    w = T(1); // Worthwhile default for homogeneous cords and color.
   }
 
   Vec4(const T& x, const T& y, const T& z, const T& w) : x(x), y(y), z(z), w(w) {}
