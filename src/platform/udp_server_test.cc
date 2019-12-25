@@ -7,16 +7,33 @@ volatile bool running = true;
 int
 main(int argc, char** argv)
 {
+  const char* ip = "127.0.0.1";
+  const char* port = "9845";
+
+  while (1) {
+    int opt = platform_getopt(argc, argv, "i:p:");
+    if (opt == -1) break;
+
+    switch (opt) {
+      case 'i':
+        ip = platform_optarg;
+        break;
+      case 'p':
+        port = platform_optarg;
+        break;
+    };
+  }
 #define MAX_BUFFER 4 * 1024
   uint8_t buffer[MAX_BUFFER];
   udp::Init();
 
   Udp4 location;
-  if (!udp::GetAddr4("127.0.0.1", "5000", &location)) {
+  if (!udp::GetAddr4(ip, port, &location)) {
     puts("fail GetAddr4");
     exit(1);
   }
 
+  printf("Server binding %s:%s\n", ip, port);
   if (!udp::Bind(location)) {
     puts("fail Bind");
     exit(1);
@@ -35,12 +52,9 @@ main(int argc, char** argv)
 
     // Echo bytes to peer
     printf("socket %d echo %d bytes\n", location.socket, received_bytes);
-    if (!udp::SendTo(location, peer, buffer, received_bytes))
-    {
+    if (!udp::SendTo(location, peer, buffer, received_bytes)) {
       puts("send failed");
-    }
-    else
-    {
+    } else {
       puts("send ok");
     }
   }
