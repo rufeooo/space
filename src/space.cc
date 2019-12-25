@@ -4,11 +4,11 @@
 #include "camera.cc"
 #include "command.cc"
 #include "ecs.h"
-#include "platform/platform.cc"
 #include "game/game.cc"
 #include "gfx.cc"
-#include "math/math.cc"
 #include "gl/renderer.cc"
+#include "math/math.cc"
+#include "platform/platform.cc"
 
 #include "game/event_buffer.h"
 #include "game/game.h"
@@ -26,9 +26,9 @@ Initialize()
   // Make a triangle. This doesn't really do anything.
   transform = kECS.Assign<TransformComponent>(1);
   transform->position = math::Vec3f(200.f, 200.f, 0.f);
-  //transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
+  // transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
   kECS.Assign<TriangleComponent>(1);
-  
+
   auto* grid = kECS.Assign<GridComponent>(2);
   grid->width = 25.f;
   grid->height = 25.f;
@@ -47,7 +47,8 @@ ProcessInput()
         if (event.button == BUTTON_LEFT) {
           command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
           move->entity_id = 0;
-          // A bit of an optimization. Assume no zoom when converting to world space.
+          // A bit of an optimization. Assume no zoom when converting to world
+          // space.
           move->position = event.position + camera::position().xy();
         }
       } break;
@@ -65,7 +66,8 @@ ProcessInput()
           case 'd': {
             camera_translate.x = 1.f;
           } break;
-          default: break;
+          default:
+            break;
         }
       } break;
       case KEY_UP: {
@@ -82,10 +84,12 @@ ProcessInput()
           case 'd': {
             camera_translate.x = 0.f;
           } break;
-          default: break;
+          default:
+            break;
         }
       } break;
-      default: break;
+      default:
+        break;
     }
   }
   camera::Translate(camera_translate);
@@ -130,8 +134,6 @@ void
 OnEnd()
 {
 }
-
-// namespace
 
 int
 main(int argc, char** argv)
