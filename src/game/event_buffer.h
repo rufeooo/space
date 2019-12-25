@@ -41,7 +41,7 @@ void SetCustomEventBuffer(EventBuffer* event_buffer);
 // some sort of enum that will later be used to determine type.
 template <class T, class ID>
 T*
-CreateEvent(ID event_id)
+EnqueueEvent(ID event_id)
 {
   T* e = (T*)EnqueueEvent(sizeof(T), (uint16_t)event_id);
   return e;

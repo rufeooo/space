@@ -71,7 +71,7 @@ ProcessInput()
     switch (event.type) {
       case MOUSE_DOWN: {
         if (event.button == BUTTON_LEFT) {
-          command::Move* move = game::CreateEvent<command::Move>(command::MOVE);
+          command::Move* move = game::EnqueueEvent<command::Move>(command::MOVE);
           move->entity_id = 0;
           // A bit of an optimization. Assume no zoom when converting to world
           // space.
