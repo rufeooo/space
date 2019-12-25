@@ -217,4 +217,10 @@ GetWindowSize()
   return size;
 }
 
+bool
+ShouldClose()
+{
+  return false;
+}
+
 }  // namespace window
