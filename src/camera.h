@@ -17,6 +17,9 @@ void AimAt(const math::Vec3f& dir);
 // Returns the current position of the camera.
 math::Vec3f position();
 
+// Returns the transform matrix of the camera.
+math::Mat4f transform_matrix();
+
 // Return the cameras current view matrix.
 math::Mat4f view_matrix();
 

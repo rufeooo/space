@@ -37,6 +37,13 @@ position()
 }
 
 math::Mat4f
+transform_matrix()
+{
+  return math::CreateTranslationMatrix(kCamera.position) *
+         math::CreateRotationMatrix(kCamera.orientation);
+}
+
+math::Mat4f
 view_matrix()
 {
   return math::CreateViewMatrix<float>(kCamera.position, kCamera.orientation);

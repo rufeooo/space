@@ -30,8 +30,8 @@ Initialize()
   kECS.Assign<TriangleComponent>(1);
   
   auto* grid = kECS.Assign<GridComponent>(2);
-  grid->width = 50.f;
-  grid->height = 50.f;
+  grid->width = 25.f;
+  grid->height = 25.f;
 
   return true;
 }
