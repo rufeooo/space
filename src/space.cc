@@ -1,14 +1,11 @@
 #include <cassert>
-#include <iostream>
 
 #include "camera.cc"
 #include "command.cc"
 #include "ecs.h"
-#include "game/game.cc"
+#include "game/event_buffer.cc"
 #include "gfx.cc"
-#include "gl/renderer.cc"
 #include "math/math.cc"
-#include "platform/platform.cc"
 
 struct State {
   // Game and render updates per second
@@ -24,8 +21,6 @@ struct State {
   // Number of times the game frame was exceptionally delayed
   uint64_t game_jerk = 0;
   // ...
-  std::ofstream output_event_file;
-  std::ifstream input_event_file;
   game::EventBuffer event_buffer;
 };
 
@@ -58,7 +53,6 @@ Initialize()
   grid->height = 25.f;
   grid->color = math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f);
 
-
   return true;
 }
 
@@ -71,7 +65,8 @@ ProcessInput()
     switch (event.type) {
       case MOUSE_DOWN: {
         if (event.button == BUTTON_LEFT) {
-          command::Move* move = game::EnqueueEvent<command::Move>(command::MOVE);
+          command::Move* move =
+              game::EnqueueEvent<command::Move>(command::MOVE);
           move->entity_id = 0;
           // A bit of an optimization. Assume no zoom when converting to world
           // space.
@@ -189,23 +184,15 @@ main(int argc, char** argv)
     ProcessInput();
 
     {
-      // Pump the event queue if a replay is coming from file.
-      game::OptionallyPumpEventsFromFile();
-
       // Dequeue and handle all events in event queue.
       game::Event event;
       while (PollEvent(&event)) {
-        game::OptionallyWriteEventToFile(event);
         HandleEvent(event);
       }
 
       // Clears all memory in event buffer since they should
       // have all been handled by now.
       game::ResetEventBuffer();
-
-      // If all events have been pumped from file close it
-      // and reset the regular event buffer.
-      game::OptionallyCloseEventsFile();
 
       // Give the user an update tick. The engine runs with
       // a fixed delta so no need to provide a delta time.

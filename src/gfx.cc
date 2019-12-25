@@ -5,10 +5,8 @@
 
 #include "camera.h"
 #include "ecs.h"
-#include "math/mat_ops.h"
-#include "math/vec.h"
-#include "gl/shader_cache.h"
-#include "gl/utils.h"
+#include "gl/renderer.cc"
+#include "math/math.cc"
 
 namespace gfx
 {
@@ -65,15 +63,14 @@ Initialize()
 {
   gl::InitGLAndCreateWindow(800, 800, "Space");
 
-  if (!kGfx.shader_cache.CompileShader(
-          kVertexShaderName, gl::ShaderType::VERTEX, kVertexShader)) {
+  if (!kGfx.shader_cache.CompileShader(kVertexShaderName,
+                                       gl::ShaderType::VERTEX, kVertexShader)) {
     std::cout << "Unable to compile " << kVertexShaderName << std::endl;
     return false;
   }
 
-  if (!kGfx.shader_cache.CompileShader(kFragmentShaderName,
-                                       gl::ShaderType::FRAGMENT,
-                                       kFragmentShader)) {
+  if (!kGfx.shader_cache.CompileShader(
+          kFragmentShaderName, gl::ShaderType::FRAGMENT, kFragmentShader)) {
     std::cout << "Unable to compile " << kFragmentShaderName << std::endl;
     return false;
   }
@@ -101,8 +98,7 @@ Initialize()
   // Triangle.
   float m = kGfx.meter_size;
   kGfx.triangle_vao_reference = gl::CreateGeometryVAO(
-      {math::Vec2f(0.0f, m / 2.f),
-       math::Vec2f(m / 2.f, -m / 2.f),
+      {math::Vec2f(0.0f, m / 2.f), math::Vec2f(m / 2.f, -m / 2.f),
        math::Vec2f(-m / 2.f, -m / 2.f)});
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
@@ -111,8 +107,8 @@ Initialize()
        math::Vec2f(m / 2.f, -m / 2.f), math::Vec2f(-m / 2.f, -m / 2.f)});
 
   // Line is flat on the x-axis with distance m.
-  kGfx.line_vao_reference = gl::CreateGeometryVAO(
-      {math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)});
+  kGfx.line_vao_reference =
+      gl::CreateGeometryVAO({math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)});
 
   return true;
 }
@@ -166,18 +162,18 @@ CreateLineTransform(const math::Vec3f& start, const math::Vec3f& end)
   //
   // It must be translated / rotated / scaled to be properly moved
   // to meet the start / end nature of the line component.
-  
+
   // Position is the midpoint of the start and end.
   math::Vec3f translation = (start + end) / 2.f;
   // Angle between the two points in 2d.
-  math::Vec3f diff = end - start; 
+  math::Vec3f diff = end - start;
   float angle = std::atan2(diff.y, diff.x) * (180.f / PI);
   float distance = math::Length(diff);
   return math::CreateTranslationMatrix(translation) *
          math::CreateScaleMatrix(
-            math::Vec3f(distance / 2.f, distance / 2.f, 1.f)) *
+             math::Vec3f(distance / 2.f, distance / 2.f, 1.f)) *
          math::CreateRotationMatrix(
-            math::Quatf(angle, math::Vec3f(0.f, 0.f, -1.f)));
+             math::Quatf(angle, math::Vec3f(0.f, 0.f, -1.f)));
 }
 
 void
