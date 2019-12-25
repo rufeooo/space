@@ -59,6 +59,8 @@ typedef GLint glGetAttribLocation_Func(GLuint, const GLchar*);
 glGetAttribLocation_Func* glGetAttribLocation;
 typedef void glGetActiveUniform_Func(GLuint, GLuint, GLsizei, GLsizei*, GLint*, GLenum*, GLchar*);
 glGetActiveUniform_Func* glGetActiveUniform;
+typedef void glUniform4f_Func(GLint, GLfloat, GLfloat, GLfloat, GLfloat);
+glUniform4f_Func* glUniform4f;
 
 // GL defines.
 #define GL_ARRAY_BUFFER                   0x8892
@@ -405,6 +407,7 @@ SetupGLFunctions() {
   glGetActiveAttrib = (glGetActiveAttrib_Func*)GetGLFunction("glGetActiveAttrib");
   glGetAttribLocation = (glGetAttribLocation_Func*)GetGLFunction("glGetAttribLocation");
   glGetActiveUniform = (glGetActiveUniform_Func*)GetGLFunction("glGetActiveUniform");
+  glUniform4f = (glUniform4f_Func*)GetGLFunction("glUniform4f");
 }
 
 int
