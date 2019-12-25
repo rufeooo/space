@@ -2,27 +2,31 @@
 
 #include "math/math.cc"
 
-#include "game/event_buffer.cc"
 #include "space/camera.cc"
 #include "space/command.cc"
 #include "space/ecs.cc"
 #include "space/gfx.cc"
+
+#define MAX_TICK_EVENTS 30
+#define PAGE (4 * 1024)
 
 struct State {
   // Game and render updates per second
   uint64_t framerate = 60;
   // Calculated available microseconds per game_update
   uint64_t frame_target_usec;
-  // Game Halt variable
-  bool end = false;
   // Allow yielding idle cycles to kernel
   bool sleep_on_loop = true;
   // Number of times the game has been updated.
   uint64_t game_updates = 0;
   // Number of times the game frame was exceptionally delayed
   uint64_t game_jerk = 0;
-  // ...
-  game::EventBuffer event_buffer;
+  // Events handled per input tick
+  PlatformEvent ievent[MAX_TICK_EVENTS];
+  uint64_t used_ievent = 0;
+  // Network resources
+  Udp4 socket;
+  uint8_t netbuffer[PAGE];
 };
 
 static State kGameState;
@@ -58,78 +62,121 @@ Initialize()
 }
 
 bool
-ProcessInput()
+Connect()
 {
-  PlatformEvent event;
-  static math::Vec2f camera_translate(0.f, 0.f);
-  while (window::PollEvent(&event)) {
-    switch (event.type) {
-      case MOUSE_DOWN: {
-        if (event.button == BUTTON_LEFT) {
-          command::Move* move =
-              game::EnqueueEvent<command::Move>(command::MOVE);
-          move->entity_id = 0;
-          // A bit of an optimization. Assume no zoom when converting to world
-          // space.
-          move->position = event.position + camera::position().xy();
-        }
-      } break;
-      case KEY_DOWN: {
-        switch (event.key) {
-          case 'w': {
-            camera_translate.y = 1.f;
-          } break;
-          case 'a': {
-            camera_translate.x = -1.f;
-          } break;
-          case 's': {
-            camera_translate.y = -1.f;
-          } break;
-          case 'd': {
-            camera_translate.x = 1.f;
-          } break;
-          default:
-            break;
-        }
-      } break;
-      case KEY_UP: {
-        switch (event.key) {
-          case 'w': {
-            camera_translate.y = 0.f;
-          } break;
-          case 'a': {
-            camera_translate.x = 0.f;
-          } break;
-          case 's': {
-            camera_translate.y = 0.f;
-          } break;
-          case 'd': {
-            camera_translate.x = 0.f;
-          } break;
-          default:
-            break;
-        }
-      } break;
-      default:
-        break;
-    }
-  }
-  camera::Translate(camera_translate);
+  if (!udp::Init()) return false;
+
+  if (!udp::GetAddr4("localhost", "9845", &kGameState.socket)) return false;
 
   return true;
 }
 
 void
-HandleEvent(game::Event event)
+ProcessLocalInput()
 {
-  switch ((command::Event)event.metadata) {
-    case command::MOVE:
-      command::Execute(*((command::Move*)event.data));
-      break;
-    case command::INVALID:
-    default:
-      assert("Invalid command.");
+  PlatformEvent event;
+  for (kGameState.used_ievent = 0; kGameState.used_ievent < MAX_TICK_EVENTS;
+       ++kGameState.used_ievent) {
+    if (!window::PollEvent(&kGameState.ievent[kGameState.used_ievent])) break;
   }
+}
+
+void
+NetworkEgress()
+{
+  // write frame
+  *((int*)kGameState.netbuffer) = kGameState.game_updates;
+  // write input
+  memcpy(kGameState.netbuffer + sizeof(int), kGameState.ievent,
+         sizeof(PlatformEvent) * kGameState.used_ievent);
+
+  if (!udp::Send(
+          kGameState.socket, kGameState.netbuffer,
+          sizeof(int) + sizeof(PlatformEvent) * kGameState.used_ievent)) {
+    exit(1);
+  }
+}
+
+void
+NetworkIngress()
+{
+  uint16_t bytes_received;
+  if (!udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
+                        kGameState.netbuffer, &bytes_received))
+    return;
+
+  if (bytes_received > sizeof(kGameState.ievent)) exit(1);
+
+  // TODO: packet reordering
+
+  memcpy(kGameState.ievent, kGameState.netbuffer + sizeof(int),
+         bytes_received - 4);
+  kGameState.used_ievent = (bytes_received - 4) / sizeof(PlatformEvent);
+}
+
+void
+GameInput(PlatformEvent* event, math::Vec2f* camera)
+{
+  switch (event->type) {
+    case MOUSE_DOWN: {
+      if (event->button == BUTTON_LEFT) {
+        command::Move move;
+        move.entity_id = 0;
+        // A bit of an optimization. Assume no zoom when converting to world
+        // space.
+        move.position = event->position + camera::position().xy();
+        command::Execute(move);
+      }
+    } break;
+    case KEY_DOWN: {
+      switch (event->key) {
+        case 'w': {
+          camera->y = 1.f;
+        } break;
+        case 'a': {
+          camera->x = -1.f;
+        } break;
+        case 's': {
+          camera->y = -1.f;
+        } break;
+        case 'd': {
+          camera->x = 1.f;
+        } break;
+        default:
+          break;
+      }
+    } break;
+    case KEY_UP: {
+      switch (event->key) {
+        case 'w': {
+          camera->y = 0.f;
+        } break;
+        case 'a': {
+          camera->x = 0.f;
+        } break;
+        case 's': {
+          camera->y = 0.f;
+        } break;
+        case 'd': {
+          camera->x = 0.f;
+        } break;
+        default:
+          break;
+      }
+    } break;
+    default:
+      break;
+  }
+}
+
+void
+ProcessGameInput(uint64_t event_count, PlatformEvent* event)
+{
+  static math::Vec2f camera_translate(0.f, 0.f);
+  for (int i = 0; i < event_count; ++i) {
+    GameInput(&event[i], &camera_translate);
+  }
+  camera::Translate(camera_translate);
 }
 
 bool
@@ -152,21 +199,18 @@ UpdateGame()
   return true;
 }
 
-void
-OnEnd()
-{
-}
-
 constexpr int kEventBufferSize = 20 * 1024;
 
 int
-main(int argc, char** argv)
+main()
 {
   uint64_t loop_count = 0;
 
-  game::AllocateEventBuffer(kEventBufferSize);
   if (!Initialize()) {
-    OnEnd();
+    return 1;
+  }
+
+  if (!Connect()) {
     return 1;
   }
 
@@ -177,24 +221,12 @@ main(int argc, char** argv)
 
   while (!window::ShouldClose() &&
          (loop_count == 0 || kGameState.game_updates < loop_count)) {
-    if (kGameState.end) {
-      OnEnd();
-      return 1;
-    }
-
-    ProcessInput();
+    ProcessLocalInput();
+    NetworkEgress();
+    NetworkIngress();
+    ProcessGameInput(kGameState.used_ievent, kGameState.ievent);
 
     {
-      // Dequeue and handle all events in event queue.
-      game::Event event;
-      while (PollEvent(&event)) {
-        HandleEvent(event);
-      }
-
-      // Clears all memory in event buffer since they should
-      // have all been handled by now.
-      game::ResetEventBuffer();
-
       // Give the user an update tick. The engine runs with
       // a fixed delta so no need to provide a delta time.
       UpdateGame();
@@ -203,7 +235,6 @@ main(int argc, char** argv)
     }
 
     if (!gfx::Render()) {
-      OnEnd();
       return 1;
     }
 
@@ -213,9 +244,6 @@ main(int argc, char** argv)
       if (kGameState.sleep_on_loop) platform::sleep_usec(sleep_usec);
     }
   }
-
-  OnEnd();
-  game::DeallocateEventBuffer();
 
   return 0;
 }
