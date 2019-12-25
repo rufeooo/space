@@ -1,11 +1,12 @@
 #include <cassert>
 
-#include "camera.cc"
-#include "command.cc"
-#include "ecs.h"
-#include "game/event_buffer.cc"
-#include "gfx.cc"
 #include "math/math.cc"
+
+#include "game/event_buffer.cc"
+#include "space/camera.cc"
+#include "space/command.cc"
+#include "space/ecs.cc"
+#include "space/gfx.cc"
 
 struct State {
   // Game and render updates per second

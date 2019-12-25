@@ -1,8 +1,6 @@
 #include "command.h"
 
-#include "components.h"
-#include "components/common/transform_component.h"
-#include "ecs.h"
+#include "ecs.cc"
 
 namespace command
 {

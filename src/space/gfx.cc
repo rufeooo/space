@@ -4,7 +4,7 @@
 #include <iostream>
 
 #include "camera.h"
-#include "ecs.h"
+#include "ecs.cc"
 #include "gl/renderer.cc"
 #include "math/math.cc"
 
@@ -135,8 +135,8 @@ RenderTriangles(const math::Mat4f& ortho_view)
                             math::CreateScaleMatrix(transform.scale) *
                             math::CreateRotationMatrix(transform.orientation);
         math::Mat4f matrix = ortho_view * model;
-        glUniform4f(kGfx.color_uniform, tri.color.x, tri.color.y,
-                    tri.color.z, tri.color.w);
+        glUniform4f(kGfx.color_uniform, tri.color.x, tri.color.y, tri.color.z,
+                    tri.color.w);
         glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
         glDrawArrays(GL_LINE_LOOP, 0, 3);
       });
@@ -191,14 +191,13 @@ RenderLines(const math::Mat4f& ortho_view)
   // TODO: This should eventually work with 3d too.
   glUseProgram(kGfx.program_reference);
   glBindVertexArray(kGfx.line_vao_reference);
-  kECS.Enumerate<LineComponent>(
-      [&](ecs::Entity entity, LineComponent& line) {
-        math::Mat4f matrix = ortho_view * CreateLineTransform(line.start, line.end);
-        glUniform4f(kGfx.color_uniform, line.color.x, line.color.y,
-                    line.color.z, line.color.w);
-        glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
-        glDrawArrays(GL_LINES, 0, 2);
-      });
+  kECS.Enumerate<LineComponent>([&](ecs::Entity entity, LineComponent& line) {
+    math::Mat4f matrix = ortho_view * CreateLineTransform(line.start, line.end);
+    glUniform4f(kGfx.color_uniform, line.color.x, line.color.y, line.color.z,
+                line.color.w);
+    glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
+    glDrawArrays(GL_LINES, 0, 2);
+  });
 }
 
 void
@@ -212,48 +211,51 @@ RenderGrids(const math::Mat4f& ortho_view, const math::Vec2f& dims)
   math::Vec3f top_right = camera_transform * math::Vec3f(dims);
   math::Vec3f bottom_left = camera_transform * math::Vec3f(0.f, 0.f, 0.f);
 
-  kECS.Enumerate<GridComponent>(
-      [&](ecs::Entity entity, GridComponent& grid) {
-        // This was painful to calculate.... :(
-        //
-        // These is calculating the extents of the grid to render. It should start and
-        // end one grid position past the extents of the screen snapped properly to
-        // a grid coordinate.
-        float right_most_grid_x =
-            grid.width - (fmod(top_right.x + grid.width, grid.width));
-        float left_most_grid_x = -fmod(bottom_left.x + grid.width, grid.width);
-        float top_most_grid_y =
-            grid.height - (fmod(top_right.y + grid.height, grid.height)); 
-        float bottom_most_grid_y = -fmod(bottom_left.y + grid.height, grid.height);
+  kECS.Enumerate<GridComponent>([&](ecs::Entity entity, GridComponent& grid) {
+    // This was painful to calculate.... :(
+    //
+    // These is calculating the extents of the grid to render. It should start
+    // and end one grid position past the extents of the screen snapped properly
+    // to a grid coordinate.
+    float right_most_grid_x =
+        grid.width - (fmod(top_right.x + grid.width, grid.width));
+    float left_most_grid_x = -fmod(bottom_left.x + grid.width, grid.width);
+    float top_most_grid_y =
+        grid.height - (fmod(top_right.y + grid.height, grid.height));
+    float bottom_most_grid_y = -fmod(bottom_left.y + grid.height, grid.height);
 
-        math::Vec3f top_right_transformed =
-          top_right + math::Vec3f(right_most_grid_x, top_most_grid_y, 0.f);
-        math::Vec3f bottom_left_transformed =
-          bottom_left + math::Vec3f(left_most_grid_x, bottom_most_grid_y, 0.f);
-    
-        glUniform4f(kGfx.color_uniform, grid.color.x, grid.color.y,
-                    grid.color.z, grid.color.w);
+    math::Vec3f top_right_transformed =
+        top_right + math::Vec3f(right_most_grid_x, top_most_grid_y, 0.f);
+    math::Vec3f bottom_left_transformed =
+        bottom_left + math::Vec3f(left_most_grid_x, bottom_most_grid_y, 0.f);
 
-        // Draw horizontal lines.
-        for (float y = bottom_left_transformed.y; y < top_right.y; y += grid.height) {
-          LineComponent line;
-          line.start = math::Vec3f(bottom_left_transformed.x, y, 0.f);
-          line.end = math::Vec3f(top_right_transformed.x, y, 0.f);
-          math::Mat4f matrix = ortho_view * CreateLineTransform(line.start, line.end);
-          glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
-          glDrawArrays(GL_LINES, 0, 2);
-        }
+    glUniform4f(kGfx.color_uniform, grid.color.x, grid.color.y, grid.color.z,
+                grid.color.w);
 
-        // Draw vertical lines.
-        for (float x = bottom_left_transformed.x; x < top_right.x; x += grid.width) {
-          LineComponent line;
-          line.start = math::Vec3f(x, bottom_left_transformed.y, 0.f);
-          line.end = math::Vec3f(x, top_right_transformed.y, 0.f);
-          math::Mat4f matrix = ortho_view * CreateLineTransform(line.start, line.end);
-          glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
-          glDrawArrays(GL_LINES, 0, 2);
-        }
-      });
+    // Draw horizontal lines.
+    for (float y = bottom_left_transformed.y; y < top_right.y;
+         y += grid.height) {
+      LineComponent line;
+      line.start = math::Vec3f(bottom_left_transformed.x, y, 0.f);
+      line.end = math::Vec3f(top_right_transformed.x, y, 0.f);
+      math::Mat4f matrix =
+          ortho_view * CreateLineTransform(line.start, line.end);
+      glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
+      glDrawArrays(GL_LINES, 0, 2);
+    }
+
+    // Draw vertical lines.
+    for (float x = bottom_left_transformed.x; x < top_right.x;
+         x += grid.width) {
+      LineComponent line;
+      line.start = math::Vec3f(x, bottom_left_transformed.y, 0.f);
+      line.end = math::Vec3f(x, top_right_transformed.y, 0.f);
+      math::Mat4f matrix =
+          ortho_view * CreateLineTransform(line.start, line.end);
+      glUniformMatrix4fv(kGfx.matrix_uniform, 1, GL_FALSE, &matrix[0]);
+      glDrawArrays(GL_LINES, 0, 2);
+    }
+  });
 }
 
 bool
