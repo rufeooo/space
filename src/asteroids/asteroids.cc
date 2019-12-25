@@ -5,16 +5,14 @@
 
 #include "asteroids_commands.h"
 #include "asteroids_state.h"
-#include "ecs/ecs.h"
+#include "ecs.cc"
 #include "game/event_buffer.h"
 #include "game/game.h"
+#include "gl/utils.h"
 #include "math/intersection.h"
 #include "math/mat_ops.h"
 #include "math/vec.h"
 #include "platform/platform.cc"
-#include "gl/utils.h"
-
-#include "ecs/internal.h"
 
 namespace asteroids
 {
@@ -55,9 +53,8 @@ InitializeGraphics()
     std::cout << "Unable to compile " << kVertexShaderName << std::endl;
     return false;
   }
-  if (!opengl.shader_cache.CompileShader(kFragmentShaderName,
-                                         gl::ShaderType::FRAGMENT,
-                                         kFragmentShader)) {
+  if (!opengl.shader_cache.CompileShader(
+          kFragmentShaderName, gl::ShaderType::FRAGMENT, kFragmentShader)) {
     std::cout << "Unable to compile " << kFragmentShaderName << std::endl;
     return false;
   }
@@ -314,7 +311,7 @@ UpdateGame()
         if (IsKeyDown(input.previous_input_mask, KEYBOARD_SPACE) &&
             IsKeyUp(input.input_mask, KEYBOARD_SPACE)) {
           auto* create_projectile =
-              game::CreateEvent<commands::CreateProjectile>(
+              game::EnqueueEvent<commands::CreateProjectile>(
                   commands::CREATE_PROJECTILE);
           create_projectile->entity_id = GenerateFreeEntity();
           auto& projectile_transform = create_projectile->transform;
@@ -397,7 +394,7 @@ UpdateGame()
       static std::random_device rd;
       static std::mt19937 gen(rd());
       static std::uniform_real_distribution<> disr(-10000.0, 10000.0);
-      auto* create_asteroid = game::CreateEvent<commands::CreateAsteroid>(
+      auto* create_asteroid = game::EnqueueEvent<commands::CreateAsteroid>(
           commands::CREATE_ASTEROID);
       create_asteroid->entity_id = GenerateFreeEntity();
       create_asteroid->position = math::Vec3f(disr(gen), disr(gen), 0.f);

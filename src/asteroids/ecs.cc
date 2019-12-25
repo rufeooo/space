@@ -2,9 +2,12 @@
 
 #include <vector>
 
-#include "components/common/transform_component.h"
+#include "ecs/common.cc"
+#include "ecs/internal.h"
+
+#include "components/server_authoritative_component.h"
+
 #include "math/vec.h"
-#include "network/client.h"
 
 namespace asteroids
 {
@@ -25,7 +28,6 @@ struct PhysicsComponent {
   float max_velocity = 0.00004f * 3.f * 60.f;
 };
 
-// TODO: Move to components/.
 struct PolygonShape {
   PolygonShape() = default;
   PolygonShape(const std::vector<math::Vec2f>& points) : points(points) {}

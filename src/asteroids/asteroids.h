@@ -4,14 +4,11 @@
 #include <set>
 #include <vector>
 
-#include "components/common/transform_component.h"
-#include "components/rendering/rendering_component.h"
-#include "components/rendering/view_component.h"
-#include "ecs/ecs.h"
+#include "ecs.cc"
 #include "game/event.h"
-#include "math/vec.h"
 #include "gl/shader_cache.h"
 #include "gl/utils.h"
+#include "math/vec.h"
 
 namespace asteroids
 {

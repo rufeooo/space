@@ -4,8 +4,7 @@
 
 #include "asteroids.h"
 #include "asteroids_state.h"
-#include "components/common/input_component.h"
-#include "components/network/server_authoritative_component.h"
+#include "ecs.cc"
 #include "game/event.h"
 
 namespace asteroids
@@ -26,8 +25,8 @@ Execute(CreatePlayer& create_player)
       GlobalEntityGeometry().ship_geometry.size());
   components.Assign<InputComponent>(create_player.entity_id);
   components.Assign<PlayerComponent>(create_player.entity_id);
-  auto* auth = components.Assign<ServerAuthoritativeComponent>(
-      create_player.entity_id);
+  auto* auth =
+      components.Assign<ServerAuthoritativeComponent>(create_player.entity_id);
   auth->bitmask = TRANSFORM | PHYSICS;
 }
 
@@ -36,11 +35,10 @@ Execute(CreateProjectile& create_projectile)
 {
   auto& components = GlobalGameState().components;
   auto dir = math::Normalize(create_projectile.transform.orientation.Up());
-  TransformComponent projectile_transform(
-      create_projectile.transform);
+  TransformComponent projectile_transform(create_projectile.transform);
   projectile_transform.position += (dir * .08f);
   components.Assign<TransformComponent>(create_projectile.entity_id,
-                                                   projectile_transform);
+                                        projectile_transform);
   components.Assign<PhysicsComponent>(create_projectile.entity_id,
                                       math::Vec3f(), dir * kProjectileSpeed,
                                       0.f, 0.f);
@@ -100,8 +98,7 @@ Execute(CreateAsteroid& create_asteroid)
       GlobalOpenGLGameReferences().program_reference,
       GlobalEntityGeometry().asteroid_geometry[random_number - 1].size());
   components.Assign<AsteroidComponent>(create_asteroid.entity_id);
-  components.Assign<ServerAuthoritativeComponent>(
-      create_asteroid.entity_id);
+  components.Assign<ServerAuthoritativeComponent>(create_asteroid.entity_id);
   auto* auth = components.Assign<ServerAuthoritativeComponent>(
       create_asteroid.entity_id);
   // Only need transform on asteroids. Physics unneeded.

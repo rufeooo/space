@@ -7,10 +7,10 @@
 #include "asteroids/asteroids.cc"
 #include "asteroids/asteroids_commands.cc"
 #include "asteroids/asteroids_state.cc"
+#include "asteroids/network/server.cc"
 #include "game/game.cc"
 #include "gl/renderer.cc"
 #include "math/math.cc"
-#include "network/server.cc"
 #include "platform/platform.cc"
 
 static uint64_t kClientPlayers[network::server::kMaxClients];
@@ -46,7 +46,7 @@ OnClientMsgReceived(int client_id, uint8_t* msg, int size)
       // Create the the player with a server ID and update that
       // on the client.
       auto* create_player =
-          game::CreateEvent<asteroids::commands::CreatePlayer>(
+          game::EnqueueEvent<asteroids::commands::CreatePlayer>(
               asteroids::commands::CREATE_PLAYER);
       create_player->entity_id = asteroids::GenerateFreeEntity();
 

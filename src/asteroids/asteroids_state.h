@@ -2,17 +2,10 @@
 #include <set>
 #include <vector>
 
-#include "asteroids_components.h"
-
-#include "components/common/input_component.h"
-#include "components/common/transform_component.h"
-#include "components/network/server_authoritative_component.h"
-#include "components/rendering/rendering_component.h"
-#include "components/rendering/view_component.h"
-#include "ecs/ecs.h"
-#include "math/vec.h"
+#include "ecs.cc"
 #include "gl/shader_cache.h"
 #include "gl/utils.h"
+#include "math/vec.h"
 
 namespace asteroids
 {
@@ -55,9 +48,8 @@ EntityGeometry& GlobalEntityGeometry();
 
 struct GameState {
   ecs::ComponentStorage<
-      ViewComponent, PhysicsComponent, PolygonShape,
-      TransformComponent, InputComponent,
-      GameStateComponent, RenderingComponent, TTLComponent,
+      ViewComponent, PhysicsComponent, PolygonShape, TransformComponent,
+      InputComponent, GameStateComponent, RenderingComponent, TTLComponent,
       AsteroidComponent, PlayerComponent, ProjectileComponent,
       RandomNumberIntChoiceComponent, ServerAuthoritativeComponent>
       components;

@@ -1,18 +1,15 @@
 #include <cassert>
 #include <thread>
 
-#include "platform/platform.cc" // Needs to come first for windows defines.
 #include "asteroids/asteroids.cc"
 #include "asteroids/asteroids_commands.cc"
 #include "asteroids/asteroids_state.cc"
-#include "components/common/input_component.h"
-#include "components/common/transform_component.h"
-#include "components/network/server_authoritative_component.h"
-#include "ecs/internal.h"
+#include "asteroids/ecs.cc"
+#include "asteroids/network/client.cc"
 #include "game/game.cc"
 #include "gl/renderer.cc"
 #include "math/math.cc"
-#include "network/client.cc"
+#include "platform/platform.cc"  // Needs to come first for windows defines.
 
 static const char* hostname;
 static const char* port = ASTEROIDS_PORT;
@@ -105,12 +102,12 @@ void
 SetupClientPlayer()
 {
   // Create the player.
-  auto* create_player = game::CreateEvent<asteroids::commands::CreatePlayer>(
+  auto* create_player = game::EnqueueEvent<asteroids::commands::CreatePlayer>(
       asteroids::commands::CREATE_PLAYER);
   create_player->entity_id = asteroids::GenerateFreeEntity();
 
   // Set this clients player id to the right player id.
-  auto* change_id = game::CreateEvent<asteroids::commands::PlayerIdMutation>(
+  auto* change_id = game::EnqueueEvent<asteroids::commands::PlayerIdMutation>(
       asteroids::commands::PLAYER_ID_MUTATION);
   change_id->entity_id = create_player->entity_id;
 
@@ -203,7 +200,7 @@ ProcessInput()
   if (player_input.input_mask != previous_player_input.input_mask ||
       player_input.previous_input_mask !=
           previous_player_input.previous_input_mask) {
-    auto* input_event = game::CreateEvent<asteroids::commands::Input>(
+    auto* input_event = game::EnqueueEvent<asteroids::commands::Input>(
         asteroids::commands::PLAYER_INPUT);
     *input_event = player_input;
     input_event->entity_id = asteroids::GlobalGameState().player_id;

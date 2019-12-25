@@ -3,7 +3,8 @@
 #include <cassert>
 #include <functional>
 
-#include "asteroids_components.h"
+#include "ecs.cc"
+
 #include "math/vec.h"
 
 namespace asteroids
