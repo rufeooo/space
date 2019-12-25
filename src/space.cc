@@ -10,9 +10,26 @@
 #include "math/math.cc"
 #include "platform/platform.cc"
 
-#include "game/event_buffer.h"
-#include "game/game.h"
-#include "math/vec.h"
+struct State {
+  // Game and render updates per second
+  uint64_t framerate = 60;
+  // Calculated available microseconds per game_update
+  uint64_t frame_target_usec;
+  // Game Halt variable
+  bool end = false;
+  // Allow yielding idle cycles to kernel
+  bool sleep_on_loop = true;
+  // Number of times the game has been updated.
+  uint64_t game_updates = 0;
+  // Number of times the game frame was exceptionally delayed
+  uint64_t game_jerk = 0;
+  // ...
+  std::ofstream output_event_file;
+  std::ifstream input_event_file;
+  game::EventBuffer event_buffer;
+};
+
+static State kGameState;
 
 bool
 Initialize()
@@ -135,15 +152,72 @@ OnEnd()
 {
 }
 
+constexpr int kEventBufferSize = 20 * 1024;
+
 int
 main(int argc, char** argv)
 {
-  game::Setup(&Initialize, &ProcessInput, &HandleEvent, &UpdateGame,
-              &gfx::Render, &OnEnd);
+  uint64_t loop_count = 0;
 
-  if (!game::Run()) {
-    std::cerr << "Encountered error running spacey game..." << std::endl;
+  game::AllocateEventBuffer(kEventBufferSize);
+  if (!Initialize()) {
+    OnEnd();
+    return 1;
   }
+
+  kGameState.game_updates = 0;
+  kGameState.game_jerk = 0;
+  kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
+  platform::clock_init();
+
+  while (loop_count == 0 || kGameState.game_updates < loop_count) {
+    if (kGameState.end) {
+      OnEnd();
+      return 1;
+    }
+
+    ProcessInput();
+
+    {
+      // Pump the event queue if a replay is coming from file.
+      game::OptionallyPumpEventsFromFile();
+
+      // Dequeue and handle all events in event queue.
+      game::Event event;
+      while (PollEvent(&event)) {
+        game::OptionallyWriteEventToFile(event);
+        HandleEvent(event);
+      }
+
+      // Clears all memory in event buffer since they should
+      // have all been handled by now.
+      game::ResetEventBuffer();
+
+      // If all events have been pumped from file close it
+      // and reset the regular event buffer.
+      game::OptionallyCloseEventsFile();
+
+      // Give the user an update tick. The engine runs with
+      // a fixed delta so no need to provide a delta time.
+      UpdateGame();
+
+      ++kGameState.game_updates;
+    }
+
+    if (!gfx::Render()) {
+      OnEnd();
+      return 1;
+    }
+
+    uint64_t sleep_usec = 0;
+    while (!platform::elapse_usec(kGameState.frame_target_usec, &sleep_usec,
+                                  &kGameState.game_jerk)) {
+      if (kGameState.sleep_on_loop) platform::sleep_usec(sleep_usec);
+    }
+  }
+
+  OnEnd();
+  game::DeallocateEventBuffer();
 
   return 0;
 }
