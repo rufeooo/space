@@ -17,6 +17,7 @@ void InitGLAndCreateWindow(int window_width, int window_height, const char* titl
   glDepthFunc(GL_LESS);
   glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
   glEnable(GL_BLEND);
+  glEnable(GL_LINE_SMOOTH);
   // Should these be enabled?
   // glEnable(GL_CULL_FACE);
   // glCullFace(GL_BACK);
