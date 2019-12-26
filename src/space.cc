@@ -84,7 +84,6 @@ NetworkSetup()
 void
 ProcessLocalInput()
 {
-  PlatformEvent event;
   for (kGameState.used_ievent = 0; kGameState.used_ievent < MAX_TICK_EVENTS;
        ++kGameState.used_ievent) {
     if (!window::PollEvent(&kGameState.ievent[kGameState.used_ievent])) break;
@@ -209,13 +208,9 @@ UpdateGame()
   return true;
 }
 
-constexpr int kEventBufferSize = 20 * 1024;
-
 int
 main(int argc, char** argv)
 {
-  uint64_t loop_count = 0;
-
   while (1) {
     int opt = platform_getopt(argc, argv, "i:p:");
     if (opt == -1) break;
@@ -245,24 +240,18 @@ main(int argc, char** argv)
   kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
   platform::clock_init();
 
-  while (!window::ShouldClose() &&
-         (loop_count == 0 || kGameState.game_updates < loop_count)) {
+  while (!window::ShouldClose()) {
     ProcessLocalInput();
     NetworkEgress();
     NetworkIngress();
     ProcessGameInput(kGameState.used_ievent, kGameState.ievent);
 
-    {
-      // Give the user an update tick. The engine runs with
-      // a fixed delta so no need to provide a delta time.
-      UpdateGame();
+    // Give the user an update tick. The engine runs with
+    // a fixed delta so no need to provide a delta time.
+    UpdateGame();
+    gfx::Render();
 
-      ++kGameState.game_updates;
-    }
-
-    if (!gfx::Render()) {
-      return 1;
-    }
+    ++kGameState.game_updates;
 
     uint64_t sleep_usec = 0;
     while (!platform::elapse_usec(kGameState.frame_target_usec, &sleep_usec,

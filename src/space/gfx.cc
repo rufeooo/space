@@ -258,7 +258,7 @@ RenderGrids(const math::Mat4f& ortho_view, const math::Vec2f& dims)
   });
 }
 
-bool
+void
 Render()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -284,7 +284,6 @@ Render()
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   window::SwapBuffers();
-  return true;
 }
 
 }  // namespace gfx

@@ -15,6 +15,6 @@ void SetProjection(CreateProjectionFunctor* projection);
 
 bool Initialize();
 
-bool Render();
+void Render();
 
 }  // namespace gfx
