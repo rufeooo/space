@@ -10,7 +10,13 @@
 #include "space/network/server.cc"
 
 #define MAX_TICK_EVENTS 30
+#define MAX_PLAYER 2
 #define PAGE (4 * 1024)
+
+struct InputBuffer {
+  PlatformEvent ievent[MAX_TICK_EVENTS];
+  uint64_t used_ievent = 0;
+};
 
 struct State {
   // Game and render updates per second
@@ -24,13 +30,19 @@ struct State {
   // Number of times the game frame was exceptionally delayed
   uint64_t game_jerk = 0;
   // Events handled per input tick
-  PlatformEvent ievent[MAX_TICK_EVENTS];
-  uint64_t used_ievent = 0;
+  InputBuffer local_input;
   // Network resources
   Udp4 socket;
   uint8_t netbuffer[PAGE];
   const char* server_ip = "localhost";
   const char* server_port = "9845";
+  // Unique id for this game
+  uint64_t player_id;
+  // Total players in this game
+  uint64_t player_count;
+  // Per Player
+  InputBuffer player_input[MAX_PLAYER];
+  bool player_received[MAX_PLAYER];
 };
 
 static State kGameState;
@@ -78,30 +90,79 @@ NetworkSetup()
                      &kGameState.socket))
     return false;
 
+  // TODO: Handshake for player_id, player_count
+  kGameState.player_id = 0;
+  kGameState.player_count = 1;
+
+  // fake handshake
+  platform::sleep_ms(100);
+
   return true;
 }
 
 void
 ProcessLocalInput()
 {
-  for (kGameState.used_ievent = 0; kGameState.used_ievent < MAX_TICK_EVENTS;
-       ++kGameState.used_ievent) {
-    if (!window::PollEvent(&kGameState.ievent[kGameState.used_ievent])) break;
+  InputBuffer* ibuf = &kGameState.local_input;
+  ibuf->used_ievent = 0;
+  while (ibuf->used_ievent < MAX_TICK_EVENTS) {
+    PlatformEvent pevent;
+    if (!window::PollEvent(&pevent)) break;
+
+    uint64_t type = pevent.type;
+    switch (type) {
+      case MOUSE_DOWN:
+      case MOUSE_UP:
+      case KEY_DOWN:
+      case KEY_UP:
+        ibuf->ievent[ibuf->used_ievent] = pevent;
+        ++ibuf->used_ievent;
+        break;
+    }
   }
+}
+
+void
+ResetPlayersReceived()
+{
+  for (int i = 0; i < kGameState.player_count; ++i) {
+    kGameState.player_received[i] = false;
+  }
+}
+
+bool
+AllPlayersReceived()
+{
+  for (int i = 0; i < kGameState.player_count; ++i) {
+    if (!kGameState.player_received[i]) return false;
+  }
+
+  return true;
 }
 
 void
 NetworkEgress()
 {
-  // write frame
-  *((int*)kGameState.netbuffer) = kGameState.game_updates;
-  // write input
-  memcpy(kGameState.netbuffer + sizeof(int), kGameState.ievent,
-         sizeof(PlatformEvent) * kGameState.used_ievent);
+  InputBuffer* ibuf = &kGameState.local_input;
 
-  if (!udp::Send(
-          kGameState.socket, kGameState.netbuffer,
-          sizeof(int) + sizeof(PlatformEvent) * kGameState.used_ievent)) {
+  // write frame
+  uint64_t* header = (uint64_t*)kGameState.netbuffer;
+  *header = kGameState.game_updates;
+  ++header;
+  *header = kGameState.player_id;
+  ++header;
+  uint64_t header_size = (uint8_t*)header - kGameState.netbuffer;
+#if 0
+  printf("Send %lu frame %lu player_id\n", kGameState.game_updates,
+         kGameState.player_id);
+#endif
+
+  // write input
+  memcpy(kGameState.netbuffer + header_size, ibuf->ievent,
+         sizeof(PlatformEvent) * ibuf->used_ievent);
+
+  if (!udp::Send(kGameState.socket, kGameState.netbuffer,
+                 header_size + sizeof(PlatformEvent) * ibuf->used_ievent)) {
     exit(1);
   }
 }
@@ -110,17 +171,34 @@ void
 NetworkIngress()
 {
   uint16_t bytes_received;
-  if (!udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
-                        kGameState.netbuffer, &bytes_received))
-    return;
+  while (udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
+                          kGameState.netbuffer, &bytes_received)) {
+    // TODO: packet reordering based on frame
+    uint64_t* header = (uint64_t*)kGameState.netbuffer;
+    uint64_t frame = *header;
+    ++header;
+    uint64_t player_id = *header;
+    ++header;
+    uint64_t header_size = (uint8_t*)header - kGameState.netbuffer;
+#if 0
+    printf("%lu frame %lu player_id\n", frame, player_id);
+#endif
 
-  if (bytes_received > sizeof(kGameState.ievent)) exit(1);
+    // sanity checks
+    if (player_id >= MAX_PLAYER) exit(1);
+    if (bytes_received > header_size + sizeof(InputBuffer::ievent)) exit(1);
 
-  // TODO: packet reordering
-
-  memcpy(kGameState.ievent, kGameState.netbuffer + sizeof(int),
-         bytes_received - 4);
-  kGameState.used_ievent = (bytes_received - 4) / sizeof(PlatformEvent);
+    // TODO: queue per player
+    InputBuffer* ibuf = &kGameState.player_input[player_id];
+    memcpy(ibuf->ievent, kGameState.netbuffer + header_size,
+           bytes_received - header_size);
+    ibuf->used_ievent = (bytes_received - header_size) / sizeof(PlatformEvent);
+#if 0
+    printf("Copied %lu, used_ievent %lu\n", bytes_received - header_size,
+           ibuf->used_ievent);
+#endif
+    kGameState.player_received[player_id] = true;
+  }
 }
 
 void
@@ -179,12 +257,20 @@ GameInput(PlatformEvent* event, math::Vec2f* camera)
 }
 
 void
-ProcessGameInput(uint64_t event_count, PlatformEvent* event)
+ProcessGameInput(int player_id, uint64_t event_count, PlatformEvent* event)
 {
   static math::Vec2f camera_translate(0.f, 0.f);
+  // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
     GameInput(&event[i], &camera_translate);
   }
+
+  if (player_id != kGameState.player_id) return;
+
+  // TODO: ecs data segregation
+  // Player 0 ecs != Player 1 ecs 
+  //
+  // Local player camera control
   camera::Translate(camera_translate);
 }
 
@@ -243,8 +329,17 @@ main(int argc, char** argv)
   while (!window::ShouldClose()) {
     ProcessLocalInput();
     NetworkEgress();
-    NetworkIngress();
-    ProcessGameInput(kGameState.used_ievent, kGameState.ievent);
+    // TEMP: until frame slotting packets is done, we must lock-step 1 frame at
+    // a time
+    ResetPlayersReceived();
+    while (!AllPlayersReceived()) {
+      NetworkIngress();
+      platform::sleep_ms(1000);
+    }
+    for (int i = 0; i < kGameState.player_count; ++i) {
+      InputBuffer* ibuf = &kGameState.player_input[i];
+      ProcessGameInput(i, ibuf->used_ievent, ibuf->ievent);
+    }
 
     // Give the user an update tick. The engine runs with
     // a fixed delta so no need to provide a delta time.
