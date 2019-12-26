@@ -96,20 +96,21 @@ CreateViewMatrix(const Vec3<T>& translation, const Quat<T>& quat)
 
 template <class T>
 Mat<T, 4, 4>
-CreatePerspectiveMatrix(int width, int height)
+CreatePerspectiveMatrix(float width, float height, float near_clip, float far_clip, 
+                        float fov_degrees)
 {
-  float near_clip = 0.1f;                       // clipping plane
-  float far_clip = 100.0f;                      // clipping plane
-  float fov = 67.0f * ONE_DEG_IN_RAD;           // convert 67 degrees to radians
-  float aspect = (float)width / (float)height;  // aspect ratio
+  float fov = fov_degrees * ONE_DEG_IN_RAD;
+  float aspect = width / height;
   // matrix components
   float range = tan(fov * 0.5f) * near_clip;
   float Sx = (2.0f * near_clip) / (range * aspect + range * aspect);
   float Sy = near_clip / range;
   float Sz = -(far_clip + near_clip) / (far_clip - near_clip);
   float Pz = -(2.0f * far_clip * near_clip) / (far_clip - near_clip);
-  return Mat<T, 4, 4>{Sx,   0.0f, 0.0f, 0.0f,  0.0f, Sy,   0.0f, 0.0f,
-                      0.0f, 0.0f, Sz,   -1.0f, 0.0f, 0.0f, Pz,   0.0f};
+  return Mat<T, 4, 4>{  Sx, 0.0f, 0.0f,  0.0f,
+                      0.0f,   Sy, 0.0f,  0.0f,
+                      0.0f, 0.0f,   Sz, -1.0f,
+                      0.0f, 0.0f,   Pz,  0.0f};
 }
 
 template <class T>
@@ -129,21 +130,12 @@ CreateOrthographicMatrix(float right, float left, float top, float bottom,
   h = h == 0.f ? 1.f : h;
   float d = far - near;
   d = d == 0.f ? 1.f : d;
-  return Mat<T, 4, 4>{2.f / w,
-                      0.f,
-                      0.f,
-                      0.f,
-                      0.f,
-                      2.f / h,
-                      0.f,
-                      0.f,
-                      0.f,
-                      0.f,
-                      -2.f / d,
-                      0.f,
-                      -(right + left) / w,
-                      -(top + bottom) / h,
-                      -(far + near) / d,
+  return Mat<T, 4, 4>{2.f / w, 0.f    , 0.f     , 0.f,
+                      0.f    , 2.f / h, 0.f     , 0.f,
+                      0.f    , 0.f    , -2.f / d, 0.f,
+                      -(right + left) / w,  // translate x
+                      -(top + bottom) / h,  // translate y
+                      -(far + near) / d,    // translate z
                       1.f};
 }
 
