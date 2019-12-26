@@ -8,7 +8,6 @@
 #include "asteroids/asteroids_commands.cc"
 #include "asteroids/asteroids_state.cc"
 #include "asteroids/network/server.cc"
-#include "game/game.cc"
 #include "gl/renderer.cc"
 #include "math/math.cc"
 #include "platform/platform.cc"

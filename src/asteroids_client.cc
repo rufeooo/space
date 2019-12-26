@@ -6,7 +6,6 @@
 #include "asteroids/asteroids_state.cc"
 #include "asteroids/ecs.cc"
 #include "asteroids/network/client.cc"
-#include "game/game.cc"
 #include "gl/renderer.cc"
 #include "math/math.cc"
 #include "platform/platform.cc"  // Needs to come first for windows defines.

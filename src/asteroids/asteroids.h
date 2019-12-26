@@ -5,7 +5,7 @@
 #include <vector>
 
 #include "ecs.cc"
-#include "game/event.h"
+#include "event.h"
 #include "gl/shader_cache.h"
 #include "gl/utils.h"
 #include "math/vec.h"

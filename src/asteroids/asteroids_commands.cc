@@ -5,7 +5,6 @@
 #include "asteroids.h"
 #include "asteroids_state.h"
 #include "ecs.cc"
-#include "game/event.h"
 
 namespace asteroids
 {
