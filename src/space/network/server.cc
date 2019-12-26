@@ -11,7 +11,7 @@ struct ServerParam {
 static pthread_attr_t attr;
 static pthread_t thread;
 static ServerParam param;
-static bool running;
+static bool running = true;
 #define MAX_BUFFER (4 * 1024)
 
 void*
