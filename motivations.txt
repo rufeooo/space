@@ -1,0 +1,3 @@
+Alan's goals when writing code:
+  Keep a simple agreement with data.
+  Prefer reduced variance to better performance.
