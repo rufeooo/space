@@ -116,7 +116,7 @@ CreatePerspectiveMatrix(float width, float height, float near_clip, float far_cl
 template <class T>
 Mat<T, 4, 4>
 CreateOrthographicMatrix(float right, float left, float top, float bottom,
-                         float far, float near)
+                         float far_clip, float near_clip)
 {
   // Goal with this matrix is to scale a point, in likely screen space relative
   // to the cameras to GL space or the unit cube.
@@ -128,14 +128,14 @@ CreateOrthographicMatrix(float right, float left, float top, float bottom,
   w = w == 0.f ? 1.f : w;
   float h = top - bottom;
   h = h == 0.f ? 1.f : h;
-  float d = far - near;
+  float d = far_clip - near_clip;
   d = d == 0.f ? 1.f : d;
   return Mat<T, 4, 4>{2.f / w, 0.f    , 0.f     , 0.f,
                       0.f    , 2.f / h, 0.f     , 0.f,
                       0.f    , 0.f    , -2.f / d, 0.f,
                       -(right + left) / w,  // translate x
                       -(top + bottom) / h,  // translate y
-                      -(far + near) / d,    // translate z
+                      -(far_clip + near_clip) / d,    // translate z
                       1.f};
 }
 
