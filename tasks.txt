@@ -42,6 +42,8 @@ engine -
 
            This avoids the unnecessary complexity of defining UI layout and functionality
            seperately.
+  anthony: Bitmap loading.
+  anthony: Rendering text given a bitmap with characters.
 
 
 network -
