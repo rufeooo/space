@@ -7,6 +7,7 @@
 #include "space/command.cc"
 #include "space/ecs.cc"
 #include "space/gfx.cc"
+#include "space/network/server.cc"
 
 #define MAX_TICK_EVENTS 30
 #define PAGE (4 * 1024)
@@ -65,9 +66,13 @@ Initialize()
 }
 
 bool
-Connect()
+NetworkSetup()
 {
   if (!udp::Init()) return false;
+
+  if (strcmp("localhost", kGameState.server_ip) == 0) {
+    if (!CreateNetworkServer("localhost", "9845")) return false;
+  }
 
   if (!udp::GetAddr4(kGameState.server_ip, kGameState.server_port,
                      &kGameState.socket))
@@ -231,7 +236,7 @@ main(int argc, char** argv)
     return 1;
   }
 
-  if (!Connect()) {
+  if (!NetworkSetup()) {
     return 1;
   }
 
