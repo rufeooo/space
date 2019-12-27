@@ -261,6 +261,7 @@ NetworkIngress()
     // Acknowledge queued input for local player
     if (player_id == local_player) {
       kGameState.input_ack[slot] = true;
+      kGameState.input[slot].used_ievent = 0;
     }
   }
 }
