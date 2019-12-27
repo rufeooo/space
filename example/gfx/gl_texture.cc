@@ -10,12 +10,12 @@
 
 const char* vertex_shader =
   "#version 410\n"
-  "layout (location = 0) in vec3 vertex_position;\n"
-  "layout (location = 1) in vec2 vt;\n"
-  "out vec2 texture_coordinates;\n"
-  "void main() {\n"
-  "	texture_coordinates = vt;\n"
-  "	gl_Position =vec4 (vertex_position, 1.0);\n"
+  "layout (location = 0) in vec3 vertex_position;"
+  "layout (location = 1) in vec2 vt;"
+  "out vec2 texture_coordinates;"
+  "void main() {"
+  "	texture_coordinates = vt;"
+  "	gl_Position =vec4 (vertex_position, 1.0);"
   "}";
 
 const char* fragment_shader =
@@ -31,7 +31,7 @@ const char* fragment_shader =
 int
 main(int argc, char** argv)
 {
-  int window_result = window::Create("Hello triangle", 640, 480);
+  int window_result = window::Create("Textures", 640, 480);
   std::cout << "Window create: " << window_result << std::endl;
   // Only for mac I need this?
   const GLubyte* renderer = glGetString(GL_RENDERER);
@@ -61,17 +61,12 @@ main(int argc, char** argv)
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-  std::cout << glGetError() << std::endl;
 
+  GLfloat points[] = { -1.f, 1.f, 0.0f, 1.f, 1.f, 0.0f, 1.f, -1.f, 1.f,
+                        1.f, -1.f, 0.0f, -1.f, -1.f, 0.0f, -1.f, 1.f, 0.0f };
 
-	/* OTHER STUFF GOES HERE NEXT */
-	GLfloat points[] = { -0.5f, 0.5f, 0.0f, 0.5f, 0.5f, 0.0f, 0.5f, -0.5f, 0.5f,
-                        0.5f, -0.5f, 0.0f, -0.5f, -0.5f, 0.0f, -0.5f, 0.5f, 0.5f };
-											 
-
-	// 2^16 = 65536
-	GLfloat texcoords[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
-													1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f };
+  GLfloat texcoords[] = { 0.0f, 0.0f, 1.0f, 0.0f, 1.0f, 1.0f,
+                          1.0f, 1.0f, 0.0f, 1.0f, 0.0f, 0.0f };
   // Create VBO.
   GLuint points_vbo = 0;
   glGenBuffers(1, &points_vbo);
@@ -106,21 +101,18 @@ main(int argc, char** argv)
   std::cout << cache.GetProgramInfo("prog") << std::endl;
 
   int tex_loc = glGetUniformLocation (p, "basic_texture");
-  std::cout << "tex loc: " << tex_loc << std::endl;
 
   glClearColor(0.0, 0.0, 0.0, 1.0);
   while (!window::ShouldClose()) {
     PlatformEvent event;
     while (window::PollEvent(&event)) {}
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-    glClearColor(.3f, .3f, .3f, 1.f);
     // Set the shader program.
     glUseProgram(p);
     glUniform1i (tex_loc, 0); // use active texture 0
     // Bind the vertex array object.
     glBindVertexArray(vao);
-    // glDrawArrays(GL_LINE_LOOP, 0, 3); // Draws 3 lines making tri!
-    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the triangle
+    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
     window::SwapBuffers();
   }
   return 0;
