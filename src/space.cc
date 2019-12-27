@@ -9,8 +9,15 @@
 #include "space/gfx.cc"
 #include "space/network/server.cc"
 
-#define MAX_TICK_EVENTS 30
+// Input events capable of being processed in one game loop
+#define MAX_TICK_EVENTS 32
+// Game loop inputs allowed in-flight on the network
+#define MAX_NETQUEUE 128
+// Convert frame id into a NETQUEUE slot
+#define FRAME_SLOT(frame) (frame % MAX_NETQUEUE)
+// Players in one game
 #define MAX_PLAYER 2
+// System memory block: Move to platform?
 #define PAGE (4 * 1024)
 
 struct InputBuffer {
@@ -27,10 +34,13 @@ struct State {
   bool sleep_on_loop = true;
   // Number of times the game has been updated.
   uint64_t game_updates = 0;
+  uint64_t logic_updates = 0;
   // Number of times the game frame was exceptionally delayed
   uint64_t game_jerk = 0;
-  // Events handled per input tick
-  InputBuffer local_input;
+  // Events handled per input game frame for NETQUEUE frames
+  // History is preserved until network acknowledgement
+  InputBuffer input[MAX_NETQUEUE];
+  bool input_ack[MAX_NETQUEUE];
   // Network resources
   Udp4 socket;
   uint8_t netbuffer[PAGE];
@@ -41,8 +51,8 @@ struct State {
   // Total players in this game
   uint64_t player_count;
   // Per Player
-  InputBuffer player_input[MAX_PLAYER];
-  bool player_received[MAX_PLAYER];
+  InputBuffer player_input[MAX_PLAYER][MAX_NETQUEUE];
+  bool player_received[MAX_PLAYER][MAX_NETQUEUE];
 };
 
 static State kGameState;
@@ -100,11 +110,15 @@ NetworkSetup()
   return true;
 }
 
-void
-ProcessLocalInput()
+bool
+ProcessInput()
 {
-  InputBuffer* ibuf = &kGameState.local_input;
-  ibuf->used_ievent = 0;
+  uint64_t slot = FRAME_SLOT(kGameState.game_updates);
+  InputBuffer* ibuf = &kGameState.input[slot];
+
+  // If writing to a slot with events the queue has overrun
+  if (!kGameState.input_ack[slot]) exit(2);
+
   while (ibuf->used_ievent < MAX_TICK_EVENTS) {
     PlatformEvent pevent;
     if (!window::PollEvent(&pevent)) break;
@@ -120,41 +134,41 @@ ProcessLocalInput()
         break;
     }
   }
-}
 
-void
-ResetPlayersReceived()
-{
-  for (int i = 0; i < kGameState.player_count; ++i) {
-    kGameState.player_received[i] = false;
-  }
+#if 0
+  printf("slot %lu false\n", slot);
+#endif
+  kGameState.input_ack[slot] = false;
+  return true;
 }
 
 bool
-AllPlayersReceived()
+SlotReceived(uint64_t slot)
 {
   for (int i = 0; i < kGameState.player_count; ++i) {
-    if (!kGameState.player_received[i]) return false;
+    if (!kGameState.player_received[i][slot]) return false;
   }
 
   return true;
 }
 
 void
-NetworkEgress()
+NetworkSend(uint64_t frame)
 {
-  InputBuffer* ibuf = &kGameState.local_input;
+  uint64_t slot = FRAME_SLOT(frame);
+  InputBuffer* ibuf = &kGameState.input[slot];
+
+  if (kGameState.input_ack[slot]) return;
 
   // write frame
   uint64_t* header = (uint64_t*)kGameState.netbuffer;
-  *header = kGameState.game_updates;
+  *header = frame;
   ++header;
   *header = kGameState.player_id;
   ++header;
   uint64_t header_size = (uint8_t*)header - kGameState.netbuffer;
 #if 0
-  printf("Send %lu frame %lu player_id\n", kGameState.game_updates,
-         kGameState.player_id);
+  printf("Send [ %lu frame ] [ %lu player_id ]\n", frame, kGameState.player_id);
 #endif
 
   // write input
@@ -168,12 +182,26 @@ NetworkEgress()
 }
 
 void
+NetworkEgress()
+{
+  uint64_t max_frame = kGameState.game_updates;
+  uint64_t min_frame = max_frame - MAX_NETQUEUE + 1;
+  // Re-send input history
+  for (uint64_t i = min_frame; i != max_frame; ++i) {
+    NetworkSend(i);
+  }
+  // Send current input
+  NetworkSend(max_frame);
+}
+
+void
 NetworkIngress()
 {
+  uint64_t local_player = kGameState.player_id;
+
   uint16_t bytes_received;
   while (udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
                           kGameState.netbuffer, &bytes_received)) {
-    // TODO: packet reordering based on frame
     uint64_t* header = (uint64_t*)kGameState.netbuffer;
     uint64_t frame = *header;
     ++header;
@@ -181,15 +209,17 @@ NetworkIngress()
     ++header;
     uint64_t header_size = (uint8_t*)header - kGameState.netbuffer;
 #if 0
-    printf("%lu frame %lu player_id\n", frame, player_id);
+    printf("udp::ReceiveFrom [ %lu frame ] [ %lu player_id ]\n", frame,
+           player_id);
 #endif
 
+    // TODO: frame sanity
     // sanity checks
     if (player_id >= MAX_PLAYER) exit(1);
     if (bytes_received > header_size + sizeof(InputBuffer::ievent)) exit(1);
 
-    // TODO: queue per player
-    InputBuffer* ibuf = &kGameState.player_input[player_id];
+    uint64_t slot = FRAME_SLOT(frame);
+    InputBuffer* ibuf = &kGameState.player_input[player_id][slot];
     memcpy(ibuf->ievent, kGameState.netbuffer + header_size,
            bytes_received - header_size);
     ibuf->used_ievent = (bytes_received - header_size) / sizeof(PlatformEvent);
@@ -197,12 +227,17 @@ NetworkIngress()
     printf("Copied %lu, used_ievent %lu\n", bytes_received - header_size,
            ibuf->used_ievent);
 #endif
-    kGameState.player_received[player_id] = true;
+    kGameState.player_received[player_id][slot] = true;
+
+    // Acknowledge queued input for local player
+    if (player_id == local_player) {
+      kGameState.input_ack[slot] = true;
+    }
   }
 }
 
 void
-GameInput(PlatformEvent* event, math::Vec2f* camera)
+SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
 {
   switch (event->type) {
     case MOUSE_DOWN: {
@@ -257,18 +292,18 @@ GameInput(PlatformEvent* event, math::Vec2f* camera)
 }
 
 void
-ProcessGameInput(int player_id, uint64_t event_count, PlatformEvent* event)
+ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 {
   static math::Vec2f camera_translate(0.f, 0.f);
   // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
-    GameInput(&event[i], &camera_translate);
+    SimulationEvent(&event[i], &camera_translate);
   }
 
   if (player_id != kGameState.player_id) return;
 
   // TODO: ecs data segregation
-  // Player 0 ecs != Player 1 ecs 
+  // Player 0 ecs != Player 1 ecs
   //
   // Local player camera control
   camera::Translate(camera_translate);
@@ -324,28 +359,33 @@ main(int argc, char** argv)
   kGameState.game_updates = 0;
   kGameState.game_jerk = 0;
   kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
+  memset(kGameState.input_ack, 1, sizeof(State::input_ack));
   platform::clock_init();
 
   while (!window::ShouldClose()) {
-    ProcessLocalInput();
+    ProcessInput();
     NetworkEgress();
-    // TEMP: until frame slotting packets is done, we must lock-step 1 frame at
-    // a time
-    ResetPlayersReceived();
-    while (!AllPlayersReceived()) {
-      NetworkIngress();
-      platform::sleep_ms(1000);
-    }
-    for (int i = 0; i < kGameState.player_count; ++i) {
-      InputBuffer* ibuf = &kGameState.player_input[i];
-      ProcessGameInput(i, ibuf->used_ievent, ibuf->ievent);
+    NetworkIngress();
+
+    uint64_t slot = FRAME_SLOT(kGameState.logic_updates);
+    if (SlotReceived(slot)) {
+      for (int i = 0; i < kGameState.player_count; ++i) {
+        InputBuffer* ibuf = &kGameState.player_input[i][slot];
+        ProcessSimulation(i, ibuf->used_ievent, ibuf->ievent);
+        kGameState.player_received[i][slot] = false;
+      }
+
+      // Give the user an update tick. The engine runs with
+      // a fixed delta so no need to provide a delta time.
+      ++kGameState.logic_updates;
+      UpdateGame();
     }
 
-    // Give the user an update tick. The engine runs with
-    // a fixed delta so no need to provide a delta time.
-    UpdateGame();
     gfx::Render();
 
+#if 0
+    printf("[frame %lu]\n", kGameState.game_updates);
+#endif
     ++kGameState.game_updates;
 
     uint64_t sleep_usec = 0;

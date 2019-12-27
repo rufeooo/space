@@ -46,11 +46,11 @@ server_main(void* arg)
     }
 
     // Echo bytes to peer
+#if 0
     printf("socket %d echo %d bytes\n", location.socket, received_bytes);
+#endif
     if (!udp::SendTo(location, peer, buffer, received_bytes)) {
-      puts("send failed");
-    } else {
-      puts("send ok");
+      puts("server send failed");
     }
   }
 
