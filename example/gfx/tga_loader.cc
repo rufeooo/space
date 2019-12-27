@@ -19,13 +19,13 @@ struct TgaHeader {
   uint8_t id_length;
   uint8_t color_map_type;
   uint8_t image_type;
-  // Ignore this for now.
   uint8_t color_map_spec[5];
 };
 #pragma pack(pop)
 
 uint32_t
-LoadTGA(const char* file, uint8_t** image_bytes)
+LoadTGA(const char* file, uint8_t** image_bytes,
+        uint16_t* image_width, uint16_t* image_height)
 {
   FILE* fptr;
   uint8_t* buffer;
@@ -50,13 +50,15 @@ LoadTGA(const char* file, uint8_t** image_bytes)
 
   // Image bytes sz
   uint32_t image_bytes_size = image_spec->image_width * image_spec->image_height;
+  *image_width = image_spec->image_width;
+  *image_height = image_spec->image_height;
   *image_bytes = (uint8_t*)malloc(image_bytes_size);
   memcpy(*image_bytes, &buffer[sizeof(TgaHeader) + sizeof(TgaImageSpec)], image_bytes_size);
   // Free buffer used to read in file.
   free(buffer);
   return image_bytes_size;
 }
-
+/*
 int
 main(int argc, char** argv)
 {
@@ -81,4 +83,4 @@ main(int argc, char** argv)
 
 
   return 0;
-}
+}*/
