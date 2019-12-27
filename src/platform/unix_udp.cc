@@ -82,7 +82,7 @@ SendTo(Udp4 location, Udp4 peer, const void* buffer, uint16_t len)
 
 bool
 ReceiveFrom(Udp4 peer, uint16_t buffer_len, uint8_t* buffer,
-            uint16_t* bytes_received)
+            int16_t* bytes_received)
 {
   // MUST initialize: remote_len is an in/out parameter
   struct sockaddr_in remote_addr;

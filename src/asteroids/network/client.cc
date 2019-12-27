@@ -42,7 +42,7 @@ SetupClientSocket()
 void
 RunClientLoop()
 {
-  uint16_t bytes_received;
+  int16_t bytes_received;
   if (!udp::ReceiveFrom(kClientState.client_socket,
                         sizeof(ClientState::receive_buffer),
                         kClientState.receive_buffer, &bytes_received)) {

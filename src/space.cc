@@ -30,6 +30,8 @@ struct State {
   uint64_t framerate = 60;
   // Calculated available microseconds per game_update
   uint64_t frame_target_usec;
+  // Microseconds per receive call during connection handshake
+  uint64_t handshake_target_usec = 5 * 1000;
   // Allow yielding idle cycles to kernel
   bool sleep_on_loop = true;
   // Number of times the game has been updated.
@@ -100,12 +102,39 @@ NetworkSetup()
                      &kGameState.socket))
     return false;
 
-  // TODO: Handshake for player_id, player_count
-  kGameState.player_id = 0;
-  kGameState.player_count = 1;
+  const uint64_t greeting_size = 6;
+  const char greeting[greeting_size] = {"space"};
+  uint64_t jerk;
+  int16_t bytes_received = 0;
+  for (int send_count = 0; bytes_received <= 0 && send_count < 5;
+       ++send_count) {
+    puts("Client: send handshake");
+    if (!udp::Send(kGameState.socket, greeting, greeting_size)) exit(1);
 
-  // fake handshake
-  platform::sleep_ms(100);
+    for (int per_send = 0; per_send < 10; ++per_send) {
+      if (udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
+                           kGameState.netbuffer, &bytes_received))
+        break;
+      uint64_t sleep_usec = 0;
+      platform::elapse_usec(kGameState.handshake_target_usec, &sleep_usec,
+                            &jerk);
+      platform::sleep_usec(sleep_usec);
+    }
+  }
+
+  printf("Client: handshake completed %d\n", bytes_received);
+  if (bytes_received != greeting_size + 2 * sizeof(uint64_t)) exit(3);
+
+  uint64_t* header = (uint64_t*)(kGameState.netbuffer + greeting_size);
+  uint64_t player_id = *header;
+  ++header;
+  uint64_t player_count = *header;
+  ++header;
+  printf("Handshake result: [ player_id %lu ] [ player_count %lu ]\n",
+         player_id, player_count);
+
+  kGameState.player_id = player_id;
+  kGameState.player_count = player_count;
 
   return true;
 }
@@ -199,7 +228,7 @@ NetworkIngress()
 {
   uint64_t local_player = kGameState.player_id;
 
-  uint16_t bytes_received;
+  int16_t bytes_received;
   while (udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
                           kGameState.netbuffer, &bytes_received)) {
     uint64_t* header = (uint64_t*)kGameState.netbuffer;
@@ -216,7 +245,7 @@ NetworkIngress()
     // TODO: frame sanity
     // sanity checks
     if (player_id >= MAX_PLAYER) exit(1);
-    if (bytes_received > header_size + sizeof(InputBuffer::ievent)) exit(1);
+    if (bytes_received > header_size + sizeof(InputBuffer::ievent)) exit(3);
 
     uint64_t slot = FRAME_SLOT(frame);
     InputBuffer* ibuf = &kGameState.player_input[player_id][slot];
@@ -352,16 +381,20 @@ main(int argc, char** argv)
     return 1;
   }
 
+  // Network handshake uses a clock
+  platform::clock_init();
   if (!NetworkSetup()) {
     return 1;
   }
 
+  // Reset State
   kGameState.game_updates = 0;
   kGameState.game_jerk = 0;
-  kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
   memset(kGameState.input_ack, 1, sizeof(State::input_ack));
-  platform::clock_init();
+  kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
 
+  // Reset the clock for gameplay
+  platform::clock_init();
   while (!window::ShouldClose()) {
     ProcessInput();
     NetworkEgress();

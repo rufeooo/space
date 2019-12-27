@@ -1,5 +1,6 @@
 #include <pthread.h>
 #include <cstdio>
+#include <cstring>
 
 #include "platform/platform.cc"
 
@@ -20,18 +21,23 @@ server_main(void* arg)
   ServerParam* param = (ServerParam*)arg;
 
   uint8_t buffer[MAX_BUFFER];
-  udp::Init();
+  uint64_t player_count = 0;
+  if (!udp::Init())
+  {
+    puts("server: fail init");
+    return 0;
+  }
 
   Udp4 location;
   if (!udp::GetAddr4(param->ip, param->port, &location)) {
-    puts("fail GetAddr4");
-    exit(1);
+    puts("server: fail GetAddr4");
+    return 0;
   }
 
   printf("Server binding %s:%s\n", param->ip, param->port);
   if (!udp::Bind(location)) {
-    puts("fail Bind");
-    exit(1);
+    puts("server: fail Bind");
+    return 0;
   }
 
   while (running) {
@@ -45,12 +51,30 @@ server_main(void* arg)
       continue;
     }
 
+    const uint64_t greeting_size = 6;
+    const char greeting[greeting_size] = {"space"};
+    if (received_bytes >= greeting_size &&
+        strncmp(greeting, (char*)buffer, greeting_size) == 0) {
+      uint64_t* header = (uint64_t*)(buffer + greeting_size);
+      uint64_t player_id = player_count;
+      ++player_count;
+      *header = player_id;
+      ++header;
+      *header = player_count;
+      ++header;
+      if (!udp::SendTo(location, peer, buffer,
+                       greeting_size + 2 * sizeof(uint64_t)))
+        puts("server handshake failed");
+      continue;
+    }
+
     // Echo bytes to peer
 #if 0
     printf("socket %d echo %d bytes\n", location.socket, received_bytes);
 #endif
     if (!udp::SendTo(location, peer, buffer, received_bytes)) {
       puts("server send failed");
+      break;
     }
   }
 
