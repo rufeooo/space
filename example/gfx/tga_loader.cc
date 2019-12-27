@@ -57,10 +57,10 @@ int main(int argc, char** argv) {
   // Just don't even support colors.
   assert(header->id_length == 0);
   assert(header->color_map_type == 0);
+  assert(image_spec->pixel_depth == 8);
 
   // Image bytes sz
-  uint32_t image_bytes_size =
-    image_spec->image_width * image_spec->image_height * image_spec->pixel_depth;
+  uint32_t image_bytes_size = image_spec->image_width * image_spec->image_height;
 
   uint8_t* pixel_bytes = (uint8_t*)malloc(image_bytes_size);
   memcpy(pixel_bytes, &buffer[sizeof(TgaHeader) + sizeof(TgaImageSpec)], image_bytes_size);
