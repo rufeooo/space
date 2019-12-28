@@ -6,13 +6,22 @@ typedef struct {
   int x;
   int y;
 } c1_t;
+typedef struct {
+  int z;
+} c2_t;
 
-#define ECS_TYPE(V) \
-  V:                \
-  __COUNTER__
+#define ECS_TYPE(V, ID) \
+  V:                    \
+  ID
 
-#define TYPE_ID(X) _Generic((X), ECS_TYPE(c1_t), default : -1)
-#define MAX_ECS_TYPE __COUNTER__
+// clang-format off
+#define TYPE_ID(X) _Generic((X), \
+    default: -1, \
+    ECS_TYPE(c1_t, 0), \
+    ECS_TYPE(c2_t, 1) \
+)
+#define MAX_ECS_TYPE 2
+// clang-format on
 #define PAGE (4 * 1024)
 
 typedef struct {
@@ -49,6 +58,17 @@ ecs_memory(int type_id)
   int f_type = TYPE_ID(*ptr_type); \
   ptr_type = ecs_memory(f_type);*/
 #define ECS_ENUM(ptr_type) ptr_type = ecs_memory(TYPE_ID(*ptr_type))
+
+int t1()
+{
+  c1_t f;
+  return TYPE_ID(f);
+}
+int t2()
+{
+  c2_t f;
+  return TYPE_ID(f);
+}
 
 int
 main()
