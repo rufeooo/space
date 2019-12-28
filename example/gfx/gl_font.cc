@@ -42,7 +42,7 @@ struct TextPoint {
 
 void
 DrawString(const char* msg, const FntMetadata& fm, float start_x, float start_y,
-           float winx, float winy)
+           float texture_width, float texture_height)
 {
   int msg_len = strlen(msg);
 
@@ -51,13 +51,13 @@ DrawString(const char* msg, const FntMetadata& fm, float start_x, float start_y,
 
     const FntMetadataRow* row = &fm.rows[msg[i]];
 
-    float tex_x = row->x / winx;
-    float tex_y = row->y / winy;
-    float tex_w = row->width / winx;
-    float tex_h = row->height / winy;
+    float tex_x = row->x / texture_width;
+    float tex_y = row->y / texture_height;
+    float tex_w = row->width / texture_width;
+    float tex_h = row->height / texture_height;
 
-    float offset_start_x = start_x - row->xoffset / winx;
-    float offset_start_y = start_y - row->yoffset / winy;
+    float offset_start_x = start_x - row->xoffset / texture_width;
+    float offset_start_y = start_y - row->yoffset / texture_height;
 
     text_point[0] = TextPoint(offset_start_x, offset_start_y,
                               tex_x, tex_y);
@@ -73,7 +73,7 @@ DrawString(const char* msg, const FntMetadata& fm, float start_x, float start_y,
                               tex_x, tex_y);
 
     glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
+    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draw the character 
     
     start_x += tex_w;
   }
@@ -91,8 +91,8 @@ main(int argc, char** argv)
   glDepthFunc(GL_LESS);
 
   uint8_t* image_data;
-  uint16_t x, y;
-  LoadTGA("example/gfx/characters_0.tga", &image_data, &x, &y);
+  uint16_t texture_width, texture_height;
+  LoadTGA("example/gfx/characters_0.tga", &image_data, &texture_width, &texture_height);
   FntMetadata fm = LoadFntMetadata("example/gfx/characters.fnt");
   GLuint tex = 0;
   glGenTextures (1, &tex);
@@ -102,8 +102,8 @@ main(int argc, char** argv)
     GL_TEXTURE_2D,
     0,
     GL_RED,
-    x,
-    y,
+    texture_width,
+    texture_height,
     0,
     GL_RED,
     GL_UNSIGNED_BYTE,
@@ -155,7 +155,7 @@ main(int argc, char** argv)
     glUseProgram(p);
     glUniform1i(tex_loc, 0); // use active texture 0
 
-    DrawString("Hello, World!", fm, start_x, start_y, x, y);
+    DrawString("Hello, World!", fm, start_x, start_y, texture_width, texture_height);
 
     window::SwapBuffers();
   }
