@@ -23,7 +23,54 @@ struct TgaHeader {
 };
 #pragma pack(pop)
 
-uint32_t
+struct FntMetadataRow {
+  int id;
+  int x;
+  int y;
+  int width;
+  int height;
+  int xoffset;
+  int yoffset;
+  int xadvance;
+};
+
+struct FntMetadata {
+  // Just assume we we are doint ascii.
+  // Key corresponds to ascii key code.
+  FntMetadataRow rows[256];
+};
+
+FntMetadata
+LoadFntMetadata(const char* file)
+{
+  FILE* fptr = fopen(file, "r");
+  char line[128];
+  int row_count = 0;
+  int i = 0;
+  FntMetadata metadata;
+  while (fgets(line, sizeof(line), fptr)) {
+    ++i;
+    // First 5 lines are header.
+    if (i <= 5) continue;
+    // After that comes the kernings.
+    if (i > 100) return metadata;
+    // TODO: These offsets looks like they are pretty predictable but
+    // maybe they're not?? This is quick and works for now so just keep this.
+    int id = atoi(&line[8]);
+    FntMetadataRow* row = &metadata.rows[id];
+    row->id = atoi(&line[8]);
+    row->x = atoi(&line[15]);
+    row->y = atoi(&line[23]);
+    row->width = atoi(&line[35]);
+    row->height = atoi(&line[48]);
+    row->xoffset = atoi(&line[62]);
+    row->yoffset = atoi(&line[76]);
+    row->xadvance = atoi(&line[91]);
+  }
+  return metadata;
+}
+
+bool
 LoadTGA(const char* file, uint8_t** image_bytes,
         uint16_t* image_width, uint16_t* image_height)
 {
@@ -56,31 +103,26 @@ LoadTGA(const char* file, uint8_t** image_bytes,
   memcpy(*image_bytes, &buffer[sizeof(TgaHeader) + sizeof(TgaImageSpec)], image_bytes_size);
   // Free buffer used to read in file.
   free(buffer);
-  return image_bytes_size;
+  return true;
 }
-/*
+
+#if 0
 int
 main(int argc, char** argv)
 {
-  uint8_t* image_bytes;
-  
-  uint32_t sz = LoadTGA("example/gfx/characters_0.tga", &image_bytes);
-
-  printf("read %i image bytes...\n", sz);
-
-  // First pixel is pure black.
-  printf("pixel: %i\n", image_bytes[0]);
-
-  // These should fade to white
-  printf("pixel: %i\n", image_bytes[7]);
-  printf("pixel: %i\n", image_bytes[8]);
-  printf("pixel: %i\n", image_bytes[8]);
-  printf("pixel: %i\n", image_bytes[10]);
-  printf("pixel: %i\n", image_bytes[11]);
-  printf("pixel: %i\n", image_bytes[12]);
-  printf("pixel: %i\n", image_bytes[13]);
-  printf("pixel: %i\n", image_bytes[14]);
-
+  FntMetadata metadata = LoadFntMetadata("example/gfx/characters.fnt");
+  for (int i = 32; i < 127; ++i) {
+    FntMetadataRow row = metadata.rows[i];
+    printf("id=%i\n", row.id);
+    printf("x=%i\n", row.x);
+    printf("y=%i\n", row.y);
+    printf("width=%i\n", row.width);
+    printf("height=%i\n", row.height);
+    printf("xoffset=%i\n", row.xoffset);
+    printf("yoffset=%i\n", row.yoffset);
+    printf("xadvance=%i\n", row.xadvance);
+  }
 
   return 0;
-}*/
+}
+#endif
