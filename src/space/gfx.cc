@@ -80,7 +80,6 @@ Render()
   rgg::SetProjectionMatrix(projection);
   rgg::SetViewMatrix(camera::view_matrix());
   rgg::SetCameraTransformMatrix(camera::transform_matrix());
-  rgg::SetViewport(window::GetWindowSize());
 
   // For now draw all primitives as wireframe.
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);

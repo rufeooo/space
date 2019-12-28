@@ -35,7 +35,6 @@ main(int argc, char** argv)
   rgg::SetProjectionMatrix(PerspectiveProjection());
   rgg::SetCameraTransformMatrix(camera::transform_matrix());
   rgg::SetViewMatrix(camera::view_matrix());
-  rgg::SetViewport(window::GetWindowSize());
 
   while (!window::ShouldClose()) {
     PlatformEvent event;
@@ -52,9 +51,11 @@ main(int argc, char** argv)
         math::Vec3f(0.f, -500.f, 0.f),
         math::Vec3f(0.f, 500.f, 0.f),
         math::Vec4f(0.f, 1.f, 0.f, 0.75f));
-    
+   
+    rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
+
     //std::cout << "ERROR: " << glGetError() << std::endl;
-    ui::Text("Testing", 0.f, 0.f, math::Vec4f());
+    ui::Text("Testing", 0.5f, 0.f, math::Vec4f());
 
     window::SwapBuffers();
   }

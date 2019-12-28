@@ -12,7 +12,6 @@ struct RGG {
   math::Mat4f projection;
   math::Mat4f view;
   math::Mat4f camera_transform;
-  math::Vec2f viewport;
 
   // References to shader programs.
   GLuint program_reference;
@@ -113,12 +112,6 @@ SetCameraTransformMatrix(const math::Mat4f& camera_transform)
 }
 
 void
-SetViewport(const math::Vec2f& dims)
-{
-  kRGG.viewport = dims;
-}
-
-void
 RenderTriangle(const math::Vec3f& position, const math::Vec3f& scale,
                const math::Quatf& orientation, const math::Vec4f& color)
 {
@@ -190,7 +183,7 @@ RenderGrid(float width, float height, math::Vec4f& color)
   glUseProgram(kRGG.program_reference);
   glBindVertexArray(kRGG.line_vao_reference);
   // The bottom left and top right of the screen with regards to the camera.
-  math::Vec3f top_right = kRGG.camera_transform * math::Vec3f(kRGG.viewport);
+  math::Vec3f top_right = kRGG.camera_transform * math::Vec3f(window::GetWindowSize());
   math::Vec3f bottom_left = kRGG.camera_transform * math::Vec3f(0.f, 0.f, 0.f);
   float right_most_grid_x =
         width - (fmod(top_right.x + width, width));

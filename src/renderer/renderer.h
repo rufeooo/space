@@ -14,8 +14,6 @@ void SetViewMatrix(const math::Mat4f& view);
 
 void SetCameraTransformMatrix(const math::Mat4f& camera_transform);
 
-void SetViewport(const math::Vec2f& dims);
-
 void RenderTriangle(const math::Vec3f& position,
                     const math::Vec3f& scale,
                     const math::Quatf& orientation,
