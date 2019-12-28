@@ -5,24 +5,6 @@
 #include <string.h>
 
 // http://tfc.duke.free.fr/coding/tga_specs.pdf
-
-#pragma pack(push,1)
-struct TgaImageSpec {
-  uint16_t x_origin;
-  uint16_t y_origin;
-  uint16_t image_width;
-  uint16_t image_height;
-  uint8_t pixel_depth;
-  uint8_t image_descriptor;
-};
-struct TgaHeader {
-  uint8_t id_length;
-  uint8_t color_map_type;
-  uint8_t image_type;
-  uint8_t color_map_spec[5];
-};
-#pragma pack(pop)
-
 struct FntMetadataRow {
   int id;
   int x;
@@ -35,8 +17,7 @@ struct FntMetadataRow {
 };
 
 struct FntMetadata {
-  // Just assume we we are doint ascii.
-  // Key corresponds to ascii key code.
+  // Just assume ascii. Key corresponds to decimal key code.
   FntMetadataRow rows[256];
 };
 
@@ -74,6 +55,23 @@ bool
 LoadTGA(const char* file, uint8_t** image_bytes,
         uint16_t* image_width, uint16_t* image_height)
 {
+#pragma pack(push,1)
+  struct TgaImageSpec {
+    uint16_t x_origin;
+    uint16_t y_origin;
+    uint16_t image_width;
+    uint16_t image_height;
+    uint8_t pixel_depth;
+    uint8_t image_descriptor;
+  };
+  struct TgaHeader {
+    uint8_t id_length;
+    uint8_t color_map_type;
+    uint8_t image_type;
+    uint8_t color_map_spec[5];
+  };
+#pragma pack(pop)
+
   FILE* fptr;
   uint8_t* buffer;
   uint32_t file_length;
@@ -105,24 +103,3 @@ LoadTGA(const char* file, uint8_t** image_bytes,
   free(buffer);
   return true;
 }
-
-#if 0
-int
-main(int argc, char** argv)
-{
-  FntMetadata metadata = LoadFntMetadata("example/gfx/characters.fnt");
-  for (int i = 32; i < 127; ++i) {
-    FntMetadataRow row = metadata.rows[i];
-    printf("id=%i\n", row.id);
-    printf("x=%i\n", row.x);
-    printf("y=%i\n", row.y);
-    printf("width=%i\n", row.width);
-    printf("height=%i\n", row.height);
-    printf("xoffset=%i\n", row.xoffset);
-    printf("yoffset=%i\n", row.yoffset);
-    printf("xadvance=%i\n", row.xadvance);
-  }
-
-  return 0;
-}
-#endif

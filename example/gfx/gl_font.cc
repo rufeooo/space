@@ -2,7 +2,7 @@
 
 #include "platform/window.cc"
 #include "gl/utils.cc"
-#include "gl/shader_cache.cc"
+#include "gl/shader.cc"
 #include "tga_loader.cc"
 
 #include <iostream>
@@ -115,21 +115,14 @@ main(int argc, char** argv)
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
 
-  gl::ShaderCache cache;
 
-  std::string a = "a";
-  std::string b = "b";
-  cache.CompileShader(a, gl::ShaderType::VERTEX, vertex_shader);
-  cache.CompileShader(b, gl::ShaderType::FRAGMENT, fragment_shader);
-  cache.LinkProgram("prog", std::vector({a, b}));
-
-  uint32_t p;
-  cache.GetProgramReference("prog", &p);
-  std::cout << cache.GetProgramInfo("prog") << std::endl;
-  int tex_loc = glGetUniformLocation (p, "basic_texture");
-
-
-  
+  GLuint vert_shader, frag_shader;
+  gl::CompileShader(GL_VERTEX_SHADER, &vertex_shader, &vert_shader);
+  gl::CompileShader(GL_FRAGMENT_SHADER, &fragment_shader, &frag_shader);
+  GLuint program;
+  gl::LinkShaders({vert_shader, frag_shader}, &program);
+  std::cout << gl::GetProgramInfo(program) << std::endl;
+  int tex_loc = glGetUniformLocation (program, "basic_texture");
   
   GLuint text_vbo = 0;
   glGenBuffers(1, &text_vbo);
@@ -152,7 +145,7 @@ main(int argc, char** argv)
     while (window::PollEvent(&event)) {}
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     // Set the shader program.
-    glUseProgram(p);
+    glUseProgram(program);
     glUniform1i(tex_loc, 0); // use active texture 0
 
     DrawString("Hello, World!", fm, start_x, start_y, texture_width, texture_height);

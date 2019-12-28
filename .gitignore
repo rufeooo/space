@@ -4,6 +4,7 @@ debug/
 logs/
 _tmp/
 .vs/
+.DS_Store
 
 EVENTS.bin
 *.swp

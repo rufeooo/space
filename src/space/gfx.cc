@@ -21,8 +21,6 @@ constexpr const char* kVertexShader = R"(
   }
 )";
 
-constexpr const char* kVertexShaderName = "vert";
-
 constexpr const char* kFragmentShader = R"(
   #version 410
   in vec4 color_out;
@@ -32,24 +30,18 @@ constexpr const char* kFragmentShader = R"(
   }
 )";
 
-constexpr const char* kFragmentShaderName = "frag";
-
-constexpr const char* kProgramName = "prog";
-
 struct Gfx {
-  gl::ShaderCache shader_cache;
-
   // References to shader programs.
-  uint32_t program_reference;
+  GLuint program_reference;
 
   // References to uniforms.
-  uint32_t matrix_uniform = -1;
-  uint32_t color_uniform = -1;
+  GLuint matrix_uniform = -1;
+  GLuint color_uniform = -1;
 
   // References to vertex data on GPU.
-  uint32_t triangle_vao_reference;
-  uint32_t rectangle_vao_reference;
-  uint32_t line_vao_reference;
+  GLuint triangle_vao_reference;
+  GLuint rectangle_vao_reference;
+  GLuint line_vao_reference;
 
   // Number of pixels that correspond with a meter.
   int meter_size = 50;
@@ -70,28 +62,16 @@ Initialize()
 {
   gl::InitGLAndCreateWindow(800, 800, "Space");
 
-  if (!kGfx.shader_cache.CompileShader(kVertexShaderName,
-                                       gl::ShaderType::VERTEX, kVertexShader)) {
-    std::cout << "Unable to compile " << kVertexShaderName << std::endl;
+  GLuint vert_shader, frag_shader;
+  if (!gl::CompileShader(GL_VERTEX_SHADER, &kVertexShader, &vert_shader)) {
     return false;
   }
 
-  if (!kGfx.shader_cache.CompileShader(
-          kFragmentShaderName, gl::ShaderType::FRAGMENT, kFragmentShader)) {
-    std::cout << "Unable to compile " << kFragmentShaderName << std::endl;
+  if (!gl::CompileShader(GL_FRAGMENT_SHADER, &kFragmentShader, &frag_shader)) {
     return false;
   }
 
-  if (!kGfx.shader_cache.LinkProgram(
-          kProgramName, {kVertexShaderName, kFragmentShaderName})) {
-    std::cout << "Unable to link: " << kProgramName
-              << " info: " << kGfx.shader_cache.GetProgramInfo(kProgramName)
-              << std::endl;
-    return false;
-  }
-
-  if (!kGfx.shader_cache.GetProgramReference(kProgramName,
-                                             &kGfx.program_reference)) {
+  if (!gl::LinkShaders({vert_shader, frag_shader}, &kGfx.program_reference)) {
     return false;
   }
 
