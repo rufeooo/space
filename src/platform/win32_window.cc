@@ -61,6 +61,10 @@ typedef void glGetActiveUniform_Func(GLuint, GLuint, GLsizei, GLsizei*, GLint*, 
 glGetActiveUniform_Func* glGetActiveUniform;
 typedef void glUniform4f_Func(GLint, GLfloat, GLfloat, GLfloat, GLfloat);
 glUniform4f_Func* glUniform4f;
+typedef void glActiveTexture_Func(GLenum);
+glActiveTexture_Func* glActiveTexture;
+typedef void glUniform1i_Func(GLint, GLint);
+glUniform1i_Func* glUniform1i;
 
 // GL defines.
 #define GL_ARRAY_BUFFER                   0x8892
@@ -83,6 +87,18 @@ glUniform4f_Func* glUniform4f;
 #define GL_SAMPLER_3D                     0x8B5F
 #define GL_SAMPLER_CUBE                   0x8B60
 #define GL_SAMPLER_2D_SHADOW              0x8B62
+#define GL_TEXTURE0                       0x84C0
+#define GL_TEXTURE1                       0x84C1
+#define GL_TEXTURE2                       0x84C2
+#define GL_TEXTURE3                       0x84C3
+#define GL_TEXTURE4                       0x84C4
+#define GL_TEXTURE5                       0x84C5
+#define GL_TEXTURE6                       0x84C6
+#define GL_TEXTURE7                       0x84C7
+#define GL_TEXTURE8                       0x84C8
+#define GL_TEXTURE9                       0x84C9
+#define GL_TEXTURE10                      0x84CA
+#define GL_CLAMP_TO_EDGE                  0x812F
 
 namespace window {
 
@@ -408,6 +424,8 @@ SetupGLFunctions() {
   glGetAttribLocation = (glGetAttribLocation_Func*)GetGLFunction("glGetAttribLocation");
   glGetActiveUniform = (glGetActiveUniform_Func*)GetGLFunction("glGetActiveUniform");
   glUniform4f = (glUniform4f_Func*)GetGLFunction("glUniform4f");
+  glActiveTexture = (glActiveTexture_Func*)GetGLFunction("glActiveTexture");
+  glUniform1i = (glUniform1i_Func*)GetGLFunction("glUniform1i");
 }
 
 int
