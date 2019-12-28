@@ -48,7 +48,7 @@ Initialize()
     GL_UNSIGNED_BYTE,
     image_data
   );
-  //free(image_data); // GL has the texture data now. Free it from process.
+  free(image_data); // GL has the texture data now. Free it from process.
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
   glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
   glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
