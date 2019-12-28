@@ -28,6 +28,57 @@ const char* fragment_shader =
   "	frag_colour = texel;"
   "}";
 
+struct TextPoint {
+  TextPoint() = default;
+  TextPoint(GLfloat x, GLfloat y, GLfloat s, GLfloat t) :
+    x(x), y(y), s(s), t(t) {};
+  GLfloat x;
+  GLfloat y;
+  GLfloat s;
+  GLfloat t;
+
+  void Pr() { printf("%.1f,%.1f,%.1f,%.1f\n", x, y, s, t); }
+};
+
+void
+DrawString(const char* msg, const FntMetadata& fm, float start_x, float start_y,
+           float winx, float winy)
+{
+  int msg_len = strlen(msg);
+
+  for (int i = 0; i < msg_len; ++i) {
+    TextPoint text_point[6];
+
+    const FntMetadataRow* row = &fm.rows[msg[i]];
+
+    float tex_x = row->x / winx;
+    float tex_y = row->y / winy;
+    float tex_w = row->width / winx;
+    float tex_h = row->height / winy;
+
+    float offset_start_x = start_x - row->xoffset / winx;
+    float offset_start_y = start_y - row->yoffset / winy;
+
+    text_point[0] = TextPoint(offset_start_x, offset_start_y,
+                              tex_x, tex_y);
+    text_point[1] = TextPoint(offset_start_x + tex_w, offset_start_y,
+                              tex_x + tex_w, tex_y);
+    text_point[2] = TextPoint(offset_start_x + tex_w, offset_start_y - tex_h,
+                              tex_x + tex_w, tex_y + tex_h);
+    text_point[3] = TextPoint(offset_start_x + tex_w, offset_start_y - tex_h,
+                              tex_x + tex_w, tex_y + tex_h);
+    text_point[4] = TextPoint(offset_start_x, offset_start_y - tex_h,
+                              tex_x, tex_y + tex_h);
+    text_point[5] = TextPoint(offset_start_x, offset_start_y,
+                              tex_x, tex_y);
+
+    glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
+    
+    start_x += tex_w;
+  }
+}
+
 int
 main(int argc, char** argv)
 {
@@ -42,6 +93,7 @@ main(int argc, char** argv)
   uint8_t* image_data;
   uint16_t x, y;
   LoadTGA("example/gfx/characters_0.tga", &image_data, &x, &y);
+  FntMetadata fm = LoadFntMetadata("example/gfx/characters.fnt");
   GLuint tex = 0;
   glGenTextures (1, &tex);
   glActiveTexture(GL_TEXTURE0);
@@ -77,18 +129,7 @@ main(int argc, char** argv)
   int tex_loc = glGetUniformLocation (p, "basic_texture");
 
 
-  struct TextPoint {
-    TextPoint() = default;
-    TextPoint(GLfloat x, GLfloat y, GLfloat s, GLfloat t) :
-      x(x), y(y), s(s), t(t) {};
-    GLfloat x;
-    GLfloat y;
-    GLfloat s;
-    GLfloat t;
-
-    void Pr() { printf("%.1f,%.1f,%.1f,%.1f\n", x, y, s, t); }
-  };
-
+  
   
   GLuint text_vbo = 0;
   glGenBuffers(1, &text_vbo);
@@ -114,53 +155,7 @@ main(int argc, char** argv)
     glUseProgram(p);
     glUniform1i(tex_loc, 0); // use active texture 0
 
-    // Try to draw two characters side by side...
-    {
-      // An H - check characters.fnt id=72
-      // char id=72   x=190   y=21    width=17    height=20    xoffset=1     yoffset=6     xadvance=19    page=0  chnl=15
-      TextPoint text_point[6];
-      // Scale to correct texture position.
-      float tex_x = 190.f / x;
-      float tex_y = 21.f / y;
-      float tex_w = 17.f / x;
-      float tex_h = 20.f / y;
-
-      text_point[0] = TextPoint(start_x, start_y, tex_x, tex_y);
-      text_point[1] = TextPoint(start_x + tex_w, start_y, tex_x + tex_w, tex_y);
-      text_point[2] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
-      text_point[3] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
-      text_point[4] = TextPoint(start_x, start_y - tex_h, tex_x, tex_y + tex_h);
-      text_point[5] = TextPoint(start_x, start_y, tex_x, tex_y);
-
-      glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
-      glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
-
-      start_x += tex_w + (1.f / x);
-    }
-
-    {
-      // An i - check characters.fnt id 105
-      // char id=105  x=189   y=63    width=4     height=20    xoffset=1     yoffset=6     xadvance=6     page=0  chnl=15
-      TextPoint text_point[6];
-      // Scale to correct texture position.
-      float tex_x = 189.f / x;
-      float tex_y = 63.f / y;
-      float tex_w = 4.f / x;
-      float tex_h = 20.f / y;
-
-      text_point[0] = TextPoint(start_x, start_y, tex_x, tex_y);
-      text_point[1] = TextPoint(start_x + tex_w, start_y, tex_x + tex_w, tex_y);
-      text_point[2] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
-      text_point[3] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
-      text_point[4] = TextPoint(start_x, start_y - tex_h, tex_x, tex_y + tex_h);
-      text_point[5] = TextPoint(start_x, start_y, tex_x, tex_y);
-
-      glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
-      glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
-
-      // Reset.
-      start_x = 0.f;
-    }
+    DrawString("Hello, World!", fm, start_x, start_y, x, y);
 
     window::SwapBuffers();
   }
