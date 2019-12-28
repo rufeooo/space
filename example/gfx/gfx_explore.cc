@@ -1,8 +1,7 @@
 
 #include "platform/platform.cc"
-#include "space/camera.cc"
-#include "gl/renderer.cc"
-#include "space/gfx.cc"
+#include "gl/gl.cc"
+#include "renderer/renderer.cc"
 
 // ORTHO:
 //0.002500,0.000000,0.000000,-1.000000
@@ -24,30 +23,28 @@ math::Mat4f PerspectiveProjection() {
 int
 main(int argc, char** argv)
 {
-  if (!gfx::Initialize()) return 1;
+  if (!window::Create("Graphics Explore", 800, 800)) return 1;
 
-  gfx::SetProjection(&PerspectiveProjection);
-
-  camera::Translate(math::Vec3f(0.f, 0.f, 5.0f));
-  // Aim it down the z axis.
-  camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
-
-  // x/y/z axis.
-  auto* x = kECS.Assign<LineComponent>(1);
-  x->start = math::Vec3f(-500.f, 0.f, 0.f);
-  x->end = math::Vec3f(500.f, 0.f, 0.f);
-  x->color = math::Vec4f(1.f, 0.f, 0.f, 0.75f);
-
-  auto* y = kECS.Assign<LineComponent>(2);
-  y->start = math::Vec3f(0.f, -500.f, 0.f);
-  y->end = math::Vec3f(0.f, 500.f, 0.f);
-  y->color = math::Vec4f(0.f, 1.f, 0.f, 0.75f);
-
+  rgg::SetProjectionMatrix(PerspectiveProjection());
+  rgg::SetViewMatrix(math::CreateIdentityMatrix<float, 4>());
+  rgg::SetCameraTransformMatrix(math::CreateIdentityMatrix<float, 4>());
+  rgg::SetViewport(window::GetWindowSize());
 
   while (!window::ShouldClose()) {
     PlatformEvent event;
     while (window::PollEvent(&event)) {}
-    gfx::Render();
+
+    rgg::RenderLine(
+        math::Vec3f(-500.f, 0.f, 0.f),
+        math::Vec3f(500.f, 0.f, 0.f),
+        math::Vec4f(1.f, 0.f, 0.f, 0.75f));
+
+    rgg::RenderLine(
+        math::Vec3f(0.f, -500.f, 0.f),
+        math::Vec3f(0.f, 500.f, 0.f),
+        math::Vec4f(0.f, 1.f, 0.f, 0.75f));
+
+    window::SwapBuffers();
   }
 
   return 0;

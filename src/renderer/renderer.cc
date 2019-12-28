@@ -3,6 +3,7 @@
 #include "shader.h"
 #include "gl/gl.cc"
 #include "gl/shader.cc"
+#include "math/mat_ops.h"
 
 namespace rgg {
 
