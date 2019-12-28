@@ -44,7 +44,6 @@ engine -
            seperately.
 
 network -
-  add multiple players
-  handle udp acknowledgement
-  handle udp handshake at start of game
+  support >2 players
   stand up AWS udp server that auto-restarts after each game
+  (eventually) server authoritative packet reordering
