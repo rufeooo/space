@@ -1,5 +1,7 @@
 
+#if 0
 #include <stdio.h>
+#endif
 #include <stdlib.h>
 
 typedef struct {
@@ -29,8 +31,6 @@ typedef struct {
 } ecstype_t;
 ecstype_t typeinfo[MAX_ECS_TYPE];
 
-#define PRINTF_COUNTER(type) printf("%d\n", __COUNTER__)
-
 void
 ecs_init()
 {
@@ -54,17 +54,20 @@ ecs_memory(int type_id)
   return typeinfo[type_id].memory;
 }
 
-/*#define ECS_ENUM(ptr_type)         \
-  int f_type = TYPE_ID(*ptr_type); \
-  ptr_type = ecs_memory(f_type);*/
-#define ECS_ENUM(ptr_type) ptr_type = ecs_memory(TYPE_ID(*ptr_type))
+#define ECS_GET(ptr_type, index) \
+  ptr_type = ecs_memory(TYPE_ID(*ptr_type)) + index
+#define ECS_ENUM_END(ptr_type) \
+  ptr_type = ecs_memory(TYPE_ID(*ptr_type)) + PAGE / sizeof(*ptr_type) + 1;
 
-int t1()
+// c1_t* iter_end = iter_f + PAGE / sizeof(*iter_f) + 1;
+int
+t1()
 {
   c1_t f;
   return TYPE_ID(f);
 }
-int t2()
+int
+t2()
 {
   c2_t f;
   return TYPE_ID(f);
@@ -75,26 +78,41 @@ main()
 {
   ecs_init();
 
-  c1_t f;
+  c1_t f = {.x = 1, .y = 2};
   int i;
   c1_t* iter_f;
-  ECS_ENUM(iter_f);
-  c1_t* iter_end = iter_f + PAGE / sizeof(*iter_f) + 1;
-
+  c1_t* iter_end;
+  ECS_GET(iter_f, 0);
+  *iter_f = f;
+  ECS_GET(iter_f, 0);
+  ECS_ENUM_END(iter_end);
   for (int i = 0; iter_f < iter_end; ++iter_f, ++i) {
     iter_f->x = i;
     iter_f->y = i * 10;
   }
+  ECS_GET(iter_f, 0);
+#if 0
+  printf("[ %d x ] [ %d y ]\n", iter_f->x, iter_f->y);
+#endif
+  ECS_GET(iter_f, 0);
+  *iter_f = (c1_t){0};
+  ECS_GET(iter_f, 0);
+#if 0
+  printf("[ %d x ] [ %d y ]\n", iter_f->x, iter_f->y);
+#endif
 
-  ECS_ENUM(iter_f);
+  ECS_GET(iter_f, 0);
   for (int i = 0; iter_f < iter_end; ++iter_f, ++i) {
+#if 0
     printf("[ %d x ] [ %d y ]\n", iter_f->x, iter_f->y);
+#endif
   }
 
+#if 0
   printf("%d c1\n", TYPE_ID(f));
   printf("%d int\n", TYPE_ID(i));
+#endif
   int arr[] = {[0] = 3};
-  // PRINTF_COUNTER(c1);
   return 0;
 }
 
