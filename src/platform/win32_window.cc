@@ -65,6 +65,8 @@ typedef void glActiveTexture_Func(GLenum);
 glActiveTexture_Func* glActiveTexture;
 typedef void glUniform1i_Func(GLint, GLint);
 glUniform1i_Func* glUniform1i;
+typedef void glDeleteShader_Func(GLuint);
+glDeleteShader_Func* glDeleteShader;
 
 // GL defines.
 #define GL_ARRAY_BUFFER                   0x8892
@@ -427,6 +429,7 @@ SetupGLFunctions() {
   glUniform4f = (glUniform4f_Func*)GetGLFunction("glUniform4f");
   glActiveTexture = (glActiveTexture_Func*)GetGLFunction("glActiveTexture");
   glUniform1i = (glUniform1i_Func*)GetGLFunction("glUniform1i");
+  glDeleteShader = (glDeleteShader_Func*)GetGLFunction("glDeleteShader");
 }
 
 int
