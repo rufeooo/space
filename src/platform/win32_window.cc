@@ -99,6 +99,7 @@ glUniform1i_Func* glUniform1i;
 #define GL_TEXTURE9                       0x84C9
 #define GL_TEXTURE10                      0x84CA
 #define GL_CLAMP_TO_EDGE                  0x812F
+#define GL_DYNAMIC_DRAW                   0x88E8
 
 namespace window {
 
