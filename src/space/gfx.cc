@@ -5,7 +5,7 @@
 
 #include "camera.cc"
 #include "ecs.cc"
-#include "gl/renderer.cc"
+#include "gl/gl.cc"
 
 namespace gfx
 {
@@ -60,7 +60,18 @@ SetProjection(CreateProjectionFunctor* projection)
 bool
 Initialize()
 {
-  gl::InitGLAndCreateWindow(800, 800, "Space");
+  int window_result = window::Create("Space", 800, 800);
+  std::cout << "window create result: " << window_result << std::endl;
+  const GLubyte* renderer = glGetString(GL_RENDERER);
+  const GLubyte* version = glGetString(GL_VERSION);
+  std::cout << renderer << std::endl;
+  std::cout << version << std::endl;
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glEnable(GL_LINE_SMOOTH);
+
 
   GLuint vert_shader, frag_shader;
   if (!gl::CompileShader(GL_VERTEX_SHADER, &kVertexShader, &vert_shader)) {

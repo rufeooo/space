@@ -59,7 +59,6 @@ LinkShaders(const std::vector<GLuint>& shader_ids, GLuint* id)
   int params = -1;
   glGetProgramiv(*id, GL_LINK_STATUS, &params);
   if (params != GL_TRUE) {
-    // TODO: switch to LOG
     std::cout << GetProgramInfoLog(*id) << std::endl;
     return false;
   }

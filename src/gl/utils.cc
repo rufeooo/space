@@ -4,26 +4,6 @@
 
 namespace gl
 {
-
-void InitGLAndCreateWindow(int window_width, int window_height, const char* title)
-{
-  int window_result = window::Create(title, window_width, window_height);
-  std::cout << "window create result: " << window_result << std::endl;
-  const GLubyte* renderer = glGetString(GL_RENDERER);
-  const GLubyte* version = glGetString(GL_VERSION);
-  std::cout << renderer << std::endl;
-  std::cout << version << std::endl;
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
-  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-  glEnable(GL_BLEND);
-  glEnable(GL_LINE_SMOOTH);
-  // Should these be enabled?
-  // glEnable(GL_CULL_FACE);
-  // glCullFace(GL_BACK);
-  // glFrontFace(GL_CW);
-}
-
 const char*
 GLTypeToString(int type)
 {

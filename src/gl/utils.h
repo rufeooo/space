@@ -6,8 +6,6 @@
 
 namespace gl
 {
-void InitGLAndCreateWindow(int window_width, int window_height, const char* title);
-
 // Given a GLenum returns a const char* version of it. For example -
 // GLTypeToString(GL_BOOL) = "bool"
 // GLTypeToString(GL_INT) = "int"
