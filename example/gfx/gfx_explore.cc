@@ -54,7 +54,7 @@ main(int argc, char** argv)
    
     rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
 
-    //std::cout << "ERROR: " << glGetError() << std::endl;
+    glClear(GL_DEPTH_BUFFER_BIT);
     ui::Text("Testing", 0.5f, 0.f, math::Vec4f());
 
     window::SwapBuffers();
