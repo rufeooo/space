@@ -105,7 +105,7 @@ Initialize()
   // Triangle.
   float m = kGfx.meter_size;
   kGfx.triangle_vao_reference = gl::CreateGeometryVAO(
-      {math::Vec2f(0.0f, m / 2.f)
+      {math::Vec2f(0.0f, m / 2.f),
        math::Vec2f(m / 2.f, -m / 2.f),
        math::Vec2f(-m / 2.f, -m / 2.f)});
 

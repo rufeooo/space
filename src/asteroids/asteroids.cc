@@ -7,11 +7,8 @@
 #include "asteroids_state.h"
 #include "ecs.cc"
 #include "game.cc"
-#include "gl/utils.h"
-#include "math/intersection.h"
-#include "math/mat_ops.h"
-#include "math/vec.h"
-#include "platform/platform.cc"
+#include "gl/renderer.cc"
+#include "math/math.cc"
 
 namespace asteroids
 {
@@ -417,7 +414,8 @@ RenderGame()
   auto* view_component = components.Get<ViewComponent>(opengl.camera);
   math::Mat4f view = math::CreateViewMatrix(view_component->position,
                                             view_component->orientation);
-  math::Mat4f projection = math::CreatePerspectiveMatrix<float>(800, 800);
+  math::Mat4f projection =
+      math::CreatePerspectiveMatrix<float>(800, 800, .1f, 100.f, 67.f);
   auto projection_view = projection * view;
   components.Enumerate<RenderingComponent, TransformComponent>(
       [&](ecs::Entity ent, RenderingComponent& comp,
