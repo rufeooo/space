@@ -6,7 +6,7 @@
 
 #include "ecs.cc"
 #include "event.h"
-#include "gl/shader_cache.h"
+#include "gl/shader.h"
 #include "gl/utils.h"
 #include "math/vec.h"
 

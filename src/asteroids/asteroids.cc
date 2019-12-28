@@ -7,7 +7,7 @@
 #include "asteroids_state.h"
 #include "ecs.cc"
 #include "game.cc"
-#include "gl/renderer.cc"
+#include "gl/gl.cc"
 #include "math/math.cc"
 
 namespace asteroids
@@ -21,8 +21,6 @@ constexpr const char* kVertexShader = R"(
   }
 )";
 
-constexpr const char* kVertexShaderName = "vert";
-
 constexpr const char* kFragmentShader = R"(
   #version 410
 	out vec4 frag_color;
@@ -31,38 +29,37 @@ constexpr const char* kFragmentShader = R"(
   }
 )";
 
-constexpr const char* kFragmentShaderName = "frag";
-
-constexpr const char* kProgramName = "prog";
-
 bool
 InitializeGraphics()
 {
   auto& opengl = GlobalOpenGL();
   auto& components = GlobalGameState().components;
-  gl::InitGLAndCreateWindow(800, 800, "Asteroids");
+
+  int window_result = window::Create("Asteroids", 800, 800);
+  std::cout << "window create result: " << window_result << std::endl;
+  const GLubyte* renderer = glGetString(GL_RENDERER);
+  const GLubyte* version = glGetString(GL_VERSION);
+  std::cout << renderer << std::endl;
+  std::cout << version << std::endl;
+  glEnable(GL_DEPTH_TEST);
+  glDepthFunc(GL_LESS);
+  glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+  glEnable(GL_BLEND);
+  glEnable(GL_LINE_SMOOTH);
+
   components.Assign<ViewComponent>(
       opengl.camera, math::Vec3f(0.0f, 0.0f, 1.5f),
       math::Quatf(0.0f, math::Vec3f(0.0f, 0.0f, -1.0f)));
-  if (!opengl.shader_cache.CompileShader(
-          kVertexShaderName, gl::ShaderType::VERTEX, kVertexShader)) {
-    std::cout << "Unable to compile " << kVertexShaderName << std::endl;
+  GLuint vertex_shader, fragment_shader;
+  if (!gl::CompileShader(GL_VERTEX_SHADER, &kVertexShader, &vertex_shader)) {
     return false;
   }
-  if (!opengl.shader_cache.CompileShader(
-          kFragmentShaderName, gl::ShaderType::FRAGMENT, kFragmentShader)) {
-    std::cout << "Unable to compile " << kFragmentShaderName << std::endl;
+  if (!gl::CompileShader(GL_FRAGMENT_SHADER, &kFragmentShader,
+                         &fragment_shader)) {
     return false;
   }
-  if (!opengl.shader_cache.LinkProgram(
-          kProgramName, {kVertexShaderName, kFragmentShaderName})) {
-    std::cout << "Unable to link: " << kProgramName
-              << " info: " << opengl.shader_cache.GetProgramInfo(kProgramName)
-              << std::endl;
-    return false;
-  }
-  if (!opengl.shader_cache.GetProgramReference(
-          kProgramName, &GlobalOpenGLGameReferences().program_reference)) {
+  if (!gl::LinkShaders({vertex_shader, fragment_shader},
+                       &GlobalOpenGLGameReferences().program_reference)) {
     return false;
   }
   GlobalOpenGLGameReferences().matrix_uniform_location = glGetUniformLocation(
@@ -73,7 +70,6 @@ InitializeGraphics()
       GlobalOpenGLGameReferences().program_reference;
   GlobalOpenGLGameReferences().ship_program_reference =
       GlobalOpenGLGameReferences().program_reference;
-  std::cout << opengl.shader_cache.GetProgramInfo(kProgramName) << std::endl;
   return true;
 }
 

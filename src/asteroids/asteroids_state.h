@@ -3,7 +3,7 @@
 #include <vector>
 
 #include "ecs.cc"
-#include "gl/shader_cache.h"
+#include "gl/shader.h"
 #include "gl/utils.h"
 #include "math/vec.h"
 
@@ -31,7 +31,6 @@ OpenGLGameReferences& GlobalOpenGLGameReferences();
 // Used for manipulating OpenGl state.
 struct OpenGL {
   ecs::Entity camera = 0;
-  gl::ShaderCache shader_cache;
 };
 
 OpenGL& GlobalOpenGL();
