@@ -3,10 +3,9 @@
 #include <cmath>
 #include <iostream>
 
-#include "camera.h"
+#include "camera.cc"
 #include "ecs.cc"
 #include "gl/renderer.cc"
-#include "math/math.cc"
 
 namespace gfx
 {

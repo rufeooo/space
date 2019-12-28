@@ -1,6 +1,5 @@
 #include "intersection.h"
 
-#include <algorithm>
 #include <iostream>
 
 #include "utils.h"

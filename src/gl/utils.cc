@@ -24,7 +24,7 @@ void InitGLAndCreateWindow(int window_width, int window_height, const char* titl
   // glFrontFace(GL_CW);
 }
 
-std::string
+const char*
 GLTypeToString(int type)
 {
   switch (type) {

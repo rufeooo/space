@@ -1,6 +1,6 @@
 #include "filesystem.h"
 
-#include <Windows.h>
+#include <windows.h>
 
 namespace filesystem
 {

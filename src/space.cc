@@ -3,9 +3,7 @@
 
 #include "math/math.cc"
 
-#include "space/camera.cc"
 #include "space/command.cc"
-#include "space/ecs.cc"
 #include "space/gfx.cc"
 #include "space/network/server.cc"
 

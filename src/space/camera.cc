@@ -1,7 +1,6 @@
 #include "camera.h"
 
-#include "math/mat_ops.h"
-#include "math/quat.h"
+#include "math/math.cc"
 
 namespace camera
 {
