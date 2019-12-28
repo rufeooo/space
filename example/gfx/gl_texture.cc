@@ -7,6 +7,7 @@
 
 #include <iostream>
 #include <vector>
+#include <string>
 
 const char* vertex_shader =
   "#version 410\n"
@@ -84,29 +85,26 @@ main(int argc, char** argv)
     GLfloat y;
     GLfloat s;
     GLfloat t;
+
+    void Pr() { printf("%.1f,%.1f,%.1f,%.1f\n", x, y, s, t); }
   };
 
-  TextPoint text_point[6];
-  text_point[0] = TextPoint(-1.f, 1.f, 0.f, 0.f);
-  text_point[1] = TextPoint(1.f, 1.f, 1.f, 0.f);
-  text_point[2] = TextPoint(1.f, -1.f, 1.f, 1.f);
-  text_point[3] = TextPoint(1.f, -1.f, 1.f, 1.f);
-  text_point[4] = TextPoint(-1.f, -1.f, 0.f, 1.f);
-  text_point[5] = TextPoint(-1.f, 1.f, 0.f, 0.f);
-
+  
   GLuint text_vbo = 0;
   glGenBuffers(1, &text_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
-  glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
 
   GLuint text_vao;
-	glGenVertexArrays(1, &text_vao);
-	glBindVertexArray(text_vao);
+  glGenVertexArrays(1, &text_vao);
+  glBindVertexArray(text_vao);
 
-	glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
-	glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
+  glBindBuffer(GL_ARRAY_BUFFER, text_vbo);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
-	glEnableVertexAttribArray(0);
+  glEnableVertexAttribArray(0);
+
+  float start_x = 0.f;
+  float start_y = 0.f;
 
   while (!window::ShouldClose()) {
     PlatformEvent event;
@@ -115,7 +113,55 @@ main(int argc, char** argv)
     // Set the shader program.
     glUseProgram(p);
     glUniform1i(tex_loc, 0); // use active texture 0
-    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
+
+    // Try to draw two characters side by side...
+    {
+      // An H - check characters.fnt id=72
+      // char id=72   x=190   y=21    width=17    height=20    xoffset=1     yoffset=6     xadvance=19    page=0  chnl=15
+      TextPoint text_point[6];
+      // Scale to correct texture position.
+      float tex_x = 190.f / x;
+      float tex_y = 21.f / y;
+      float tex_w = 17.f / x;
+      float tex_h = 20.f / y;
+
+      text_point[0] = TextPoint(start_x, start_y, tex_x, tex_y);
+      text_point[1] = TextPoint(start_x + tex_w, start_y, tex_x + tex_w, tex_y);
+      text_point[2] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
+      text_point[3] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
+      text_point[4] = TextPoint(start_x, start_y - tex_h, tex_x, tex_y + tex_h);
+      text_point[5] = TextPoint(start_x, start_y, tex_x, tex_y);
+
+      glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
+      glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
+
+      start_x += tex_w + (1.f / x);
+    }
+
+    {
+      // An i - check characters.fnt id 105
+      // char id=105  x=189   y=63    width=4     height=20    xoffset=1     yoffset=6     xadvance=6     page=0  chnl=15
+      TextPoint text_point[6];
+      // Scale to correct texture position.
+      float tex_x = 189.f / x;
+      float tex_y = 63.f / y;
+      float tex_w = 4.f / x;
+      float tex_h = 20.f / y;
+
+      text_point[0] = TextPoint(start_x, start_y, tex_x, tex_y);
+      text_point[1] = TextPoint(start_x + tex_w, start_y, tex_x + tex_w, tex_y);
+      text_point[2] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
+      text_point[3] = TextPoint(start_x + tex_w, start_y - tex_h, tex_x + tex_w, tex_y + tex_h);
+      text_point[4] = TextPoint(start_x, start_y - tex_h, tex_x, tex_y + tex_h);
+      text_point[5] = TextPoint(start_x, start_y, tex_x, tex_y);
+
+      glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
+      glDrawArrays(GL_TRIANGLES, 0, 6);  // Draws the texture 
+
+      // Reset.
+      start_x = 0.f;
+    }
+
     window::SwapBuffers();
   }
   return 0;
