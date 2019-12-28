@@ -1,6 +1,7 @@
 #include "renderer.h"
 
 #include "shader.h"
+#include "ui.cc"
 #include "gl/gl.cc"
 #include "gl/shader.cc"
 #include "math/mat_ops.h"
@@ -85,6 +86,10 @@ Initialize()
   // Line is flat on the x-axis with distance m.
   kRGG.line_vao_reference =
       gl::CreateGeometryVAO({math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)});
+
+  if (!ui::Initialize()) {
+    return false;
+  }
 
   return true;
 }
