@@ -18,8 +18,8 @@ Signed2DTriArea(const math::Vec2f& a, const math::Vec2f& b,
 bool
 OnSegment(const math::Vec2f& p, const math::Vec2f& q, const math::Vec2f& r)
 {
-  if (q.x <= Max(p.x, r.x) && q.x >= Min(p.x, r.x) &&
-      q.y <= Max(p.y, r.y) && q.y >= Min(p.y, r.y)) {
+  if (q.x <= Max(p.x, r.x) && q.x >= Min(p.x, r.x) && q.y <= Max(p.y, r.y) &&
+      q.y >= Min(p.y, r.y)) {
     return true;
   }
   return false;
@@ -87,17 +87,17 @@ LineSegmentsIntersect(const math::Vec2f& a_start, const math::Vec2f& a_end,
 
 // https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
 bool
-PointInPolygon(const math::Vec2f& point,
-               const std::vector<math::Vec2f>& polygon)
+PointInPolygon(const math::Vec2f& point, const uint64_t polygon_size,
+               math::Vec2f polygon[polygon_size])
 {
   // There must be at least 3 vertices in polygon[]
-  if (polygon.size() < 3) return false;
+  if (polygon_size < 3) return false;
   // Create a point for line segment from p to infinite
   math::Vec2f extreme(std::numeric_limits<float>::max(), point.y);
   // Count intersections of the above line with sides of polygon
   int count = 0, i = 0;
   do {
-    int next = (i + 1) % polygon.size();
+    int next = (i + 1) % polygon_size;
     // Check if the line segment from 'p' to 'extreme' intersects
     // with the line segment from 'polygon[i]' to 'polygon[next]'
     if (DoIntersect(polygon[i], polygon[next], point, extreme)) {

@@ -3,6 +3,10 @@
 #include "intersection.cc"
 #include "vec.h"
 
+#ifndef ARRAY_LENGTH
+#define ARRAY_LENGTH(x) (sizeof(x)/sizeof(x[0]))
+#endif
+
 TEST(Intersection, LineSegmentsIntersectPositive_One)
 {
   math::Vec2f a_start(0.f, 1.f), a_end(1.f, 1.f);
@@ -53,47 +57,47 @@ TEST(Intersection, LineSegmentsIntersectNegative_Three)
 
 TEST(Intersection, PointInPolygon_One)
 {
-  std::vector<math::Vec2f> polygon = {
+  math::Vec2f polygon[] = {
       {0.0f, 0.0f}, {10.0f, 0.0f}, {10.0f, 10.0f}, {0.0f, 10.0f}};
   math::Vec2f p(20.0f, 20.0f);
-  ASSERT_FALSE(math::PointInPolygon(p, polygon));
+  ASSERT_FALSE(math::PointInPolygon(p, ARRAY_LENGTH(polygon), polygon));
 }
 
 TEST(Intersection, PointInPolygon_Two)
 {
-  std::vector<math::Vec2f> polygon = {
+  math::Vec2f polygon[] = {
       {0.0f, 0.0f}, {10.0f, 0.0f}, {10.0f, 10.0f}, {0.0f, 10.0f}};
   math::Vec2f p(5.f, 5.f);
-  ASSERT_TRUE(math::PointInPolygon(p, polygon));
+  ASSERT_TRUE(math::PointInPolygon(p, ARRAY_LENGTH(polygon), polygon));
 }
 
 TEST(Intersection, PointInPolygon_Three)
 {
-  std::vector<math::Vec2f> polygon = {{0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}};
+  math::Vec2f polygon[] = {{0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}};
   math::Vec2f p(3.f, 3.f);
-  ASSERT_TRUE(math::PointInPolygon(p, polygon));
+  ASSERT_TRUE(math::PointInPolygon(p, ARRAY_LENGTH(polygon), polygon));
 }
 
 TEST(Intersection, PointInPolygon_Four)
 {
-  std::vector<math::Vec2f> polygon = {{0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}};
+  math::Vec2f polygon[] = {{0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}};
   math::Vec2f p(5.f, 1.f);
-  ASSERT_TRUE(math::PointInPolygon(p, polygon));
+  ASSERT_TRUE(math::PointInPolygon(p, ARRAY_LENGTH(polygon), polygon));
 }
 
 TEST(Intersection, PointInPolygon_Five)
 {
-  std::vector<math::Vec2f> polygon = {{0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}};
+  math::Vec2f polygon[] = {{0.f, 0.f}, {5.f, 5.f}, {5.f, 0.f}};
   math::Vec2f p(8.f, 1.f);
-  ASSERT_FALSE(math::PointInPolygon(p, polygon));
+  ASSERT_FALSE(math::PointInPolygon(p, ARRAY_LENGTH(polygon), polygon));
 }
 
 TEST(Intersection, PointInPolygon_Six)
 {
-  std::vector<math::Vec2f> polygon = {
+  math::Vec2f polygon[] = {
       {0.f, 0.f}, {10.f, 0.f}, {10.f, 10.f}, {0.f, 10.f}};
   math::Vec2f p(-1.f, 10.f);
-  ASSERT_FALSE(math::PointInPolygon(p, polygon));
+  ASSERT_FALSE(math::PointInPolygon(p, ARRAY_LENGTH(polygon), polygon));
 }
 
 int
