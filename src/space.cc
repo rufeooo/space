@@ -53,6 +53,8 @@ struct State {
   // Per Player
   InputBuffer player_input[MAX_PLAYER][MAX_NETQUEUE];
   bool player_received[MAX_PLAYER][MAX_NETQUEUE];
+  // Frame time history
+  uint64_t frame_sleep[MAX_NETQUEUE];
 };
 
 static State kGameState;
@@ -438,7 +440,11 @@ main(int argc, char** argv)
     uint64_t sleep_usec = 0;
     while (!platform::elapse_usec(kGameState.frame_target_usec, &sleep_usec,
                                   &kGameState.game_jerk)) {
-      if (kGameState.sleep_on_loop) platform::sleep_usec(sleep_usec);
+      if (kGameState.sleep_on_loop) {
+        platform::sleep_usec(sleep_usec);
+        kGameState.frame_sleep[slot] = sleep_usec;
+        break;
+      }
     }
   }
 
