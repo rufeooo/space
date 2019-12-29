@@ -1,7 +1,5 @@
 #include "intersection.h"
 
-#include <iostream>
-
 #include "utils.h"
 
 namespace math

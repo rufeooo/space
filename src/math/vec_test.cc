@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "vec.h"
 
 #include "gtest/gtest.h"

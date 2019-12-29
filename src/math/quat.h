@@ -1,6 +1,6 @@
 #pragma once
 
-#include <cmath>
+#include <math.h>
 
 #include "vec.h"
 
@@ -29,10 +29,10 @@ struct Quat {
     angle_degrees = new_angle;
     axis = Normalize(new_axis);
     float angle_radians = (angle_degrees)*PI / 180.0f;
-    w = std::cos(angle_radians / 2.0f);
-    x = std::sin(angle_radians / 2.0f) * axis.x;
-    y = std::sin(angle_radians / 2.0f) * axis.y;
-    z = std::sin(angle_radians / 2.0f) * axis.z;
+    w = cos(angle_radians / 2.0f);
+    x = sin(angle_radians / 2.0f) * axis.x;
+    y = sin(angle_radians / 2.0f) * axis.y;
+    z = sin(angle_radians / 2.0f) * axis.z;
   }
 
   void

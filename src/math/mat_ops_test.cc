@@ -1,6 +1,5 @@
 #include "gtest/gtest.h"
 
-#include <iostream>
 #include "mat.h"
 #include "mat_ops.h"
 #include "vec.h"
