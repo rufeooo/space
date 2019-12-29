@@ -1,6 +1,6 @@
 #include "utils.h"
 
-#include <iostream>
+#include <alloca.h>
 
 namespace gl
 {
@@ -62,13 +62,13 @@ CreateTriangleVAO(
 }
 
 uint32_t
-CreateGeometryVAO(const std::vector<GLfloat>& verts)
+CreateGeometryVAO(int len, GLfloat verts[len])
 {
   // Create points VBO.
   GLuint points_vbo = 0;
   glGenBuffers(1, &points_vbo);
   glBindBuffer(GL_ARRAY_BUFFER, points_vbo);
-  glBufferData(GL_ARRAY_BUFFER, verts.size() * sizeof(GLfloat), verts.data(),
+  glBufferData(GL_ARRAY_BUFFER, len * sizeof(GLfloat), &verts[0],
                GL_STATIC_DRAW);
   GLuint vao = 0;
   glGenVertexArrays(1, &vao);
@@ -81,16 +81,17 @@ CreateGeometryVAO(const std::vector<GLfloat>& verts)
 
 // Creates a vbo for a vert list of 2d vectors.
 uint32_t
-CreateGeometryVAO(const std::vector<math::Vec2f>& verts)
+CreateGeometryVAO(int len, math::Vec2f verts[len])
 {
-  std::vector<GLfloat> vert_list;
-  vert_list.reserve(verts.size() * 3);
-  for (const auto& v : verts) {
-    vert_list.push_back(v.x);
-    vert_list.push_back(v.y);
-    vert_list.push_back(0.f);  // TODO: Maybe consider removing this.
+  // Might be worth a malloc if we ever create complicated geometry.
+  GLfloat* vert_list = (GLfloat*)alloca(len * 3 * sizeof(GLfloat));
+  int k = 0;
+  for (int i = 0; i < len; ++i) {
+    vert_list[k++] = verts[i].x;
+    vert_list[k++] = verts[i].y;
+    vert_list[k++] = 0.f;
   }
-  return CreateGeometryVAO(vert_list);
+  return CreateGeometryVAO(len * 3, vert_list);
 }
 
 }  // namespace renderer

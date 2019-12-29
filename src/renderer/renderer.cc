@@ -73,19 +73,21 @@ Initialize()
 
   // Triangle.
   float m = kRGG.meter_size;
-  kRGG.triangle_vao_reference = gl::CreateGeometryVAO(
-      {math::Vec2f(0.0f, m / 2.f),
-       math::Vec2f(m / 2.f, -m / 2.f),
-       math::Vec2f(-m / 2.f, -m / 2.f)});
+  math::Vec2f tri[3] = {
+    math::Vec2f(0.0f, m / 2.f),
+    math::Vec2f(m / 2.f, -m / 2.f),
+    math::Vec2f(-m / 2.f, -m / 2.f)};
+  kRGG.triangle_vao_reference = gl::CreateGeometryVAO(3, tri);
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
-  kRGG.rectangle_vao_reference = gl::CreateGeometryVAO(
-      {math::Vec2f(-m / 2.f, m / 2.f), math::Vec2f(m / 2.f, m / 2.f),
-       math::Vec2f(m / 2.f, -m / 2.f), math::Vec2f(-m / 2.f, -m / 2.f)});
+  math::Vec2f square[4] = {
+    math::Vec2f(-m / 2.f, m / 2.f), math::Vec2f(m / 2.f, m / 2.f),
+    math::Vec2f(m / 2.f, -m / 2.f), math::Vec2f(-m / 2.f, -m / 2.f)};
+  kRGG.rectangle_vao_reference = gl::CreateGeometryVAO(4, square);
 
   // Line is flat on the x-axis with distance m.
-  kRGG.line_vao_reference =
-      gl::CreateGeometryVAO({math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)});
+  math::Vec2f line[2] = {math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)};
+  kRGG.line_vao_reference = gl::CreateGeometryVAO(2, line);
 
   if (!ui::Initialize()) {
     return false;
