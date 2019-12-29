@@ -1,40 +1,38 @@
-#include <pthread.h>
 #include <cstdio>
 #include <cstring>
 
 #include "platform/platform.cc"
 
+static ThreadInfo thread;
+
 struct ServerParam {
   const char* ip;
   const char* port;
 };
+static ServerParam thread_param;
 
-static pthread_attr_t attr;
-static pthread_t thread;
-static ServerParam param;
 static bool running = true;
 #define MAX_BUFFER (4 * 1024)
 
 void*
-server_main(void* arg)
+server_main(ThreadInfo* t)
 {
-  ServerParam* param = (ServerParam*)arg;
+  ServerParam* thread_param = (ServerParam*)t->arg;
 
   uint8_t buffer[MAX_BUFFER];
   uint64_t player_count = 0;
-  if (!udp::Init())
-  {
+  if (!udp::Init()) {
     puts("server: fail init");
     return 0;
   }
 
   Udp4 location;
-  if (!udp::GetAddr4(param->ip, param->port, &location)) {
+  if (!udp::GetAddr4(thread_param->ip, thread_param->port, &location)) {
     puts("server: fail GetAddr4");
     return 0;
   }
 
-  printf("Server binding %s:%s\n", param->ip, param->port);
+  printf("Server binding %s:%s\n", thread_param->ip, thread_param->port);
   if (!udp::Bind(location)) {
     puts("server: fail Bind");
     return 0;
@@ -84,12 +82,12 @@ server_main(void* arg)
 bool
 CreateNetworkServer(const char* ip, const char* port)
 {
-  if (thread) return false;
+  if (thread.id) return false;
 
-  param.ip = ip;
-  param.port = port;
-  pthread_attr_init(&attr);
-  pthread_create(&thread, &attr, server_main, (void*)&param);
+  thread.arg = &thread_param;
+  thread_param.ip = ip;
+  thread_param.port = port;
+  platform::thread_create(&thread, server_main);
 
   return true;
 }
