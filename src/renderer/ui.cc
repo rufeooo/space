@@ -1,5 +1,6 @@
 #include "ui.h"
 
+#include "gl/shader.h"
 #include "tga_loader.cc"
 #include "shader.h"
 

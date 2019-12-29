@@ -18,8 +18,8 @@ Signed2DTriArea(const math::Vec2f& a, const math::Vec2f& b,
 bool
 OnSegment(const math::Vec2f& p, const math::Vec2f& q, const math::Vec2f& r)
 {
-  if (q.x <= std::max(p.x, r.x) && q.x >= std::min(p.x, r.x) &&
-      q.y <= std::max(p.y, r.y) && q.y >= std::min(p.y, r.y)) {
+  if (q.x <= Max(p.x, r.x) && q.x >= Min(p.x, r.x) &&
+      q.y <= Max(p.y, r.y) && q.y >= Min(p.y, r.y)) {
     return true;
   }
   return false;

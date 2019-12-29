@@ -1,5 +1,6 @@
 #include "renderer.h"
 
+#include "platform/platform.cc"
 #include "shader.h"
 #include "ui.cc"
 #include "gl/gl.cc"
