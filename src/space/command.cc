@@ -1,14 +1,13 @@
 #include "command.h"
 
-#include "ecs.cc"
+#include "entity.cc"
 
 namespace command
 {
 void
 Execute(const Move& move)
 {
-  auto* dest = kECS.Assign<DestinationComponent>(move.entity_id);
-  dest->position = move.position;
+  game_entity[move.entity_id].destination.position = move.position;
 }
 
 }  // namespace command

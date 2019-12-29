@@ -3,9 +3,9 @@
 #include <cmath>
 #include <iostream>
 
-#include "renderer/renderer.cc"
 #include "camera.cc"
-#include "ecs.cc"
+#include "entity.cc"
+#include "renderer/renderer.cc"
 
 namespace gfx
 {
@@ -28,40 +28,51 @@ Initialize()
 void
 RenderTriangles()
 {
-  kECS.Enumerate<TransformComponent, TriangleComponent>(
-      [&](ecs::Entity entity, TransformComponent& transform,
-          TriangleComponent& tri) {
-        rgg::RenderTriangle(transform.position, transform.scale,
-                            transform.orientation, tri.color);
-      });
+  for (int i = 0; i < MAX_ENTITY; ++i) {
+    if (NO_ENTITY(i)) break;
+    if (NO_COMPONENT(i, triangle)) continue;
+
+    Entity* ent = &game_entity[i];
+    rgg::RenderTriangle(ent->transform.position, ent->transform.scale,
+                        ent->transform.orientation, ent->triangle.color);
+  }
 }
 
 void
 RenderRectangles()
 {
-  // Draw all rectangles.
-  kECS.Enumerate<TransformComponent, RectangleComponent>(
-      [&](ecs::Entity entity, TransformComponent& transform,
-          RectangleComponent& rect) {
-        rgg::RenderRectangle(transform.position, transform.scale,
-                             transform.orientation, rect.color);
-      });
+  for (int i = 0; i < MAX_ENTITY; ++i) {
+    if (NO_ENTITY(i)) break;
+    if (NO_COMPONENT(i, rectangle)) continue;
+
+    Entity* ent = &game_entity[i];
+    rgg::RenderRectangle(ent->transform.position, ent->transform.scale,
+                         ent->transform.orientation, ent->rectangle.color);
+  }
 }
 
 void
 RenderLines()
 {
-  kECS.Enumerate<LineComponent>([&](ecs::Entity entity, LineComponent& line) {
-    rgg::RenderLine(line.start, line.end, line.color);
-  });
+  for (int i = 0; i < MAX_ENTITY; ++i) {
+    if (NO_ENTITY(i)) break;
+    if (NO_COMPONENT(i, line)) continue;
+
+    Entity* ent = &game_entity[i];
+    rgg::RenderLine(ent->line.start, ent->line.end, ent->line.color);
+  }
 }
 
 void
 RenderGrids()
 {
-  kECS.Enumerate<GridComponent>([&](ecs::Entity entity, GridComponent& grid) {
-    rgg::RenderGrid(grid.width, grid.height, grid.color);
-  });
+  for (int i = 0; i < MAX_ENTITY; ++i) {
+    if (NO_ENTITY(i)) break;
+    if (NO_COMPONENT(i, grid)) continue;
+
+    Entity* ent = &game_entity[i];
+    rgg::RenderGrid(ent->grid.width, ent->grid.height, ent->grid.color);
+  }
 }
 
 void

@@ -62,27 +62,39 @@ Initialize()
 {
   if (!gfx::Initialize()) return false;
   // Make a square. This thing moves around when clicking.
-  auto* transform = kECS.Assign<TransformComponent>(0);
-  transform->position = math::Vec3f(400.f, 400.f, 0.f);
-  auto rect = kECS.Assign<RectangleComponent>(0);
-  rect->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
+
+  {
+    Entity* ent = &game_entity[0];
+    auto* transform = &ent->transform;
+    transform->position = math::Vec3f(400.f, 400.f, 0.f);
+    auto* rect = &ent->rectangle;
+    rect->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
+  }
 
   // Make a triangle. This doesn't really do anything.
-  transform = kECS.Assign<TransformComponent>(1);
-  transform->position = math::Vec3f(200.f, 200.f, 0.f);
-  // transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
-  auto* tri = kECS.Assign<TriangleComponent>(1);
-  tri->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
 
-  auto* grid = kECS.Assign<GridComponent>(2);
-  grid->width = 50.f;
-  grid->height = 50.f;
-  grid->color = math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f);
+  {
+    Entity* ent = &game_entity[1];
+    auto* transform = &ent->transform;
+    transform->position = math::Vec3f(200.f, 200.f, 0.f);
+    // transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
+    auto* tri = &ent->triangle;
+    tri->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
+  }
 
-  grid = kECS.Assign<GridComponent>(3);
-  grid->width = 25.f;
-  grid->height = 25.f;
-  grid->color = math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f);
+  {
+    auto* grid = &game_entity[2].grid;
+    grid->width = 50.f;
+    grid->height = 50.f;
+    grid->color = math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f);
+  }
+
+  {
+    auto* grid = &game_entity[3].grid;
+    grid->width = 25.f;
+    grid->height = 25.f;
+    grid->color = math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f);
+  }
 
   return true;
 }
@@ -340,8 +352,11 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 bool
 UpdateGame()
 {
-  TransformComponent* transform = kECS.Get<TransformComponent>(0);
-  DestinationComponent* destination = kECS.Get<DestinationComponent>(0);
+  if (NO_COMPONENT(0, destination)) return false;
+
+  Entity* ent = &game_entity[0];
+  DestinationComponent* destination = &ent->destination;
+  TransformComponent* transform = &ent->transform;
   if (destination) {
     auto dir =
         math::Normalize(destination->position - transform->position.xy());
@@ -350,7 +365,7 @@ UpdateGame()
         math::LengthSquared(transform->position.xy() - destination->position);
     // Remove DestinationComponent so entity stops.
     if (length_squared < 15.0f) {
-      kECS.Remove<DestinationComponent>(0);
+      RESET_COMPONENT(0, destination);
     }
   }
 
