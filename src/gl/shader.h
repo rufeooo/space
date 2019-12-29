@@ -1,6 +1,6 @@
 #pragma once
 
-#include <vector>
+#include <stdarg.h>
 #include <string>
 
 namespace gl
@@ -10,7 +10,7 @@ namespace gl
 bool CompileShader(GLenum shader_type, const GLchar* const* src, GLuint* id);
 
 // Link shader and check for errors if any exist.
-bool LinkShaders(const std::vector<GLuint>& ids, GLuint* id);
+bool LinkShaders(GLuint* id, int n, ...);
 
 // Given a program id returns -
 // LINK_STATUS, ATTACHED_SHADERS, ACTIVE_ATTRIBUTES, ACTIVE_UNIFORMS

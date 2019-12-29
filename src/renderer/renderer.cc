@@ -56,7 +56,7 @@ Initialize()
     return false;
   }
 
-  if (!gl::LinkShaders({vert_shader, frag_shader}, &kRGG.program_reference)) {
+  if (!gl::LinkShaders(&kRGG.program_reference, 2, vert_shader, frag_shader)) {
     return false;
   }
 

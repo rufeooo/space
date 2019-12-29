@@ -63,7 +63,7 @@ Initialize()
                          &frag_shader)) {
     return false;
   }
-  if (!gl::LinkShaders({vert_shader, frag_shader}, &font.program)) {
+  if (!gl::LinkShaders(&font.program, 2, vert_shader, frag_shader)) {
     return false;
   }
   font.texture_uniform = glGetUniformLocation(font.program, "basic_texture");

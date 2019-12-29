@@ -51,12 +51,15 @@ CompileShader(GLenum shader_type, const GLchar* const* src, GLuint* id)
 
 // Link shader and check for errors if any exist.
 bool
-LinkShaders(const std::vector<GLuint>& shader_ids, GLuint* id)
+LinkShaders(GLuint* id, int n, ...)
 {
   *id = glCreateProgram();
-  for (GLuint shader : shader_ids) {
-    glAttachShader(*id, shader);
+  va_list vl;
+  va_start(vl, n);
+  for (int i = 0; i < n; ++i) {
+    glAttachShader(*id, va_arg(vl, GLuint));
   }
+  va_end(vl);
   glLinkProgram(*id);
   int params = -1;
   glGetProgramiv(*id, GL_LINK_STATUS, &params);
@@ -65,7 +68,6 @@ LinkShaders(const std::vector<GLuint>& shader_ids, GLuint* id)
     return false;
   }
   return true;
-
 }
 
 std::string
