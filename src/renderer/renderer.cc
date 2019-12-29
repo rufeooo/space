@@ -157,7 +157,7 @@ CreateLineTransform(const math::Vec3f& start, const math::Vec3f& end)
   math::Vec3f translation = (start + end) / 2.f;
   // Angle between the two points in 2d.
   math::Vec3f diff = end - start;
-  float angle = std::atan2(diff.y, diff.x) * (180.f / PI);
+  float angle = atan2(diff.y, diff.x) * (180.f / PI);
   float distance = math::Length(diff);
   return math::CreateTranslationMatrix(translation) *
          math::CreateScaleMatrix(
