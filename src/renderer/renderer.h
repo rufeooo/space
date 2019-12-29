@@ -28,6 +28,6 @@ void RenderLine(const math::Vec3f& start,
                 const math::Vec3f& end,
                 const math::Vec4f& color);
 
-void RenderGrid(float width, float height, math::Vec4f& color);
+void RenderGrid(float width, float height, const math::Vec4f& color);
 
 }

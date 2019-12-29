@@ -18,7 +18,6 @@
 
 math::Mat4f PerspectiveProjection() {
   auto sz = window::GetWindowSize();
-  std::cout << sz.x << " " << sz.y << std::endl;
   return math::CreateOrthographicMatrix<float>(
       sz.x, 0.f, sz.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
 }
