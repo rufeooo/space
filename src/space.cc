@@ -352,7 +352,7 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 bool
 UpdateGame()
 {
-  if (NO_COMPONENT(0, destination)) return false;
+  if (COMPONENT_EXISTS(0, destination)) return false;
 
   Entity* ent = &game_entity[0];
   DestinationComponent* destination = &ent->destination;
@@ -365,7 +365,7 @@ UpdateGame()
         math::LengthSquared(transform->position.xy() - destination->position);
     // Remove DestinationComponent so entity stops.
     if (length_squared < 15.0f) {
-      RESET_COMPONENT(0, destination);
+      COMPONENT_RESET(0, destination);
     }
   }
 

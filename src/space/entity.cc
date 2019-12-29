@@ -1,10 +1,10 @@
-
 #pragma once
 
 #ifndef PAGE
 #define PAGE (4 * 1024)
 #endif
 
+#include <string.h>
 #include "math/math.cc"
 
 struct DestinationComponent {
@@ -47,16 +47,25 @@ struct Entity {
   GridComponent grid;
   TransformComponent transform;
 };
+
 #define MAX_ENTITY ((PAGE) / sizeof(Entity))
 
 static Entity game_entity[MAX_ENTITY] __attribute__((aligned(PAGE)));
 static Entity zero_entity;
 
-#define NO_ENTITY(i) \
-  (memcmp(&game_entity[i], &zero_entity, sizeof(Entity)) == 0)
-#define RESET_ENTITY(i) (memcpy(&game_entity[i], &zero_entity, sizeof(Entity)))
-#define RESET_COMPONENT(i, c) (game_entity[i].c = zero_##c)
+inline bool
+EntityExists(int entity)
+{
+  return memcmp(&game_entity[entity], &zero_entity, sizeof(Entity)) != 0;
+}
+
+inline void
+EntityReset(int entity)
+{
+  memcpy(&game_entity[entity], &zero_entity, sizeof(Entity));
+}
 
 #define CONCAT(a, b) a##b
-#define NO_COMPONENT(i, c) \
+#define COMPONENT_RESET(i, c) (game_entity[i].c = zero_##c)
+#define COMPONENT_EXISTS(i, c) \
   (memcmp(&game_entity[i].c, &zero_##c, sizeof(zero_##c)) == 0)

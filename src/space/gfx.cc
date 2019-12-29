@@ -26,8 +26,8 @@ void
 RenderTriangles()
 {
   for (int i = 0; i < MAX_ENTITY; ++i) {
-    if (NO_ENTITY(i)) break;
-    if (NO_COMPONENT(i, triangle)) continue;
+    if (!EntityExists(i)) break;
+    if (COMPONENT_EXISTS(i, triangle)) continue;
 
     Entity* ent = &game_entity[i];
     rgg::RenderTriangle(ent->transform.position, ent->transform.scale,
@@ -39,8 +39,8 @@ void
 RenderRectangles()
 {
   for (int i = 0; i < MAX_ENTITY; ++i) {
-    if (NO_ENTITY(i)) break;
-    if (NO_COMPONENT(i, rectangle)) continue;
+    if (!EntityExists(i)) break;
+    if (COMPONENT_EXISTS(i, rectangle)) continue;
 
     Entity* ent = &game_entity[i];
     rgg::RenderRectangle(ent->transform.position, ent->transform.scale,
@@ -52,8 +52,8 @@ void
 RenderLines()
 {
   for (int i = 0; i < MAX_ENTITY; ++i) {
-    if (NO_ENTITY(i)) break;
-    if (NO_COMPONENT(i, line)) continue;
+    if (!EntityExists(i)) break;
+    if (COMPONENT_EXISTS(i, line)) continue;
 
     Entity* ent = &game_entity[i];
     rgg::RenderLine(ent->line.start, ent->line.end, ent->line.color);
@@ -64,8 +64,8 @@ void
 RenderGrids()
 {
   for (int i = 0; i < MAX_ENTITY; ++i) {
-    if (NO_ENTITY(i)) break;
-    if (NO_COMPONENT(i, grid)) continue;
+    if (!EntityExists(i)) break;
+    if (COMPONENT_EXISTS(i, grid)) continue;
 
     Entity* ent = &game_entity[i];
     rgg::RenderGrid(ent->grid.width, ent->grid.height, ent->grid.color);
