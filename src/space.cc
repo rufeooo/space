@@ -140,8 +140,8 @@ NetworkSetup()
   ++header;
   uint64_t player_count = *header;
   ++header;
-  printf("Handshake result: [ player_id %lu ] [ player_count %lu ]\n",
-         player_id, player_count);
+  printf("Handshake result: [ player_id %zi ] [ player_count %zi ]\n",
+         (size_t)player_id, (size_t)player_count);
 
   kGameState.player_id = player_id;
   kGameState.player_count = player_count;
