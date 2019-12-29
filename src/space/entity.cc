@@ -19,15 +19,6 @@ struct TriangleComponent {
   math::Vec4f color;
 };
 static TriangleComponent zero_triangle;
-struct RenderingComponent {
-  // ID to the vertices bound to OpenGL.
-  uint32_t vao_reference;
-  // ID to the compiled / linked OpenGL shader program.
-  uint32_t program_reference;
-  // Number of vertices to render for this component.
-  uint32_t vertex_count;
-};
-static RenderingComponent zero_rendering;
 struct LineComponent {
   math::Vec3f start;
   math::Vec3f end;
@@ -51,7 +42,6 @@ static TransformComponent zero_transform;
 struct Entity {
   DestinationComponent destination;
   RectangleComponent rectangle;
-  RenderingComponent rendering;
   TriangleComponent triangle;
   LineComponent line;
   GridComponent grid;
