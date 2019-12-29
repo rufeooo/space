@@ -1,6 +1,5 @@
 #pragma once
 
-#include <array>
 #include <cassert>
 #include <initializer_list>
 #include <string>
@@ -89,7 +88,7 @@ class Mat
     return t;
   }
 
-  std::array<T, M * N> data_;
+  T data_[M * N];
 };
 
 // This is fun... It's impossible for a program to compile if the
