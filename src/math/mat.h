@@ -1,8 +1,7 @@
 #pragma once
 
-#include <cassert>
+#include <assert.h>
 #include <stdarg.h>
-#include <string>
 
 #include "vec.h"
 
@@ -79,20 +78,6 @@ class Mat
     return !(data_ == rhs.data_);
   }
 
-  std::string
-  String() const
-  {
-    std::string m = "";
-    for (size_t i = 0; i < M; ++i) {
-      for (size_t j = 0; j < N; ++j) {
-        m += std::to_string((*this)(i, j));
-        if (j != M - 1) m += ",";
-      }
-      m += "\n";
-    }
-    return m;
-  }
-
   Mat<T, N, M>
   Transpose() const
   {
@@ -107,6 +92,19 @@ class Mat
 
   T data_[M * N];
 };
+
+inline
+void Print4x4Matrix(const Mat<float, 4, 4>& mat)
+{
+  printf("%.3f, %.3f, %.3f, %.3f\n"
+         "%.3f, %.3f, %.3f, %.3f\n"
+         "%.3f, %.3f, %.3f, %.3f\n"
+         "%.3f, %.3f, %.3f, %.3f\n",
+         mat(0, 0), mat(0, 1), mat(0, 2), mat(0, 3),
+         mat(1, 0), mat(1, 1), mat(1, 2), mat(1, 3),
+         mat(2, 0), mat(2, 1), mat(2, 2), mat(2, 3),
+         mat(3, 0), mat(3, 1), mat(3, 2), mat(3, 3));
+}
 
 // This is fun... It's impossible for a program to compile if the
 // multplication is invalid.
