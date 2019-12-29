@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 enum Key {
   KEYBOARD_NONE = 0x00,
   KEYBOARD_W = 0x01,

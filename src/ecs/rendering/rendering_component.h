@@ -1,5 +1,7 @@
 #pragma once
 
+#include <cstdint>
+
 struct RenderingComponent {
   RenderingComponent() = default;
   RenderingComponent(uint32_t vao_reference, uint32_t program_reference,

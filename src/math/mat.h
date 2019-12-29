@@ -2,6 +2,7 @@
 
 #include <assert.h>
 #include <stdarg.h>
+#include <cstdio>
 
 #include "vec.h"
 
@@ -15,19 +16,30 @@ class Mat
   Mat() = default;
   // This is common case for game code. A 4x4 matrix has 16 entries.
   // Each row here corresponds with a column of the matrix.
-  Mat(T c11, T c21, T c31, T c41,
-      T c12, T c22, T c32, T c42,
-      T c13, T c23, T c33, T c43,
-      T c14, T c24, T c34, T c44)
+  Mat(T c11, T c21, T c31, T c41, T c12, T c22, T c32, T c42, T c13, T c23,
+      T c33, T c43, T c14, T c24, T c34, T c44)
   {
-    assert(16 == M * N); // Only allowed on 4x4 matrix.
-    data_[0] = c11; data_[1] = c21; data_[2] = c31; data_[3] = c41;
-    data_[4] = c12; data_[5] = c22; data_[6] = c32; data_[7] = c42;
-    data_[8] = c13; data_[9] = c23; data_[10] = c33; data_[11] = c43;
-    data_[12] = c14; data_[13] = c24; data_[14] = c34; data_[15] = c44;
+    assert(16 == M * N);  // Only allowed on 4x4 matrix.
+    data_[0] = c11;
+    data_[1] = c21;
+    data_[2] = c31;
+    data_[3] = c41;
+    data_[4] = c12;
+    data_[5] = c22;
+    data_[6] = c32;
+    data_[7] = c42;
+    data_[8] = c13;
+    data_[9] = c23;
+    data_[10] = c33;
+    data_[11] = c43;
+    data_[12] = c14;
+    data_[13] = c24;
+    data_[14] = c34;
+    data_[15] = c44;
   }
 
-  void Init(int n, ...)
+  void
+  Init(int n, ...)
   {
     assert(n == M * N);
     va_list vl;
@@ -93,17 +105,17 @@ class Mat
   T data_[M * N];
 };
 
-inline
-void Print4x4Matrix(const Mat<float, 4, 4>& mat)
+inline void
+Print4x4Matrix(const Mat<float, 4, 4>& mat)
 {
-  printf("%.3f, %.3f, %.3f, %.3f\n"
-         "%.3f, %.3f, %.3f, %.3f\n"
-         "%.3f, %.3f, %.3f, %.3f\n"
-         "%.3f, %.3f, %.3f, %.3f\n",
-         mat(0, 0), mat(0, 1), mat(0, 2), mat(0, 3),
-         mat(1, 0), mat(1, 1), mat(1, 2), mat(1, 3),
-         mat(2, 0), mat(2, 1), mat(2, 2), mat(2, 3),
-         mat(3, 0), mat(3, 1), mat(3, 2), mat(3, 3));
+  printf(
+      "%.3f, %.3f, %.3f, %.3f\n"
+      "%.3f, %.3f, %.3f, %.3f\n"
+      "%.3f, %.3f, %.3f, %.3f\n"
+      "%.3f, %.3f, %.3f, %.3f\n",
+      mat(0, 0), mat(0, 1), mat(0, 2), mat(0, 3), mat(1, 0), mat(1, 1),
+      mat(1, 2), mat(1, 3), mat(2, 0), mat(2, 1), mat(2, 2), mat(2, 3),
+      mat(3, 0), mat(3, 1), mat(3, 2), mat(3, 3));
 }
 
 // This is fun... It's impossible for a program to compile if the
