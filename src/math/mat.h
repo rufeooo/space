@@ -1,7 +1,7 @@
 #pragma once
 
 #include <cassert>
-#include <initializer_list>
+#include <stdarg.h>
 #include <string>
 
 #include "vec.h"
@@ -14,13 +14,29 @@ class Mat
 {
  public:
   Mat() = default;
-  Mat(std::initializer_list<T> l)
+  // This is common case for game code. A 4x4 matrix has 16 entries.
+  // Each row here corresponds with a column of the matrix.
+  Mat(T c11, T c21, T c31, T c41,
+      T c12, T c22, T c32, T c42,
+      T c13, T c23, T c33, T c43,
+      T c14, T c24, T c34, T c44)
   {
-    assert(l.size() == M * N);
-    int i = 0;
-    for (const auto& v : l) {
-      data_[i++] = v;
+    assert(16 == M * N); // Only allowed on 4x4 matrix.
+    data_[0] = c11; data_[1] = c21; data_[2] = c31; data_[3] = c41;
+    data_[4] = c12; data_[5] = c22; data_[6] = c32; data_[7] = c42;
+    data_[8] = c13; data_[9] = c23; data_[10] = c33; data_[11] = c43;
+    data_[12] = c14; data_[13] = c24; data_[14] = c34; data_[15] = c44;
+  }
+
+  void Init(int n, ...)
+  {
+    assert(n == M * N);
+    va_list vl;
+    va_start(vl, n);
+    for (int i = 0; i < n; i++) {
+      data_[i] = va_arg(vl, T);
     }
+    va_end(vl);
   }
 
   T&
@@ -53,7 +69,8 @@ class Mat
   bool
   operator==(const Mat& rhs) const
   {
-    return data_ == rhs.data_;
+    if (M != rhs.rows() || N != rhs.cols()) return false;
+    return memcmp(data_, rhs.data_, M * N) == 0;
   }
 
   bool

@@ -1,7 +1,5 @@
 #pragma once
 
-#include <iostream>
-
 #include "mat.h"
 #include "quat.h"
 #include "vec.h"
@@ -107,10 +105,10 @@ CreatePerspectiveMatrix(float width, float height, float near_clip, float far_cl
   float Sy = near_clip / range;
   float Sz = -(far_clip + near_clip) / (far_clip - near_clip);
   float Pz = -(2.0f * far_clip * near_clip) / (far_clip - near_clip);
-  return Mat<T, 4, 4>{  Sx, 0.0f, 0.0f,  0.0f,
+  return Mat<T, 4, 4>(  Sx, 0.0f, 0.0f,  0.0f,
                       0.0f,   Sy, 0.0f,  0.0f,
                       0.0f, 0.0f,   Sz, -1.0f,
-                      0.0f, 0.0f,   Pz,  0.0f};
+                      0.0f, 0.0f,   Pz,  0.0f);
 }
 
 template <class T>
@@ -130,13 +128,13 @@ CreateOrthographicMatrix(float right, float left, float top, float bottom,
   h = h == 0.f ? 1.f : h;
   float d = far_clip - near_clip;
   d = d == 0.f ? 1.f : d;
-  return Mat<T, 4, 4>{2.f / w, 0.f    , 0.f     , 0.f,
+  return Mat<T, 4, 4>(2.f / w, 0.f    , 0.f     , 0.f,
                       0.f    , 2.f / h, 0.f     , 0.f,
                       0.f    , 0.f    , -2.f / d, 0.f,
                       -(right + left) / w,  // translate x
                       -(top + bottom) / h,  // translate y
                       -(far_clip + near_clip) / d,    // translate z
-                      1.f};
+                      1.f);
 }
 
 }  // namespace math
