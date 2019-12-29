@@ -9,13 +9,6 @@
 // Notably this module creates a single window and does not intend
 // on supporting making multiple.
 
-// GL types.
-typedef size_t GLsizeiptr;
-typedef char GLchar;
-typedef float GLfloat;
-typedef unsigned int GLenum;
-typedef unsigned int GLuint;
-
 enum PlatformEventType {
   NOT_IMPLEMENTED,  // Event does not have translation implemented yet.
   MOUSE_DOWN,

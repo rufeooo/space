@@ -58,7 +58,7 @@ InitializeGraphics()
                          &fragment_shader)) {
     return false;
   }
-  if (!gl::LinkShaders({vertex_shader, fragment_shader},
+  if (!gl::LinkShaders(&vertex_shader, fragment_shader,
                        &GlobalOpenGLGameReferences().program_reference)) {
     return false;
   }
@@ -82,7 +82,7 @@ CreateAsteroidGeometry(const std::vector<math::Vec2f>& geometry, float scale)
   }
   GlobalEntityGeometry().asteroid_geometry.push_back(scaled_geometry);
   GlobalOpenGLGameReferences().asteroid_vao_references.push_back(
-      gl::CreateGeometryVAO(scaled_geometry));
+      gl::CreateGeometryVAO(scaled_geometry.size(), &scaled_geometry[0]));
 }
 
 void
@@ -135,7 +135,8 @@ ProjectileCollidesWithAsteroid(
     }
   }
   // Check if the point is in the polygon created by the asteroid.
-  if (math::PointInPolygon(projectile_end, asteroid_points)) {
+  if (math::PointInPolygon(projectile_end, asteroid_points.size(),
+                           &asteroid_points[0])) {
     return true;
   }
   return false;
@@ -175,7 +176,8 @@ Initialize()
   GlobalEntityGeometry().ship_geometry = {
       {0.0f, 0.08f}, {0.03f, -0.03f}, {0.00f, -0.005f}, {-0.03f, -0.03f}};
   GlobalOpenGLGameReferences().ship_vao_reference =
-      gl::CreateGeometryVAO(GlobalEntityGeometry().ship_geometry);
+      gl::CreateGeometryVAO(GlobalEntityGeometry().ship_geometry.size(),
+                            &GlobalEntityGeometry().ship_geometry[0]);
 
   // For all asteroids:
   //   Create asteroid geometry.
@@ -230,7 +232,8 @@ Initialize()
   GlobalEntityGeometry().projectile_geometry = {
       {0.f, 0.005f}, {0.005f, 0.0f}, {0.f, -0.005f}, {-0.005f, 0.0}};
   GlobalOpenGLGameReferences().projectile_vao_reference =
-      gl::CreateGeometryVAO(GlobalEntityGeometry().projectile_geometry);
+      gl::CreateGeometryVAO(GlobalEntityGeometry().projectile_geometry.size(),
+                            &GlobalEntityGeometry().projectile_geometry[0]);
   return true;
 }
 

@@ -1,7 +1,7 @@
 #pragma once
 
 #include "math/vec.h"
-#include "platform/window.h"
+#include "platform/platform.cc"
 
 namespace gl
 {

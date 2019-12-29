@@ -7,6 +7,11 @@
 
 // https://www.khronos.org/registry/OpenGL/api/GL/glext.h
 
+// GL types.
+typedef size_t GLsizeiptr;
+typedef char GLchar;
+typedef float GLfloat;
+
 // GL functions loaded using wglGetProcAddress.
 typedef void glGenBuffers_Func(GLsizei, GLuint*);
 glGenBuffers_Func* glGenBuffers;

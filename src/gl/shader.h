@@ -3,7 +3,7 @@
 #include <stdarg.h>
 #include <string>
 
-#include "platform/window.h"
+#include "platform/platform.cc"
 
 namespace gl
 {
