@@ -68,4 +68,4 @@ EntityReset(int entity)
 #define CONCAT(a, b) a##b
 #define COMPONENT_RESET(i, c) (game_entity[i].c = zero_##c)
 #define COMPONENT_EXISTS(i, c) \
-  (memcmp(&game_entity[i].c, &zero_##c, sizeof(zero_##c)) == 0)
+  (memcmp(&game_entity[i].c, &zero_##c, sizeof(zero_##c)) != 0)

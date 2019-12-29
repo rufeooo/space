@@ -352,7 +352,7 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 bool
 UpdateGame()
 {
-  if (COMPONENT_EXISTS(0, destination)) return false;
+  if (!COMPONENT_EXISTS(0, destination)) return false;
 
   Entity* ent = &game_entity[0];
   DestinationComponent* destination = &ent->destination;
