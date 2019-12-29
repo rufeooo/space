@@ -3,7 +3,6 @@
 #include "shader.h"
 
 #include <cstdio>
-#include <iostream>
 #include <sstream>
 
 #include "utils.h"
@@ -43,7 +42,7 @@ CompileShader(GLenum shader_type, const GLchar* const* src, GLuint* id)
   int params = -1;
   glGetShaderiv(*id, GL_COMPILE_STATUS, &params);
   if (params != GL_TRUE) {
-    std::cout << GetShaderInfoLog(*id) << std::endl;
+    printf("Shader Log: %s\n", GetShaderInfoLog(*id).c_str());
     return false;
   }
   return true;
@@ -64,7 +63,7 @@ LinkShaders(GLuint* id, int n, ...)
   int params = -1;
   glGetProgramiv(*id, GL_LINK_STATUS, &params);
   if (params != GL_TRUE) {
-    std::cout << GetProgramInfoLog(*id) << std::endl;
+    printf("Program Log: %s\n", GetProgramInfoLog(*id).c_str());
     return false;
   }
   return true;

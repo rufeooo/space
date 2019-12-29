@@ -36,8 +36,7 @@ Initialize()
 {
   const GLubyte* renderer = glGetString(GL_RENDERER);
   const GLubyte* version = glGetString(GL_VERSION);
-  std::cout << renderer << std::endl;
-  std::cout << version << std::endl;
+  printf("Renderer: %s Version: %s\n", renderer, version);
 
   glEnable(GL_DEPTH_TEST);
   glDepthFunc(GL_LESS);

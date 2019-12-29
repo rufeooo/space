@@ -1,8 +1,5 @@
 #include "gfx.h"
 
-#include <cmath>
-#include <iostream>
-
 #include "camera.cc"
 #include "entity.cc"
 #include "renderer/renderer.cc"
@@ -21,7 +18,7 @@ bool
 Initialize()
 {
   int window_result = window::Create("Space", 800, 800);
-  std::cout << "window create result: " << window_result << std::endl;
+  printf("Window create result: %i\n", window_result);
   return rgg::Initialize();
 }
 
