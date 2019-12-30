@@ -1,6 +1,7 @@
 #include "thread.h"
 
 #include <pthread.h>
+#include <sched.h>
 #include <cstddef>
 
 static_assert(offsetof(ThreadInfo, id) == 0 &&
@@ -26,7 +27,7 @@ thread_create(ThreadInfo* t, ThreadFunc func)
 void
 thread_yield()
 {
-  pthread_yield();
+  sched_yield();
 }
 
 bool

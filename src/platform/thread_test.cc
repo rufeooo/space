@@ -20,9 +20,9 @@ main()
 {
   printf("%lu\n", sizeof(pthread_t));
   static ThreadInfo t;
-  thread_create(&t, whee);
+  platform::thread_create(&t, whee);
 
-  thread_join(&t);
+  platform::thread_join(&t);
   printf("ret %lu\n", t.return_value);
   return 0;
 }
