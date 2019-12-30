@@ -154,7 +154,7 @@ Render()
   glClear(GL_DEPTH_BUFFER_BIT);
   for (int i = 0; i < kGfx.text_count; ++i) {
     Text& text = kGfx.text[i];
-    ui::Text(text.msg, text.screen_x, text.screen_y, math::Vec4f());
+    rgg::RenderText(text.msg, text.screen_x, text.screen_y, math::Vec4f());
   }
 
   // Reset draw pointers.

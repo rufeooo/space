@@ -88,7 +88,8 @@ Initialize()
   math::Vec2f line[2] = {math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)};
   kRGG.line_vao_reference = gl::CreateGeometryVAO(2, line);
 
-  if (!ui::Initialize()) {
+  if (!SetupUI()) {
+    printf("Failed to setup UI.\n");
     return false;
   }
 

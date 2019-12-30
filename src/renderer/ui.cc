@@ -5,7 +5,7 @@
 #include "tga_loader.cc"
 #include "shader.h"
 
-namespace ui {
+namespace rgg {
 
 struct Font {
   uint16_t texture_width;
@@ -27,7 +27,7 @@ struct UI {
 static UI kUI;
 
 bool
-Initialize()
+SetupUI()
 {
   Font& font = kUI.font;
   uint8_t* image_data;
@@ -162,7 +162,7 @@ DrawString(const char* msg, float x, float y, const math::Vec4f& color)
 }
 
 void
-Text(const char* msg, float x, float y, const math::Vec4f& color)
+RenderText(const char* msg, float x, float y, const math::Vec4f& color)
 {
   auto& font = kUI.font;
   glUseProgram(font.program);

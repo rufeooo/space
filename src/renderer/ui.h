@@ -1,9 +1,9 @@
 #include "math/vec.h"
 
-namespace ui {
+namespace rgg {
 
-bool Initialize();
+bool SetupUI();
 
-void Text(const char* msg, float x, float y, const math::Vec4f& color);
+void RenderText(const char* msg, float x, float y, const math::Vec4f& color);
 
 }
