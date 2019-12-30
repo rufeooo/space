@@ -58,7 +58,7 @@ main(int argc, char** argv)
 
     glClear(GL_DEPTH_BUFFER_BIT);
     //ui::Text("Testing", 0.f, 0.f, math::Vec4f());
-    ui::Text("The. quick brown fox jumps over the lazy dog.", 400.f, 400.f,
+    ui::Text("The quick brown fox jumps over the lazy dog.", 400.f, 400.f,
              math::Vec4f());
 
     window::SwapBuffers();

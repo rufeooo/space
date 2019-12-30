@@ -89,9 +89,6 @@ void
 DrawString(const char* msg, float x, float y, const math::Vec4f& color)
 {
   struct TextPoint {
-    TextPoint() = default;
-    TextPoint(GLfloat x, GLfloat y, GLfloat u, GLfloat v) :
-      x(x), y(y), u(u), v(v) {};
     GLfloat x;
     GLfloat y;
     GLfloat u;
@@ -140,18 +137,16 @@ DrawString(const char* msg, float x, float y, const math::Vec4f& color)
            row->yoffset, offset_start_x, offset_start_y, tex_w, tex_h);
 #endif
 
-    text_point[0] = TextPoint(offset_start_x, offset_start_y,
-                              tex_x, tex_y);
-    text_point[1] = TextPoint(offset_start_x + v_w, offset_start_y,
-                              tex_x + tex_w, tex_y);
-    text_point[2] = TextPoint(offset_start_x + v_w, offset_start_y - v_h,
-                              tex_x + tex_w, tex_y + tex_h);
-    text_point[3] = TextPoint(offset_start_x + v_w, offset_start_y - v_h,
-                              tex_x + tex_w, tex_y + tex_h);
-    text_point[4] = TextPoint(offset_start_x, offset_start_y - v_h,
-                              tex_x, tex_y + tex_h);
-    text_point[5] = TextPoint(offset_start_x, offset_start_y,
-                              tex_x, tex_y);
+    text_point[0] = {offset_start_x, offset_start_y, tex_x, tex_y};
+    text_point[1] = {offset_start_x + v_w, offset_start_y, tex_x + tex_w,
+                     tex_y};
+    text_point[2] = {offset_start_x + v_w, offset_start_y - v_h,
+                     tex_x + tex_w, tex_y + tex_h};
+    text_point[3] = {offset_start_x + v_w, offset_start_y - v_h,
+                     tex_x + tex_w, tex_y + tex_h};
+    text_point[4] = {offset_start_x, offset_start_y - v_h, tex_x,
+                     tex_y + tex_h};
+    text_point[5] = {offset_start_x, offset_start_y, tex_x, tex_y};
 #if 0
     text_point[0].Pr();
     text_point[1].Pr();
