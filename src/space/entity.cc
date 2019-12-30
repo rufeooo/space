@@ -11,18 +11,7 @@ struct DestinationComponent {
   math::Vec2f position;
 };
 static DestinationComponent zero_destination;
-struct LineComponent {
-  math::Vec3f start;
-  math::Vec3f end;
-  math::Vec4f color;
-};
-static LineComponent zero_line;
-struct GridComponent {
-  float width;   // Width of the grid component.
-  float height;  // Height of the grid component.
-  math::Vec4f color;
-};
-static GridComponent zero_grid;
+
 struct TransformComponent {
   math::Vec3f position;
   math::Vec3f scale = math::Vec3f(1.f, 1.f, 1.f);
@@ -33,8 +22,6 @@ static TransformComponent zero_transform;
 
 struct Entity {
   DestinationComponent destination;
-  LineComponent line;
-  GridComponent grid;
   TransformComponent transform;
 };
 

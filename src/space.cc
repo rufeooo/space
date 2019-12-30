@@ -81,19 +81,6 @@ Initialize()
     transform->position = math::Vec3f(200.f, 200.f, 0.f);
   }
 
-  {
-    auto* grid = &game_entity[2].grid;
-    grid->width = 50.f;
-    grid->height = 50.f;
-    grid->color = math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f);
-  }
-
-  {
-    auto* grid = &game_entity[3].grid;
-    grid->width = 25.f;
-    grid->height = 25.f;
-    grid->color = math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f);
-  }
 
   return true;
 }
@@ -371,6 +358,9 @@ UpdateGame()
                       ent->transform.orientation,
                       math::Vec4f(1.f, 1.f, 1.f, 1.f));
   }
+
+  gfx::PushGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
+  gfx::PushGrid(25.f, 25.f, math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
 
   if (!COMPONENT_EXISTS(0, destination)) return false;
   Entity* ent = &game_entity[0];

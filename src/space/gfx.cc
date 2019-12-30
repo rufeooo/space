@@ -11,8 +11,10 @@ CreateProjectionFunctor* _custom_projection = nullptr;
 constexpr int kMaxTextSize = 128;
 constexpr int kMaxTextCount = 32;
 
-constexpr int kMaxTriangleCount = 10;
-constexpr int kMaxRectangleCount = 10;
+constexpr int kMaxTriangleCount = 32;
+constexpr int kMaxRectangleCount = 32;
+constexpr int kMaxLineCount = 32;
+constexpr int kMaxGridCount = 8;
 
 struct Text {
   char msg[kMaxTextSize];
@@ -34,6 +36,18 @@ struct Rectangle {
   math::Vec4f color;
 };
 
+struct Line {
+  math::Vec3f start;
+  math::Vec3f end;
+  math::Vec4f color;
+};
+
+struct Grid {
+  float width;
+  float height;
+  math::Vec4f color;
+};
+
 struct Gfx {
   // Allow 32 on screen text messages.
   Text text[kMaxTextCount];
@@ -44,6 +58,12 @@ struct Gfx {
 
   Rectangle rectangle[kMaxRectangleCount];
   int rectangle_count;
+
+  Line line[kMaxLineCount];
+  int line_count;
+
+  Grid grid[kMaxGridCount];
+  int grid_count;
 };
 
 static Gfx kGfx;
@@ -87,25 +107,21 @@ RenderRectangles()
 void
 RenderLines()
 {
-  for (int i = 0; i < MAX_ENTITY; ++i) {
-    if (!EntityExists(i)) break;
-    if (!COMPONENT_EXISTS(i, line)) continue;
-
-    Entity* ent = &game_entity[i];
-    rgg::RenderLine(ent->line.start, ent->line.end, ent->line.color);
+  for (int i = 0; i < kGfx.line_count; ++i) {
+    Line* line = &kGfx.line[i];
+    rgg::RenderLine(line->start, line->end, line->color);
   }
+  kGfx.line_count = 0;
 }
 
 void
 RenderGrids()
 {
-  for (int i = 0; i < MAX_ENTITY; ++i) {
-    if (!EntityExists(i)) break;
-    if (!COMPONENT_EXISTS(i, grid)) continue;
-
-    Entity* ent = &game_entity[i];
-    rgg::RenderGrid(ent->grid.width, ent->grid.height, ent->grid.color);
+  for (int i = 0; i < kGfx.grid_count; ++i) {
+    Grid* grid = &kGfx.grid[i];
+    rgg::RenderGrid(grid->width, grid->height, grid->color);
   }
+  kGfx.grid_count = 0;
 }
 
 void
@@ -177,6 +193,30 @@ PushRectangle(const math::Vec3f& position, const math::Vec3f& scale,
   if (kGfx.rectangle_count + 1 >= kMaxRectangleCount) return;
   SetPrimitive(position, scale, orientation, color,
                &kGfx.rectangle[kGfx.rectangle_count++]);
+}
+
+void
+PushLine(const math::Vec3f& start, const math::Vec3f& end,
+         const math::Vec4f& color)
+{
+  assert(kGfx.line_count + 1 < kMaxLineCount);
+  if (kGfx.line_count + 1 >= kMaxLineCount) return;
+  Line* line = &kGfx.line[kGfx.line_count++];
+  line->start = start;
+  line->end = end;
+  line->color = color;
+}
+
+void
+PushGrid(float width, float height, const math::Vec4f& color)
+{
+
+  assert(kGfx.grid_count + 1 < kMaxGridCount);
+  if (kGfx.grid_count + 1 >= kMaxGridCount) return;
+  Grid* grid = &kGfx.grid[kGfx.grid_count++];
+  grid->width = width;
+  grid->height = height;
+  grid->color = color;
 }
 
 
