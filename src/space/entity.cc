@@ -11,14 +11,6 @@ struct DestinationComponent {
   math::Vec2f position;
 };
 static DestinationComponent zero_destination;
-struct RectangleComponent {
-  math::Vec4f color;
-};
-static RectangleComponent zero_rectangle;
-struct TriangleComponent {
-  math::Vec4f color;
-};
-static TriangleComponent zero_triangle;
 struct LineComponent {
   math::Vec3f start;
   math::Vec3f end;
@@ -41,8 +33,6 @@ static TransformComponent zero_transform;
 
 struct Entity {
   DestinationComponent destination;
-  RectangleComponent rectangle;
-  TriangleComponent triangle;
   LineComponent line;
   GridComponent grid;
   TransformComponent transform;

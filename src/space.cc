@@ -71,9 +71,7 @@ Initialize()
     Entity* ent = &game_entity[0];
     auto* transform = &ent->transform;
     transform->position = math::Vec3f(400.f, 400.f, 0.f);
-    auto* rect = &ent->rectangle;
-    rect->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
-  }
+      }
 
   // Make a triangle. This doesn't really do anything.
 
@@ -81,9 +79,6 @@ Initialize()
     Entity* ent = &game_entity[1];
     auto* transform = &ent->transform;
     transform->position = math::Vec3f(200.f, 200.f, 0.f);
-    // transform->orientation.Set(90.f, math::Vec3f(0.f, 0.f, -1.f));
-    auto* tri = &ent->triangle;
-    tri->color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
   }
 
   {
@@ -362,6 +357,20 @@ UpdateGame()
   gfx::PushText(buffer, 3.f, sz.y);
   sprintf(buffer, "Window Size:  %ix%i", (int)sz.x, (int)sz.y);
   gfx::PushText(buffer, 3.f, sz.y - 25.f);
+
+  {
+    Entity* ent = &game_entity[0];
+    gfx::PushRectangle(ent->transform.position, ent->transform.scale,
+                      ent->transform.orientation,
+                      math::Vec4f(1.f, 1.f, 1.f, 1.f));
+  }
+
+  {
+    Entity* ent = &game_entity[1];
+    gfx::PushTriangle(ent->transform.position, ent->transform.scale,
+                      ent->transform.orientation,
+                      math::Vec4f(1.f, 1.f, 1.f, 1.f));
+  }
 
   if (!COMPONENT_EXISTS(0, destination)) return false;
   Entity* ent = &game_entity[0];

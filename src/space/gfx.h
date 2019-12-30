@@ -17,6 +17,12 @@ bool Initialize();
 
 void Render();
 
+void PushTriangle(const math::Vec3f& position, const math::Vec3f& scale,
+                  const math::Quatf& orientation, const math::Vec4f& color);
+
+void PushRectangle(const math::Vec3f& position, const math::Vec3f& scale,
+                   const math::Quatf& orientation, const math::Vec4f& color);
+
 void PushText(const char* msg, float screen_x, float screen_y);
 
 }  // namespace gfx
