@@ -26,10 +26,11 @@ inline constexpr const char* kFragmentShader = R"(
 inline constexpr const char* kFontVertexShader = R"(
   #version 410
   layout (location = 0) in vec4 text_pos;
+  uniform mat4 matrix;
   out vec2 texture_coordinates;
   void main() {
   	texture_coordinates = text_pos.zw;
-  	gl_Position = vec4(text_pos.xy, 0.0 , 1.0);
+  	gl_Position = matrix * vec4(text_pos.xy, 0.0 , 1.0);
   }
 )";
 
