@@ -17,4 +17,6 @@ bool Initialize();
 
 void Render();
 
+void PushText(const char* msg, float screen_x, float screen_y);
+
 }  // namespace gfx

@@ -8,6 +8,23 @@ namespace gfx
 {
 CreateProjectionFunctor* _custom_projection = nullptr;
 
+constexpr int kMaxTextSize = 128;
+constexpr int kMaxTextCount = 32;
+
+struct Text {
+  char msg[kMaxTextSize];
+  float screen_x;
+  float screen_y;
+};
+
+struct Gfx {
+  // Allow 32 on screen text messages.
+  Text text[kMaxTextCount];
+  int text_count;
+};
+
+static Gfx kGfx;
+
 void
 SetProjection(CreateProjectionFunctor* projection)
 {
@@ -98,7 +115,30 @@ Render()
   // Undo wireframe drawing.
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
+  // Draw all text.
+  glClear(GL_DEPTH_BUFFER_BIT);
+  for (int i = 0; i < kGfx.text_count; ++i) {
+    Text& text = kGfx.text[i];
+    ui::Text(text.msg, text.screen_x, text.screen_y, math::Vec4f());
+  }
+
+  // Reset draw pointers.
+  kGfx.text_count = 0;  
+  
   window::SwapBuffers();
+}
+
+void
+PushText(const char* msg, float screen_x, float screen_y)
+{
+  assert(kGfx.text_count + 1 < kMaxTextCount);
+  if (kGfx.text_count + 1 >= kMaxTextCount) return;
+  int len = strlen(msg);
+  if (len > kMaxTextSize) return;
+  Text& text = kGfx.text[kGfx.text_count++];
+  strcpy(text.msg, msg);
+  text.screen_x = screen_x;
+  text.screen_y = screen_y;
 }
 
 }  // namespace gfx

@@ -28,6 +28,8 @@ struct State {
   uint64_t framerate = 60;
   // Calculated available microseconds per game_update
   uint64_t frame_target_usec;
+  // Time it took to run a frame.
+  double frame_time_sec;
   // Microseconds per receive call during connection handshake
   uint64_t handshake_target_usec = 5 * 1000;
   // Allow yielding idle cycles to kernel
@@ -354,8 +356,14 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 bool
 UpdateGame()
 {
-  if (!COMPONENT_EXISTS(0, destination)) return false;
+  auto sz = window::GetWindowSize();
+  char buffer[50]; 
+  sprintf(buffer, "Frame Time:  %.3fs", kGameState.frame_time_sec);
+  gfx::PushText(buffer, 3.f, sz.y);
+  sprintf(buffer, "Window Size:  %ix%i", (int)sz.x, (int)sz.y);
+  gfx::PushText(buffer, 3.f, sz.y - 25.f);
 
+  if (!COMPONENT_EXISTS(0, destination)) return false;
   Entity* ent = &game_entity[0];
   DestinationComponent* destination = &ent->destination;
   TransformComponent* transform = &ent->transform;
@@ -370,7 +378,7 @@ UpdateGame()
       COMPONENT_RESET(0, destination);
     }
   }
-
+  
   return true;
 }
 
@@ -412,6 +420,7 @@ main(int argc, char** argv)
   // Reset the clock for gameplay
   platform::clock_init();
   while (!window::ShouldClose()) {
+    clock_t frame_begin = clock();
     ProcessInput();
     NetworkEgress();
     NetworkIngress();
@@ -437,6 +446,8 @@ main(int argc, char** argv)
 #endif
     ++kGameState.game_updates;
 
+    kGameState.frame_time_sec = (double)(clock() - frame_begin) / CLOCKS_PER_SEC;
+
     uint64_t sleep_usec = 0;
     while (!platform::elapse_usec(kGameState.frame_target_usec, &sleep_usec,
                                   &kGameState.game_jerk)) {
@@ -446,6 +457,7 @@ main(int argc, char** argv)
         break;
       }
     }
+
   }
 
   return 0;
