@@ -96,6 +96,7 @@ NetworkSetup()
   const char greeting[greeting_size] = {"space"};
   uint64_t jerk;
   int16_t bytes_received = 0;
+  platform::clock_init();
   for (int send_count = 0; bytes_received <= 0 && send_count < 5;
        ++send_count) {
     puts("Client: send handshake");
@@ -400,7 +401,6 @@ main(int argc, char** argv)
   }
 
   // Network handshake uses a clock
-  platform::clock_init();
   if (!NetworkSetup()) {
     return 1;
   }
