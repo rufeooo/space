@@ -54,10 +54,11 @@ main(int argc, char** argv)
         math::Vec4f(0.f, 1.f, 0.f, 0.75f));
    
     rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
+    rgg::RenderGrid(25.f, 25.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.55f));
 
     glClear(GL_DEPTH_BUFFER_BIT);
     //ui::Text("Testing", 0.f, 0.f, math::Vec4f());
-    ui::Text("The quick brown fox jumps over the lazy dog.", 400.f, 400.f,
+    ui::Text("The. quick brown fox jumps over the lazy dog.", 400.f, 400.f,
              math::Vec4f());
 
     window::SwapBuffers();

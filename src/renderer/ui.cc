@@ -130,9 +130,8 @@ DrawString(const char* msg, float x, float y, const math::Vec4f& color)
     float v_w = (float)row->width;
     float v_h = (float)row->height;
 
-    //float xoffset = (float)row->xoffset / (2.f * font.texture_width);
-    float offset_start_x = x;
-    float offset_start_y = y;
+    float offset_start_x = x/* - row->xoffset*/;
+    float offset_start_y = y - row->yoffset;
 
 #if 0
     printf("id=%i char=%c width=%i height=%i xoffset=%i yoffset=%i"
