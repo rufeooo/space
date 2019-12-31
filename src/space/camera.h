@@ -23,6 +23,6 @@ math::Mat4f transform_matrix();
 // Return the cameras current view matrix.
 math::Mat4f view_matrix();
 
-math::Vec2f GetClickInWorldSpace(const math::Vec2f& click_pos);
+math::Vec2f ScreenToWorldSpace(const math::Vec2f& screen_pos);
 
 }  // namespace camera

@@ -264,7 +264,7 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
       if (event->button == BUTTON_LEFT) {
         command::Move move;
         move.entity_id = 0;
-        move.position = camera::GetClickInWorldSpace(event->position);
+        move.position = camera::ScreenToWorldSpace(event->position);
         command::Execute(move);
       }
     } break;
@@ -336,7 +336,7 @@ UpdateGame()
   gfx::PushText(buffer, -sz.x + 3.f, sz.y);
   sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
   gfx::PushText(buffer, -sz.x + 3.f, sz.y - 25.f);
-  auto mouse = camera::GetClickInWorldSpace(window::GetCursorPosition());
+  auto mouse = camera::ScreenToWorldSpace(window::GetCursorPosition());
   sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
   gfx::PushText(buffer, -sz.x + 3.f, sz.y - 50.f);
 

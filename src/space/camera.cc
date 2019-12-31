@@ -50,7 +50,7 @@ view_matrix()
 }
 
 math::Vec2f
-GetClickInWorldSpace(const math::Vec2f& click_pos)
+ScreenToWorldSpace(const math::Vec2f& screen_pos)
 {
   auto dims = window::GetWindowSize();
   // Inner expression is orienting the click position to have (0,0) be the
@@ -58,7 +58,7 @@ GetClickInWorldSpace(const math::Vec2f& click_pos)
   //
   // Transform matrix is orientating the click to take into consideration
   // camera rotation / scale / translation.
-  return (transform_matrix() * math::Vec3f(click_pos - dims / 2.f)).xy();
+  return (transform_matrix() * math::Vec3f(screen_pos - dims / 2.f)).xy();
 }
 
 }  // namespace camera
