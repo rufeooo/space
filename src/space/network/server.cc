@@ -29,6 +29,8 @@ server_main(ThreadInfo* t)
   Udp4 location;
   if (!udp::GetAddr4(thread_param->ip, thread_param->port, &location)) {
     puts("server: fail GetAddr4");
+    puts(thread_param->ip);
+    puts(thread_param->port);
     return 0;
   }
 
@@ -46,6 +48,7 @@ server_main(ThreadInfo* t)
                          &peer)) {
       if (udp_errno) running = false;
       if (udp_errno) printf("udp_errno %d\n", udp_errno);
+      platform::sleep_usec(1000);
       continue;
     }
 
@@ -91,3 +94,13 @@ CreateNetworkServer(const char* ip, const char* port)
 
   return true;
 }
+
+uint64_t
+WaitForNetworkServer()
+{
+  if (!thread.id) return 0;
+
+  platform::thread_join(&thread);
+  return thread.return_value;
+}
+
