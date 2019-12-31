@@ -186,8 +186,11 @@ RenderGrid(float width, float height, const math::Vec4f& color)
   glUseProgram(kRGG.program_reference);
   glBindVertexArray(kRGG.line_vao_reference);
   // The bottom left and top right of the screen with regards to the camera.
-  math::Vec3f top_right = kRGG.camera_transform * math::Vec3f(window::GetWindowSize());
-  math::Vec3f bottom_left = kRGG.camera_transform * math::Vec3f(0.f, 0.f, 0.f);
+  auto dims = window::GetWindowSize();
+  math::Vec3f top_right =
+      kRGG.camera_transform * math::Vec3f(dims.x, dims.y, 0.f);
+  math::Vec3f bottom_left =
+      kRGG.camera_transform * math::Vec3f(-dims.x, -dims.y, 0.f);
   float right_most_grid_x =
         width - (fmod(top_right.x + width, width));
   float left_most_grid_x = -fmod(bottom_left.x + width, width);

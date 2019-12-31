@@ -1,6 +1,7 @@
 #include "camera.h"
 
 #include "math/math.cc"
+#include "platform/platform.cc"
 
 namespace camera
 {
@@ -46,6 +47,18 @@ math::Mat4f
 view_matrix()
 {
   return math::CreateViewMatrix<float>(kCamera.position, kCamera.orientation);
+}
+
+math::Vec2f
+GetClickInWorldSpace(const math::Vec2f& click_pos)
+{
+  auto dims = window::GetWindowSize();
+  // Inner expression is orienting the click position to have (0,0) be the
+  // middle of the screen.
+  //
+  // Transform matrix is orientating the click to take into consideration
+  // camera rotation / scale / translation.
+  return (transform_matrix() * math::Vec3f(click_pos - dims / 2.f)).xy();
 }
 
 }  // namespace camera

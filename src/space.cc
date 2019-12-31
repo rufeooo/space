@@ -65,22 +65,16 @@ bool
 Initialize()
 {
   if (!gfx::Initialize()) return false;
-  // Make a square. This thing moves around when clicking.
 
   {
-    Entity* ent = &game_entity[0];
-    auto* transform = &ent->transform;
-    transform->position = math::Vec3f(400.f, 400.f, 0.f);
-      }
-
-  // Make a triangle. This doesn't really do anything.
-
-  {
-    Entity* ent = &game_entity[1];
-    auto* transform = &ent->transform;
-    transform->position = math::Vec3f(200.f, 200.f, 0.f);
+    auto* transform = &game_entity[0].transform;
+    transform->position = math::Vec3f(0.f, 0.f, 0.f);
   }
 
+  {
+    auto* transform = &game_entity[1].transform;
+    transform->position = math::Vec3f(200.f, 200.f, 0.f);
+  }
 
   return true;
 }
@@ -270,9 +264,7 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
       if (event->button == BUTTON_LEFT) {
         command::Move move;
         move.entity_id = 0;
-        // A bit of an optimization. Assume no zoom when converting to world
-        // space.
-        move.position = event->position + camera::position().xy();
+        move.position = camera::GetClickInWorldSpace(event->position);
         command::Execute(move);
       }
     } break;
@@ -338,12 +330,15 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 bool
 UpdateGame()
 {
-  auto sz = window::GetWindowSize();
+  auto sz = window::GetWindowSize() / 2.f;
   char buffer[50]; 
-  sprintf(buffer, "Frame Time:  %.3fs", kGameState.frame_time_sec);
-  gfx::PushText(buffer, 3.f, sz.y);
-  sprintf(buffer, "Window Size:  %ix%i", (int)sz.x, (int)sz.y);
-  gfx::PushText(buffer, 3.f, sz.y - 25.f);
+  sprintf(buffer, "Frame Time:%.3fs", kGameState.frame_time_sec);
+  gfx::PushText(buffer, -sz.x + 3.f, sz.y);
+  sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
+  gfx::PushText(buffer, -sz.x + 3.f, sz.y - 25.f);
+  auto mouse = camera::GetClickInWorldSpace(window::GetCursorPosition());
+  sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
+  gfx::PushText(buffer, -sz.x + 3.f, sz.y - 50.f);
 
   {
     Entity* ent = &game_entity[0];

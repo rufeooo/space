@@ -131,10 +131,7 @@ CreateOrthographicMatrix(float right, float left, float top, float bottom,
   return Mat<T, 4, 4>(2.f / w, 0.f    , 0.f     , 0.f,
                       0.f    , 2.f / h, 0.f     , 0.f,
                       0.f    , 0.f    , -2.f / d, 0.f,
-                      -(right + left) / w,  // translate x
-                      -(top + bottom) / h,  // translate y
-                      -(far_clip + near_clip) / d,    // translate z
-                      1.f);
+                      0.f    , 0.f    , 0.f     , 1.f);
 }
 
 }  // namespace math

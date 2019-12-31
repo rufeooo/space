@@ -18,8 +18,9 @@
 
 math::Mat4f PerspectiveProjection() {
   auto sz = window::GetWindowSize();
+  //return math::CreatePerspectiveMatrix<float>(sz.x, sz.y, .1f, 100.f, 67.f);
   return math::CreateOrthographicMatrix<float>(
-      sz.x, 0.f, sz.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+      sz.x, 0.f, sz.y, 0.f, 0.0f, 0.f);
 }
 
 int
@@ -27,7 +28,7 @@ main(int argc, char** argv)
 {
   if (!window::Create("Graphics Explore", 800, 800)) return 1;
 
-  camera::Translate(math::Vec3f(-400.f, -400.f, 0.0f));
+  camera::Translate(math::Vec3f(0.f, 0.f, 0.0f));
   camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
   
   rgg::Initialize();
@@ -55,11 +56,6 @@ main(int argc, char** argv)
    
     rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
     rgg::RenderGrid(25.f, 25.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.55f));
-
-    glClear(GL_DEPTH_BUFFER_BIT);
-    //ui::Text("Testing", 0.f, 0.f, math::Vec4f());
-    ui::Text("The quick brown fox jumps over the lazy dog.", 400.f, 400.f,
-             math::Vec4f());
 
     window::SwapBuffers();
   }
