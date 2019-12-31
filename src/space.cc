@@ -330,15 +330,15 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 bool
 UpdateGame()
 {
-  auto sz = window::GetWindowSize() / 2.f;
+  auto sz = window::GetWindowSize();
   char buffer[50]; 
   sprintf(buffer, "Frame Time:%.3fs", kGameState.frame_time_sec);
-  gfx::PushText(buffer, -sz.x + 3.f, sz.y);
+  gfx::PushText(buffer, 3.f, sz.y);
   sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
-  gfx::PushText(buffer, -sz.x + 3.f, sz.y - 25.f);
+  gfx::PushText(buffer, 3.f, sz.y - 25.f);
   auto mouse = camera::ScreenToWorldSpace(window::GetCursorPosition());
   sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
-  gfx::PushText(buffer, -sz.x + 3.f, sz.y - 50.f);
+  gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
   {
     Entity* ent = &game_entity[0];

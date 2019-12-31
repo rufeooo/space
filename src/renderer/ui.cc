@@ -101,7 +101,7 @@ DrawString(const char* msg, float x, float y, const math::Vec4f& color)
   glBindVertexArray(font.vao);
 
   auto sz = window::GetWindowSize();
-  math::Mat4f projection = math::CreateOrthographicMatrix<float>(
+  math::Mat4f projection = math::CreateOrthographicMatrix2<float>(
       sz.x, 0.f, sz.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
   glUniformMatrix4fv(font.matrix_uniform, 1, GL_FALSE, &projection[0]);
 

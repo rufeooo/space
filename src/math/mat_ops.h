@@ -120,8 +120,7 @@ CreateOrthographicMatrix(float right, float left, float top, float bottom,
   // to the cameras to GL space or the unit cube.
   //
   // To do that use the diagonal of this matrix to to scale the point
-  // down to a unit cube and then the translation components to move
-  // the point into cube space.
+  // down to a unit cube.
   float w = right - left;
   w = w == 0.f ? 1.f : w;
   float h = top - bottom;
@@ -132,6 +131,28 @@ CreateOrthographicMatrix(float right, float left, float top, float bottom,
                       0.f    , 2.f / h, 0.f     , 0.f,
                       0.f    , 0.f    , -2.f / d, 0.f,
                       0.f    , 0.f    , 0.f     , 1.f);
+}
+
+// This function orients origin to bottom left of screen. Useful for UI so
+// points can be specified in actual screen space.
+template <class T>
+Mat<T, 4, 4>
+CreateOrthographicMatrix2(float right, float left, float top, float bottom,
+                         float far_clip, float near_clip)
+{
+  float w = right - left;
+  w = w == 0.f ? 1.f : w;
+  float h = top - bottom;
+  h = h == 0.f ? 1.f : h;
+  float d = far_clip - near_clip;
+  d = d == 0.f ? 1.f : d;
+  return Mat<T, 4, 4>(2.f / w, 0.f    , 0.f     , 0.f,
+                      0.f    , 2.f / h, 0.f     , 0.f,
+                      0.f    , 0.f    , -2.f / d, 0.f,
+                      -(right + left) / w,
+                      -(top + bottom) / h,
+                      -(near_clip + far_clip) / d,
+                      1.f);
 }
 
 }  // namespace math
