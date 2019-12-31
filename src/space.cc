@@ -96,7 +96,7 @@ NetworkSetup()
   const char greeting[greeting_size] = {"space"};
   uint64_t jerk;
   int16_t bytes_received = 0;
-  platform::clock_init();
+  platform::clock_init(kGameState.handshake_target_usec);
   for (int send_count = 0; bytes_received <= 0 && send_count < 5;
        ++send_count) {
     puts("Client: send handshake");
@@ -107,8 +107,7 @@ NetworkSetup()
                            kGameState.netbuffer, &bytes_received))
         break;
       uint64_t sleep_usec = 0;
-      platform::elapse_usec(kGameState.handshake_target_usec, &sleep_usec,
-                            &jerk);
+      platform::elapse_usec(&sleep_usec, &jerk);
       platform::sleep_usec(sleep_usec);
     }
   }
@@ -344,8 +343,8 @@ UpdateGame()
   {
     Entity* ent = &game_entity[0];
     gfx::PushRectangle(ent->transform.position, ent->transform.scale,
-                      ent->transform.orientation,
-                      math::Vec4f(1.f, 1.f, 1.f, 1.f));
+                       ent->transform.orientation,
+                       math::Vec4f(1.f, 1.f, 1.f, 1.f));
   }
 
   {
@@ -373,7 +372,7 @@ UpdateGame()
       COMPONENT_RESET(0, destination);
     }
   }
-  
+
   return true;
 }
 
@@ -412,7 +411,7 @@ main(int argc, char** argv)
   kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
 
   // Reset the clock for gameplay
-  platform::clock_init();
+  platform::clock_init(kGameState.frame_target_usec);
   while (!window::ShouldClose()) {
     clock_t frame_begin = clock();
     ProcessInput();
@@ -440,18 +439,17 @@ main(int argc, char** argv)
 #endif
     ++kGameState.game_updates;
 
-    kGameState.frame_time_sec = (double)(clock() - frame_begin) / CLOCKS_PER_SEC;
+    kGameState.frame_time_sec =
+        (double)(clock() - frame_begin) / CLOCKS_PER_SEC;
 
     uint64_t sleep_usec = 0;
-    while (!platform::elapse_usec(kGameState.frame_target_usec, &sleep_usec,
-                                  &kGameState.game_jerk)) {
+    while (!platform::elapse_usec(&sleep_usec, &kGameState.game_jerk)) {
       if (kGameState.sleep_on_loop) {
         platform::sleep_usec(sleep_usec);
         kGameState.frame_sleep[slot] = sleep_usec;
         break;
       }
     }
-
   }
 
   return 0;

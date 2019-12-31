@@ -3,13 +3,13 @@
 #include <cstdlib>
 #include <ctime>
 
-#include <cstdio>
-
 #include "macro.h"
 #include "rdtsc.h"
 
 EXTERN(uint64_t median_tsc_per_usec);
+EXTERN(uint64_t median_usec_per_tsc);
 EXTERN(uint64_t tsc_clock);
+EXTERN(uint64_t tsc_step);
 
 #define USEC_PER_CLOCK (1000.f / 1000.f / CLOCKS_PER_SEC)
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
@@ -27,7 +27,7 @@ cmp(const void* lhs, const void* rhs)
 namespace platform
 {
 void
-clock_init()
+clock_init(uint64_t frame_goal_usec)
 {
   clock_t c = clock();
   clock_t p;
@@ -52,22 +52,30 @@ clock_init()
   qsort(tsc_per_usec, MAX_SAMPLES, sizeof(tsc_per_usec[0]), cmp);
   median_tsc_per_usec = tsc_per_usec[MAX_SAMPLES / 2];
   tsc_clock = rdtsc();
+
+  // Calculate the step
+  tsc_step = frame_goal_usec * median_tsc_per_usec;
+  median_usec_per_tsc = ((uint64_t)1 << 33) / median_tsc_per_usec;
+}
+
+uint64_t
+tsc_to_usec(uint64_t tsc)
+{
+  return (tsc * median_usec_per_tsc) >> 33;
 }
 
 bool
-elapse_usec(uint64_t frame_goal_usec, uint64_t* optional_sleep_usec,
-            uint64_t* jerk)
+elapse_usec(uint64_t* optional_sleep_usec, uint64_t* jerk)
 {
-  assert(median_tsc_per_usec);
+  assert(median_usec_per_tsc);
   uint64_t tsc_now = rdtsc();
   uint64_t tsc_previous = tsc_clock;
-  uint64_t tsc_step = frame_goal_usec * median_tsc_per_usec;
   uint64_t tsc_next = tsc_previous + tsc_step;
 
   if (tsc_next - tsc_now < tsc_step) {
     // no-op, busy wait
     // optional sleep time
-    *optional_sleep_usec = (tsc_next - tsc_now) / median_tsc_per_usec;
+    *optional_sleep_usec = tsc_to_usec(tsc_next - tsc_now);
     return false;
   } else if (tsc_now - tsc_next <= tsc_step) {
     // frame slightly over goal time
