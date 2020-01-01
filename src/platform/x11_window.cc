@@ -217,6 +217,13 @@ GetWindowSize()
   return size;
 }
 
+math::Vec2f
+GetCursorPosition()
+{
+  math::Vec2f pos = {0, 0};
+  return pos;
+}
+
 bool
 ShouldClose()
 {

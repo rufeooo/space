@@ -48,6 +48,7 @@ struct State {
   uint8_t netbuffer[PAGE];
   const char* server_ip = "localhost";
   const char* server_port = "9845";
+  uint64_t num_players = 1;
   // Unique id for this game
   uint64_t player_id;
   // Total players in this game
@@ -85,7 +86,7 @@ NetworkSetup()
   if (!udp::Init()) return false;
 
   if (strcmp("localhost", kGameState.server_ip) == 0) {
-    if (!CreateNetworkServer("localhost", "9845", "1")) return false;
+    if (!CreateNetworkServer("localhost", "9845")) return false;
   }
 
   if (!udp::GetAddr4(kGameState.server_ip, kGameState.server_port,
@@ -99,8 +100,13 @@ NetworkSetup()
   platform::clock_init(kGameState.handshake_target_usec);
   for (int send_count = 0; bytes_received <= 0 && send_count < 500;
        ++send_count) {
-    puts("Client: send handshake");
-    if (!udp::Send(kGameState.socket, greeting, greeting_size)) exit(1);
+    printf("Client: send handshake for %lu players\n", kGameState.num_players);
+    memcpy(kGameState.netbuffer, greeting, greeting_size);
+    uint64_t* header = (uint64_t*)(kGameState.netbuffer + greeting_size);
+    *header = kGameState.num_players;
+    if (!udp::Send(kGameState.socket, kGameState.netbuffer,
+                   greeting_size + sizeof(uint64_t)))
+      exit(1);
 
     for (int per_send = 0; per_send < 10; ++per_send) {
       if (udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
@@ -331,7 +337,7 @@ bool
 UpdateGame()
 {
   auto sz = window::GetWindowSize();
-  char buffer[50]; 
+  char buffer[50];
   sprintf(buffer, "Frame Time:%.3fs", kGameState.frame_time_sec);
   gfx::PushText(buffer, 3.f, sz.y);
   sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
@@ -380,7 +386,7 @@ int
 main(int argc, char** argv)
 {
   while (1) {
-    int opt = platform_getopt(argc, argv, "i:p:");
+    int opt = platform_getopt(argc, argv, "i:p:n:");
     if (opt == -1) break;
 
     switch (opt) {
@@ -389,6 +395,9 @@ main(int argc, char** argv)
         break;
       case 'p':
         kGameState.server_port = platform_optarg;
+        break;
+      case 'n':
+        kGameState.num_players = strtol(platform_optarg, NULL, 10);
         break;
     }
   }

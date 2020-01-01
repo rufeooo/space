@@ -8,24 +8,31 @@ static ThreadInfo thread;
 struct ServerParam {
   const char* ip;
   const char* port;
-  uint64_t player_count;
 };
 static ServerParam thread_param;
+
+struct PlayerState {
+  Udp4 peer;
+  uint64_t num_players;
+  uint64_t game_id;
+};
 
 static bool running = true;
 #define MAX_BUFFER (4 * 1024)
 const uint64_t greeting_size = 6;
+const uint64_t greeting_packet = greeting_size + sizeof(uint64_t);
 const char greeting[greeting_size] = {"space"};
 #define MAX_PLAYER 2
-Udp4 player[MAX_PLAYER];
+PlayerState player[MAX_PLAYER];
 uint64_t used_player = 0;
+uint64_t next_game_id = 1;
 bool game_ready;
 
 int
-GetPlayerId(Udp4* peer)
+GetPlayerIndex(Udp4* peer)
 {
   for (int i = 0; i < MAX_PLAYER; ++i) {
-    if (memcmp(peer, &player[i], sizeof(Udp4)) == 0) return i;
+    if (memcmp(peer, &player[i].peer, sizeof(Udp4)) == 0) return i;
   }
 
   return -1;
@@ -68,49 +75,71 @@ server_main(ThreadInfo* t)
       continue;
     }
 
-    int pid = GetPlayerId(&peer);
+    int pidx = GetPlayerIndex(&peer);
 
     // Handshake packet
-    if (received_bytes >= greeting_size &&
+    if (received_bytes >= greeting_packet &&
         strncmp(greeting, (char*)buffer, greeting_size) == 0) {
       // No room for clients on this server
       if (used_player >= MAX_PLAYER) continue;
+      // Duplicate handshake packet, idx already assigned
+      if (pidx != -1) continue;
 
-      uint64_t player_id = used_player;
-      printf("Accepted %lu\n", player_id);
-      player[player_id] = peer;
+      uint64_t* header = (uint64_t*)(buffer + greeting_size);
+      uint64_t num_players = *header;
+      ++header;
+      uint64_t player_index = used_player;
+      printf("Accepted %lu\n", player_index);
+      player[player_index].peer = peer;
+      player[player_index].num_players = num_players;
+      player[player_index].game_id = 0;
       ++used_player;
 
-      if (used_player == thread_param->player_count) {
+      int ready_players = 0;
+      for (int i = 0; i < used_player; ++i) {
+        if (player[i].game_id) continue;
+        if (player[i].num_players != num_players) continue;
+        ++ready_players;
+      }
+
+      if (ready_players >= num_players) {
         uint64_t* header = (uint64_t*)(buffer);
         memcpy(buffer, greeting, greeting_size);
 
+        uint64_t player_id = 0;
         for (int i = 0; i < used_player; ++i) {
-          printf("greet player %d\n", i);
+          if (player[i].game_id) continue;
+          if (player[i].num_players != num_players) continue;
+
+          printf("greet player index %d\n", i);
           header = (uint64_t*)(buffer + greeting_size);
-          *header = i;
+          *header = player_id;
           ++header;
-          *header = thread_param->player_count;
+          *header = num_players;
           ++header;
-          if (!udp::SendTo(location, player[i], buffer,
+          if (!udp::SendTo(location, player[i].peer, buffer,
                            greeting_size + 2 * sizeof(uint64_t)))
             puts("greet failed");
+          player[player_id].game_id = next_game_id;
+          ++player_id;
         }
-
-        game_ready = true;
+        ++next_game_id;
       }
     }
 
     // Filter Identified, Game-ready clients
-    if (pid == -1) continue;
-    if (!game_ready) continue;
+    if (pidx == -1) continue;
+    if (!player[pidx].game_id) continue;
 
+    // Echo bytes to game participants
+    uint64_t game_id = player[pidx].game_id;
 #if 0
-    printf("socket %d echo %d bytes to %lu players\n", location.socket, received_bytes, thread_param->player_count);
+    printf("socket %d echo %d bytes to %lu game_id\n", location.socket, received_bytes, game_id);
 #endif
-    // Echo bytes to all players
-    for (int i = 0; i < thread_param->player_count; ++i) {
-      if (!udp::SendTo(location, player[i], buffer, received_bytes)) {
+    for (int i = 0; i < used_player; ++i) {
+      if (player[i].game_id != game_id) continue;
+
+      if (!udp::SendTo(location, player[i].peer, buffer, received_bytes)) {
         puts("server send failed");
         break;
       }
@@ -121,14 +150,13 @@ server_main(ThreadInfo* t)
 }
 
 bool
-CreateNetworkServer(const char* ip, const char* port, const char* num_players)
+CreateNetworkServer(const char* ip, const char* port)
 {
   if (thread.id) return false;
 
   thread.arg = &thread_param;
   thread_param.ip = ip;
   thread_param.port = port;
-  thread_param.player_count = atoi(num_players);
   platform::thread_create(&thread, server_main);
 
   return true;

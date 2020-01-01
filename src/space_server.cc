@@ -11,7 +11,7 @@ main(int argc, char** argv)
   const char* num_players = "1";
 
   while (1) {
-    int opt = platform_getopt(argc, argv, "i:p:n:");
+    int opt = platform_getopt(argc, argv, "i:p:");
     if (opt == -1) break;
 
     switch (opt) {
@@ -21,18 +21,15 @@ main(int argc, char** argv)
       case 'p':
         port = platform_optarg;
         break;
-      case 'n':
-        num_players = platform_optarg;
-        break;
       default:
-        puts("Usage: server_server -i <ip> -p <port> -n <num_players>");
+        puts("Usage: server_server -i <ip> -p <port>");
         return 1;
     }
   }
 
   if (!udp::Init()) return 1;
   
-  if (!CreateNetworkServer(ip, port, num_players)) return 2;
+  if (!CreateNetworkServer(ip, port)) return 2;
 
   uint64_t result = WaitForNetworkServer();
   printf("%lu\n", result);
