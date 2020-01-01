@@ -70,51 +70,45 @@ server_main(ThreadInfo* t)
 
     int pid = GetPlayerId(&peer);
 
-    if (pid == -1) {
-      if (used_player >= thread_param->player_count) continue;
-
-      if (received_bytes >= greeting_size &&
-          strncmp(greeting, (char*)buffer, greeting_size) == 0) {
-        uint64_t player_id = used_player;
-        printf("Accepted %lu\n", player_id);
-        player[player_id] = peer;
-        ++used_player;
-
-        if (used_player == thread_param->player_count) {
-          uint64_t* header = (uint64_t*)(buffer);
-          memcpy(buffer, greeting, greeting_size);
-
-          for (int i = 0; i < used_player; ++i) {
-            printf("greet player %d\n", i);
-            header = (uint64_t*)(buffer + greeting_size);
-            *header = i;
-            ++header;
-            *header = thread_param->player_count;
-            ++header;
-            if (!udp::SendTo(location, player[i], buffer,
-                             greeting_size + 2 * sizeof(uint64_t)))
-              puts("greet failed");
-          }
-
-          game_ready = true;
-        }
-      }
-
-      continue;
-    }
-
-    // Ignore extra handshakes
+    // Handshake packet
     if (received_bytes >= greeting_size &&
         strncmp(greeting, (char*)buffer, greeting_size) == 0) {
-      continue;
+      // No room for clients on this server
+      if (used_player >= MAX_PLAYER) continue;
+
+      uint64_t player_id = used_player;
+      printf("Accepted %lu\n", player_id);
+      player[player_id] = peer;
+      ++used_player;
+
+      if (used_player == thread_param->player_count) {
+        uint64_t* header = (uint64_t*)(buffer);
+        memcpy(buffer, greeting, greeting_size);
+
+        for (int i = 0; i < used_player; ++i) {
+          printf("greet player %d\n", i);
+          header = (uint64_t*)(buffer + greeting_size);
+          *header = i;
+          ++header;
+          *header = thread_param->player_count;
+          ++header;
+          if (!udp::SendTo(location, player[i], buffer,
+                           greeting_size + 2 * sizeof(uint64_t)))
+            puts("greet failed");
+        }
+
+        game_ready = true;
+      }
     }
 
+    // Filter Identified, Game-ready clients
+    if (pid == -1) continue;
     if (!game_ready) continue;
 
-      // Echo bytes to all players
 #if 0
     printf("socket %d echo %d bytes to %lu players\n", location.socket, received_bytes, thread_param->player_count);
 #endif
+    // Echo bytes to all players
     for (int i = 0; i < thread_param->player_count; ++i) {
       if (!udp::SendTo(location, player[i], buffer, received_bytes)) {
         puts("server send failed");
