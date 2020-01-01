@@ -28,10 +28,10 @@ struct State {
   uint64_t framerate = 60;
   // Calculated available microseconds per game_update
   uint64_t frame_target_usec;
+  // Game clock state
+  Clock_t game_clock;
   // Time it took to run a frame.
   double frame_time_sec;
-  // Microseconds per receive call during connection handshake
-  uint64_t handshake_target_usec = 5 * 1000;
   // Allow yielding idle cycles to kernel
   bool sleep_on_loop = true;
   // Number of times the game has been updated.
@@ -97,7 +97,9 @@ NetworkSetup()
   const char greeting[greeting_size] = {"space"};
   uint64_t jerk;
   int16_t bytes_received = 0;
-  platform::clock_init(kGameState.handshake_target_usec);
+  Clock_t handshake_clock;
+  const uint64_t usec = 5 * 1000;
+  platform::clock_init(usec, &handshake_clock);
   for (int send_count = 0; bytes_received <= 0 && send_count < 500;
        ++send_count) {
     printf("Client: send handshake for %lu players\n", kGameState.num_players);
@@ -113,7 +115,7 @@ NetworkSetup()
                            kGameState.netbuffer, &bytes_received))
         break;
       uint64_t sleep_usec = 0;
-      platform::elapse_usec(&sleep_usec, &jerk);
+      platform::elapse_usec(&handshake_clock, &sleep_usec);
       platform::sleep_usec(sleep_usec);
     }
   }
@@ -420,7 +422,7 @@ main(int argc, char** argv)
   kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
 
   // Reset the clock for gameplay
-  platform::clock_init(kGameState.frame_target_usec);
+  platform::clock_init(kGameState.frame_target_usec, &kGameState.game_clock);
   while (!window::ShouldClose()) {
     clock_t frame_begin = clock();
     ProcessInput();
@@ -452,7 +454,7 @@ main(int argc, char** argv)
         (double)(clock() - frame_begin) / CLOCKS_PER_SEC;
 
     uint64_t sleep_usec = 0;
-    while (!platform::elapse_usec(&sleep_usec, &kGameState.game_jerk)) {
+    while (!platform::elapse_usec(&kGameState.game_clock, &sleep_usec)) {
       if (kGameState.sleep_on_loop) {
         platform::sleep_usec(sleep_usec);
         kGameState.frame_sleep[slot] = sleep_usec;
