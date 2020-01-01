@@ -6,19 +6,22 @@
 #include "macro.h"
 #include "rdtsc.h"
 
-EXTERN(uint64_t median_tsc_per_usec);
-EXTERN(uint64_t median_usec_per_tsc);
-EXTERN(uint64_t tsc_clock);
-EXTERN(uint64_t tsc_step);
+struct Clock_t {
+  uint64_t median_tsc_per_usec;
+  uint64_t median_usec_per_tsc;
+  uint64_t tsc_step;
+  uint64_t tsc_clock;
+  uint64_t jerk;
+};
 
 #define USEC_PER_CLOCK (1000.f / 1000.f / CLOCKS_PER_SEC)
 #define CLOCKS_PER_MS (CLOCKS_PER_SEC / 1000)
 
 int
-cmp(const void* lhs, const void* rhs)
+cmp(const void *lhs, const void *rhs)
 {
-  uint64_t lhv = *((const uint64_t*)lhs);
-  uint64_t rhv = *((const uint64_t*)rhs);
+  uint64_t lhv = *((const uint64_t *)lhs);
+  uint64_t rhv = *((const uint64_t *)rhs);
   if (lhv < rhv) return -1;
   if (lhv > rhv) return 1;
   return 0;
@@ -27,7 +30,7 @@ cmp(const void* lhs, const void* rhs)
 namespace platform
 {
 void
-clock_init(uint64_t frame_goal_usec)
+clock_init(uint64_t frame_goal_usec, Clock_t *out_clock)
 {
   clock_t c = clock();
   clock_t p;
@@ -50,43 +53,45 @@ clock_init(uint64_t frame_goal_usec)
   }
 
   qsort(tsc_per_usec, MAX_SAMPLES, sizeof(tsc_per_usec[0]), cmp);
-  median_tsc_per_usec = tsc_per_usec[MAX_SAMPLES / 2];
-  tsc_clock = rdtsc();
+  out_clock->median_tsc_per_usec = tsc_per_usec[MAX_SAMPLES / 2];
 
   // Calculate the step
-  tsc_step = frame_goal_usec * median_tsc_per_usec;
-  median_usec_per_tsc = ((uint64_t)1 << 33) / median_tsc_per_usec;
+  out_clock->tsc_step = frame_goal_usec * out_clock->median_tsc_per_usec;
+  out_clock->median_usec_per_tsc =
+      ((uint64_t)1 << 33) / out_clock->median_tsc_per_usec;
+  // Init to current time
+  out_clock->tsc_clock = rdtsc();
+  out_clock->jerk = 0;
 }
 
 uint64_t
-tsc_to_usec(uint64_t tsc)
+tscdelta_to_usec(const Clock_t *clock, uint64_t tsc)
 {
-  return (tsc * median_usec_per_tsc) >> 33;
+  return (tsc * clock->median_usec_per_tsc) >> 33;
 }
 
 bool
-elapse_usec(uint64_t* optional_sleep_usec, uint64_t* jerk)
+elapse_usec(Clock_t *clock, uint64_t *optional_sleep_usec)
 {
-  assert(median_usec_per_tsc);
   uint64_t tsc_now = rdtsc();
-  uint64_t tsc_previous = tsc_clock;
-  uint64_t tsc_next = tsc_previous + tsc_step;
+  uint64_t tsc_previous = clock->tsc_clock;
+  uint64_t tsc_next = tsc_previous + clock->tsc_step;
 
-  if (tsc_next - tsc_now < tsc_step) {
+  if (tsc_next - tsc_now < clock->tsc_step) {
     // no-op, busy wait
     // optional sleep time
-    *optional_sleep_usec = tsc_to_usec(tsc_next - tsc_now);
+    *optional_sleep_usec = tscdelta_to_usec(clock, tsc_next - tsc_now);
     return false;
-  } else if (tsc_now - tsc_next <= tsc_step) {
+  } else if (tsc_now - tsc_next <= clock->tsc_step) {
     // frame slightly over goal time
     // trivial advancement continues
     // within tsc_step do not sleep
-    tsc_clock = tsc_next;
-  } else if (tsc_now - tsc_next > tsc_step) {
+    clock->tsc_clock = tsc_next;
+  } else if (tsc_now - tsc_next > clock->tsc_step) {
     // non-trivial time-jerk, due to hardware clock or massive perf issue
     // do not sleep
-    tsc_clock = tsc_now;
-    *jerk += 1;
+    clock->tsc_clock = tsc_now;
+    clock->jerk += 1;
   }
 
   return true;

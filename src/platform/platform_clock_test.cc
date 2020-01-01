@@ -25,20 +25,20 @@ main(int argc, char** argv)
   }
 
   int target_usec = 1000.0 * 1000.0 / framerate;
+  Clock_t clock;
   uint64_t sleep_usec = 0;
-  uint64_t slip = 0;
   uint64_t frame = 0;
 
-  platform::clock_init(target_usec);
+  platform::clock_init(target_usec, &clock);
 
   while (frame < framerate * runtime_seconds) {
-    while (!platform::elapse_usec(&sleep_usec, &slip)) {
+    while (!platform::elapse_usec(&clock, &sleep_usec)) {
       usleep(sleep_usec);
     }
     ++frame;
   }
-  printf("[0x%lx tsc_clock] [ %lu sleep_usec ] [ %lu slip ] [ %lu frame ]\n",
-         tsc_clock, sleep_usec, slip, frame);
+  printf("[0x%lx tsc_clock] [ %lu sleep_usec ] [ %lu jerk ] [ %lu frame ]\n",
+         clock.tsc_clock, sleep_usec, clock.jerk, frame);
 
   return 0;
 }
