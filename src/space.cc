@@ -85,7 +85,7 @@ NetworkSetup()
   if (!udp::Init()) return false;
 
   if (strcmp("localhost", kGameState.server_ip) == 0) {
-    if (!CreateNetworkServer("localhost", "9845")) return false;
+    if (!CreateNetworkServer("localhost", "9845", "1")) return false;
   }
 
   if (!udp::GetAddr4(kGameState.server_ip, kGameState.server_port,
@@ -97,7 +97,7 @@ NetworkSetup()
   uint64_t jerk;
   int16_t bytes_received = 0;
   platform::clock_init(kGameState.handshake_target_usec);
-  for (int send_count = 0; bytes_received <= 0 && send_count < 5;
+  for (int send_count = 0; bytes_received <= 0 && send_count < 500;
        ++send_count) {
     puts("Client: send handshake");
     if (!udp::Send(kGameState.socket, greeting, greeting_size)) exit(1);

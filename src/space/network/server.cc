@@ -8,11 +8,28 @@ static ThreadInfo thread;
 struct ServerParam {
   const char* ip;
   const char* port;
+  uint64_t player_count;
 };
 static ServerParam thread_param;
 
 static bool running = true;
 #define MAX_BUFFER (4 * 1024)
+const uint64_t greeting_size = 6;
+const char greeting[greeting_size] = {"space"};
+#define MAX_PLAYER 2
+Udp4 player[MAX_PLAYER];
+uint64_t used_player = 0;
+bool game_ready;
+
+int
+GetPlayerId(Udp4* peer)
+{
+  for (int i = 0; i < MAX_PLAYER; ++i) {
+    if (memcmp(peer, &player[i], sizeof(Udp4)) == 0) return i;
+  }
+
+  return -1;
+}
 
 void*
 server_main(ThreadInfo* t)
@@ -20,7 +37,6 @@ server_main(ThreadInfo* t)
   ServerParam* thread_param = (ServerParam*)t->arg;
 
   uint8_t buffer[MAX_BUFFER];
-  uint64_t player_count = 0;
   if (!udp::Init()) {
     puts("server: fail init");
     return 0;
@@ -52,30 +68,58 @@ server_main(ThreadInfo* t)
       continue;
     }
 
-    const uint64_t greeting_size = 6;
-    const char greeting[greeting_size] = {"space"};
-    if (received_bytes >= greeting_size &&
-        strncmp(greeting, (char*)buffer, greeting_size) == 0) {
-      uint64_t* header = (uint64_t*)(buffer + greeting_size);
-      uint64_t player_id = player_count;
-      ++player_count;
-      *header = player_id;
-      ++header;
-      *header = player_count;
-      ++header;
-      if (!udp::SendTo(location, peer, buffer,
-                       greeting_size + 2 * sizeof(uint64_t)))
-        puts("server handshake failed");
+    int pid = GetPlayerId(&peer);
+
+    if (pid == -1) {
+      if (used_player >= thread_param->player_count) continue;
+
+      if (received_bytes >= greeting_size &&
+          strncmp(greeting, (char*)buffer, greeting_size) == 0) {
+        uint64_t player_id = used_player;
+        printf("Accepted %lu\n", player_id);
+        player[player_id] = peer;
+        ++used_player;
+
+        if (used_player == thread_param->player_count) {
+          uint64_t* header = (uint64_t*)(buffer);
+          memcpy(buffer, greeting, greeting_size);
+
+          for (int i = 0; i < used_player; ++i) {
+            printf("greet player %d\n", i);
+            header = (uint64_t*)(buffer + greeting_size);
+            *header = i;
+            ++header;
+            *header = thread_param->player_count;
+            ++header;
+            if (!udp::SendTo(location, player[i], buffer,
+                             greeting_size + 2 * sizeof(uint64_t)))
+              puts("greet failed");
+          }
+
+          game_ready = true;
+        }
+      }
+
       continue;
     }
 
-    // Echo bytes to peer
+    // Ignore extra handshakes
+    if (received_bytes >= greeting_size &&
+        strncmp(greeting, (char*)buffer, greeting_size) == 0) {
+      continue;
+    }
+
+    if (!game_ready) continue;
+
+      // Echo bytes to all players
 #if 0
-    printf("socket %d echo %d bytes\n", location.socket, received_bytes);
+    printf("socket %d echo %d bytes to %lu players\n", location.socket, received_bytes, thread_param->player_count);
 #endif
-    if (!udp::SendTo(location, peer, buffer, received_bytes)) {
-      puts("server send failed");
-      break;
+    for (int i = 0; i < thread_param->player_count; ++i) {
+      if (!udp::SendTo(location, player[i], buffer, received_bytes)) {
+        puts("server send failed");
+        break;
+      }
     }
   }
 
@@ -83,13 +127,14 @@ server_main(ThreadInfo* t)
 }
 
 bool
-CreateNetworkServer(const char* ip, const char* port)
+CreateNetworkServer(const char* ip, const char* port, const char* num_players)
 {
   if (thread.id) return false;
 
   thread.arg = &thread_param;
   thread_param.ip = ip;
   thread_param.port = port;
+  thread_param.player_count = atoi(num_players);
   platform::thread_create(&thread, server_main);
 
   return true;
