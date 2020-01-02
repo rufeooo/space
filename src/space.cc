@@ -30,6 +30,8 @@ struct State {
   uint64_t frame_target_usec;
   // Game clock state
   Clock_t game_clock;
+  // Camera variable
+  math::Vec2f camera_translate;
   // Time it took to run a frame.
   uint64_t frame_time_usec = 0;
   // Allow yielding idle cycles to kernel
@@ -318,10 +320,9 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
 void
 ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 {
-  static math::Vec2f camera_translate(0.f, 0.f);
   // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
-    SimulationEvent(&event[i], &camera_translate);
+    SimulationEvent(&event[i], &kGameState.camera_translate);
   }
 
   if (player_id != kGameState.player_id) return;
@@ -330,7 +331,7 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
   // Player 0 ecs != Player 1 ecs
   //
   // Local player camera control
-  camera::Translate(camera_translate);
+  camera::Translate(kGameState.camera_translate);
 }
 
 bool
