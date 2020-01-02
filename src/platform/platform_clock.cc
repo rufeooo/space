@@ -70,6 +70,12 @@ tscdelta_to_usec(const Clock_t *clock, uint64_t tsc)
   return (tsc * clock->median_usec_per_tsc) >> 33;
 }
 
+uint64_t
+delta_usec(const Clock_t *clock)
+{
+  return tscdelta_to_usec(clock, rdtsc() - clock->tsc_clock);
+}
+
 bool
 elapse_usec(Clock_t *clock, uint64_t *optional_sleep_usec)
 {

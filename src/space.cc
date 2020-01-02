@@ -31,7 +31,7 @@ struct State {
   // Game clock state
   Clock_t game_clock;
   // Time it took to run a frame.
-  double frame_time_sec;
+  uint64_t frame_time_usec = 0;
   // Allow yielding idle cycles to kernel
   bool sleep_on_loop = true;
   // Number of times the game has been updated.
@@ -56,8 +56,6 @@ struct State {
   // Per Player
   InputBuffer player_input[MAX_PLAYER][MAX_NETQUEUE];
   bool player_received[MAX_PLAYER][MAX_NETQUEUE];
-  // Frame time history
-  uint64_t frame_sleep[MAX_NETQUEUE];
 };
 
 static State kGameState;
@@ -340,7 +338,7 @@ UpdateGame()
 {
   auto sz = window::GetWindowSize();
   char buffer[50];
-  sprintf(buffer, "Frame Time:%.3fs", kGameState.frame_time_sec);
+  sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
   gfx::PushText(buffer, 3.f, sz.y);
   sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
   gfx::PushText(buffer, 3.f, sz.y - 25.f);
@@ -424,7 +422,6 @@ main(int argc, char** argv)
   // Reset the clock for gameplay
   platform::clock_init(kGameState.frame_target_usec, &kGameState.game_clock);
   while (!window::ShouldClose()) {
-    clock_t frame_begin = clock();
     ProcessInput();
     NetworkEgress();
     NetworkIngress();
@@ -450,15 +447,12 @@ main(int argc, char** argv)
 #endif
     ++kGameState.game_updates;
 
-    kGameState.frame_time_sec =
-        (double)(clock() - frame_begin) / CLOCKS_PER_SEC;
-
     uint64_t sleep_usec = 0;
+    uint64_t frame_usec = platform::delta_usec(&kGameState.game_clock);
+    printf("%06lu\n", frame_usec);
     while (!platform::elapse_usec(&kGameState.game_clock, &sleep_usec)) {
       if (kGameState.sleep_on_loop) {
         platform::sleep_usec(sleep_usec);
-        kGameState.frame_sleep[slot] = sleep_usec;
-        break;
       }
     }
   }
