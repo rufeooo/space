@@ -90,7 +90,6 @@ RenderTriangles()
     rgg::RenderTriangle(tri->position, tri->scale, tri->orientation,
                         tri->color);
   }
-  kGfx.triangle_count = 0;
 }
 
 void
@@ -101,7 +100,6 @@ RenderRectangles()
     rgg::RenderRectangle(rect->position, rect->scale, rect->orientation,
                          rect->color);
   }
-  kGfx.rectangle_count = 0;
 }
 
 void
@@ -111,7 +109,6 @@ RenderLines()
     Line* line = &kGfx.line[i];
     rgg::RenderLine(line->start, line->end, line->color);
   }
-  kGfx.line_count = 0;
 }
 
 void
@@ -121,7 +118,6 @@ RenderGrids()
     Grid* grid = &kGfx.grid[i];
     rgg::RenderGrid(grid->width, grid->height, grid->color);
   }
-  kGfx.grid_count = 0;
 }
 
 void
@@ -156,9 +152,6 @@ Render()
     Text& text = kGfx.text[i];
     rgg::RenderText(text.msg, text.screen_x, text.screen_y, math::Vec4f());
   }
-
-  // Reset draw pointers.
-  kGfx.text_count = 0;  
   
   window::SwapBuffers();
 }
@@ -173,6 +166,18 @@ SetPrimitive(const math::Vec3f& position, const math::Vec3f& scale,
   primitive->scale = scale;
   primitive->orientation = orientation;
   primitive->color = color;
+}
+
+
+void
+ResetRenderData()
+{
+  kGfx.rectangle_count = 0;
+  kGfx.line_count = 0;
+  kGfx.grid_count = 0;
+  kGfx.triangle_count = 0;
+  // Reset draw pointers.
+  kGfx.text_count = 0;
 }
 
 void

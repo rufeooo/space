@@ -336,6 +336,7 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 bool
 UpdateGame()
 {
+  gfx::ResetRenderData();
   auto sz = window::GetWindowSize();
   char buffer[50];
   sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
@@ -448,8 +449,7 @@ main(int argc, char** argv)
     ++kGameState.game_updates;
 
     uint64_t sleep_usec = 0;
-    uint64_t frame_usec = platform::delta_usec(&kGameState.game_clock);
-    printf("%06lu\n", frame_usec);
+    kGameState.frame_time_usec = platform::delta_usec(&kGameState.game_clock);
     while (!platform::elapse_usec(&kGameState.game_clock, &sleep_usec)) {
       if (kGameState.sleep_on_loop) {
         platform::sleep_usec(sleep_usec);
