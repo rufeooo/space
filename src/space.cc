@@ -320,7 +320,7 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
 }
 
 void
-ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent event[static event_count])
+ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent event[event_count])
 {
   // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
