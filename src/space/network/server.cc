@@ -152,10 +152,12 @@ server_main(ThreadInfo* t)
           ++header;
           *header = num_players;
           ++header;
+          *header = next_game_id;
+          ++header;
           if (!udp::SendTo(location, player[i].peer, buffer,
-                           greeting_size + 2 * sizeof(uint64_t)))
+                           greeting_size + 3 * sizeof(uint64_t)))
             puts("greet failed");
-          player[player_id].game_id = next_game_id;
+          player[i].game_id = next_game_id;
           ++player_id;
         }
         ++next_game_id;

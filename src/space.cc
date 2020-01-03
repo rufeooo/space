@@ -121,15 +121,17 @@ NetworkSetup()
   }
 
   printf("Client: handshake completed %d\n", bytes_received);
-  if (bytes_received != greeting_size + 2 * sizeof(uint64_t)) exit(3);
+  if (bytes_received != greeting_size + 3 * sizeof(uint64_t)) exit(3);
 
   uint64_t* header = (uint64_t*)(kGameState.netbuffer + greeting_size);
   uint64_t player_id = *header;
   ++header;
   uint64_t player_count = *header;
   ++header;
-  printf("Handshake result: [ player_id %zi ] [ player_count %zi ]\n",
-         (size_t)player_id, (size_t)player_count);
+  uint64_t game_id = *header;
+  ++header;
+  printf("Handshake result: [ player_id %zu ] [ player_count %zu ] [ game_id %zu ] \n",
+         (size_t)player_id, (size_t)player_count, (size_t)game_id);
 
   kGameState.player_id = player_id;
   kGameState.player_count = player_count;
