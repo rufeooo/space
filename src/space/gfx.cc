@@ -75,7 +75,7 @@ SetProjection(CreateProjectionFunctor* projection)
 bool
 Initialize()
 {
-  int window_result = window::Create("Space", 800, 800);
+  int window_result = window::Create("Space", 640, 480);
   printf("Window create result: %i\n", window_result);
   return rgg::Initialize();
 }
