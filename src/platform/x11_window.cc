@@ -1,12 +1,17 @@
 #define GL_GLEXT_PROTOTYPES
 #include <X11/Xlib.h>
+
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
 #include "GL/gl.h"
 #include "GL/glext.h"
+
+#include "macro.h"
 #include "window.h"
 
-static int last_window_error;
+EXTERN(float width_pixels);
+EXTERN(float height_pixels);
+
 Display* display;
 int window_id;
 EGLDisplay egl_display;
@@ -154,6 +159,12 @@ Create(const char*, int width, int height)
     return 0;
   }
 
+  EGLint surface_width, surface_height;
+  eglQuerySurface(egl_display, egl_surface, EGL_HEIGHT, &surface_height);
+  eglQuerySurface(egl_display, egl_surface, EGL_WIDTH, &surface_width);
+  width_pixels = surface_width;
+  height_pixels = surface_height;
+
   XSetErrorHandler(x11_error_handler);
   XSetIOErrorHandler(x11_ioerror_handler);
   eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
@@ -208,13 +219,7 @@ PollEvent(PlatformEvent* event)
 math::Vec2f
 GetWindowSize()
 {
-  math::Vec2f size = {0, 0};
-  XWindowAttributes window_attrib;
-  if (XGetWindowAttributes(display, window_id, &window_attrib)) {
-    size.x = window_attrib.width;
-    size.y = window_attrib.height;
-  }
-  return size;
+  return math::Vec2f{width_pixels, height_pixels};
 }
 
 math::Vec2f
