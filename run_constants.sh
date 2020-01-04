@@ -22,7 +22,9 @@ if [ -z "$CC" ]; then
 	exit 1
 fi
 
-CXXFLAG="-O1 -std=c++17"
+if [ -z "$CXXFLAGS" ]; then
+  CXXFLAGS="-O1 -std=c++17"
+fi
 
 # Detect platform being run on.
 uname_out="$(uname -s)"
