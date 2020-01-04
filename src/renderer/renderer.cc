@@ -207,8 +207,7 @@ RenderRectangle(const math::Vec3f& position, const math::Vec3f& scale,
               color.w);
   glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
                      &matrix[0]);
-  // This is using the first 4 verts given by square[18].
-  glDrawArrays(GL_LINE_LOOP, 0, 4);
+  glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
 

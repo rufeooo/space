@@ -148,8 +148,8 @@ Render()
   // For now draw all primitives as wireframe.
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   RenderTriangles();
-  RenderRectangles();
   glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  RenderRectangles();
   RenderCircles();
   RenderLines();
   RenderGrids();
