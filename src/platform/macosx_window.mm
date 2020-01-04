@@ -51,6 +51,12 @@ acceptsFirstResponder
 {
   return YES;
 }
+
+- (void)
+keyDown:(NSEvent*)theEvent
+{
+}
+
 @end
 
 @interface BaseWindow : NSWindow
