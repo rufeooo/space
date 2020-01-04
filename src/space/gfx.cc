@@ -12,7 +12,8 @@ constexpr int kMaxTextSize = 128;
 constexpr int kMaxTextCount = 32;
 
 constexpr int kMaxTriangleCount = 32;
-constexpr int kMaxRectangleCount = 32;
+// We are going to use a lot of these for tiles.
+constexpr int kMaxRectangleCount = 128; 
 constexpr int kMaxCircleCount = 32;
 constexpr int kMaxLineCount = 32;
 constexpr int kMaxGridCount = 8;

@@ -4,6 +4,7 @@
 #include "math/math.cc"
 
 #include "space/command.cc"
+#include "space/tilemap.cc"
 #include "space/gfx.cc"
 #include "space/network/server.cc"
 
@@ -72,10 +73,9 @@ Initialize()
     transform->position = math::Vec3f(0.f, 0.f, 0.f);
   }
 
-  {
-    auto* transform = &game_entity[1].transform;
-    transform->position = math::Vec3f(200.f, 200.f, 0.f);
-  }
+  camera::MoveTo(math::Vec3f(400.f, 400.f, 0.f));
+
+  tilemap::Create();
 
   return true;
 }
@@ -357,15 +357,22 @@ UpdateGame()
                     math::Vec4f(1.f, 1.f, 1.f, 1.f));
   }
 
-  {
-    Entity* ent = &game_entity[1];
-    gfx::PushTriangle(ent->transform.position, ent->transform.scale,
-                      ent->transform.orientation,
-                      math::Vec4f(1.f, 1.f, 1.f, 1.f));
-  }
-
   gfx::PushGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
   gfx::PushGrid(25.f, 25.f, math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
+
+  for (int i = 0; i < tilemap::kMapHeight; ++i) {
+    for (int j = 0; j < tilemap::kMapWidth; ++j) {
+      using namespace tilemap;
+      Tile* tile = &kTilemap.map[i][j];
+      if (tile->type == NONE) continue;
+      math::Vec2f world = {tile->x * kTileWidth, tile->y * kTileHeight};
+      gfx::PushRectangle(math::Vec3f(world),
+                         math::Vec3f(1.f / 2.f, 1.f / 2.f, 1.f),
+                         math::Quatf(0.f, 0.f, 0.f, 1.f),
+                         math::Vec4f(1.f, 1.f, 1.f, 1.f)); 
+    }
+  }
+
 
   if (!COMPONENT_EXISTS(0, destination)) return false;
   Entity* ent = &game_entity[0];

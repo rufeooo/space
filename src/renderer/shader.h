@@ -49,7 +49,7 @@ inline constexpr const char* kCircleFragmentShader = R"(
   void main() {
     frag_color = color_out;
     if (length(position_out - center_out) > 25) {
-      frag_color.a = 0.0;
+      frag_color = vec4(0.0, 0.0, 0.0, 0.0);
     }
   }
 )";
