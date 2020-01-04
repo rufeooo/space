@@ -11,11 +11,6 @@ namespace gl
 // GLTypeToString(GL_FLOAT) = "float"
 const char* GLTypeToString(int type);
 
-// Creates vbo for a triangle and binds a vao with those points.
-// Returns resulting  vao. A user should call those once and cache
-// the id returned from it.
-uint32_t CreateTriangleVAO();
-
 // Creates a vbo for a vert list and binds / returns a vao.
 uint32_t CreateGeometryVAO(int len, GLfloat verts[len]);
 
