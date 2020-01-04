@@ -13,6 +13,7 @@ constexpr int kMaxTextCount = 32;
 
 constexpr int kMaxTriangleCount = 32;
 constexpr int kMaxRectangleCount = 32;
+constexpr int kMaxCircleCount = 32;
 constexpr int kMaxLineCount = 32;
 constexpr int kMaxGridCount = 8;
 
@@ -22,14 +23,7 @@ struct Text {
   float screen_y;
 };
 
-struct Triangle {
-  math::Vec3f position;
-  math::Vec3f scale;
-  math::Quatf orientation;
-  math::Vec4f color;
-};
-
-struct Rectangle {
+struct Primitive {
   math::Vec3f position;
   math::Vec3f scale;
   math::Quatf orientation;
@@ -53,11 +47,14 @@ struct Gfx {
   Text text[kMaxTextCount];
   int text_count;
 
-  Triangle triangle[kMaxTriangleCount];
+  Primitive triangle[kMaxTriangleCount];
   int triangle_count;
 
-  Rectangle rectangle[kMaxRectangleCount];
+  Primitive rectangle[kMaxRectangleCount];
   int rectangle_count;
+
+  Primitive circle[kMaxCircleCount];
+  int circle_count;
 
   Line line[kMaxLineCount];
   int line_count;
@@ -86,7 +83,7 @@ void
 RenderTriangles()
 {
   for (int i = 0; i < kGfx.triangle_count; ++i) {
-    Triangle* tri = &kGfx.triangle[i];
+    Primitive* tri = &kGfx.triangle[i];
     rgg::RenderTriangle(tri->position, tri->scale, tri->orientation,
                         tri->color);
   }
@@ -96,9 +93,19 @@ void
 RenderRectangles()
 {
   for (int i = 0; i < kGfx.rectangle_count; ++i) {
-    Rectangle* rect = &kGfx.rectangle[i];
+    Primitive* rect = &kGfx.rectangle[i];
     rgg::RenderRectangle(rect->position, rect->scale, rect->orientation,
                          rect->color);
+  }
+}
+
+void
+RenderCircles()
+{
+  for (int i = 0; i < kGfx.circle_count; ++i) {
+    Primitive* circ = &kGfx.circle[i];
+    rgg::RenderCircle(circ->position, circ->scale, circ->orientation,
+                      circ->color);
   }
 }
 
@@ -141,10 +148,10 @@ Render()
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
   RenderTriangles();
   RenderRectangles();
+  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+  RenderCircles();
   RenderLines();
   RenderGrids();
-  // Undo wireframe drawing.
-  glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 
   // Draw all text.
   glClear(GL_DEPTH_BUFFER_BIT);
@@ -176,6 +183,7 @@ ResetRenderData()
   kGfx.line_count = 0;
   kGfx.grid_count = 0;
   kGfx.triangle_count = 0;
+  kGfx.circle_count = 0;
   // Reset draw pointers.
   kGfx.text_count = 0;
 }
@@ -189,6 +197,17 @@ PushTriangle(const math::Vec3f& position, const math::Vec3f& scale,
   SetPrimitive(position, scale, orientation, color,
                &kGfx.triangle[kGfx.triangle_count++]);
 }
+
+void
+PushCircle(const math::Vec3f& position, const math::Vec3f& scale,
+           const math::Quatf& orientation, const math::Vec4f& color)
+{
+  assert(kGfx.circle_count + 1 < kMaxCircleCount);
+  if (kGfx.circle_count + 1 >= kMaxCircleCount) return;
+  SetPrimitive(position, scale, orientation, color,
+               &kGfx.circle[kGfx.circle_count++]);
+}
+
 
 void
 PushRectangle(const math::Vec3f& position, const math::Vec3f& scale,

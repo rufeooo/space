@@ -352,9 +352,9 @@ UpdateGame()
 
   {
     Entity* ent = &game_entity[0];
-    gfx::PushRectangle(ent->transform.position, ent->transform.scale,
-                       ent->transform.orientation,
-                       math::Vec4f(1.f, 1.f, 1.f, 1.f));
+    gfx::PushCircle(ent->transform.position, ent->transform.scale,
+                    ent->transform.orientation,
+                    math::Vec4f(1.f, 1.f, 1.f, 1.f));
   }
 
   {

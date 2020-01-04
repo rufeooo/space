@@ -23,6 +23,38 @@ inline constexpr const char* kFragmentShader = R"(
   }
 )";
 
+inline constexpr const char* kCircleVertexShader = R"(
+  #version 410
+  layout (location = 0) in vec3 vertex_position;
+  uniform mat4 model;
+  uniform mat4 view_projection;
+  uniform vec4 color;
+  out vec4 color_out;
+  out vec3 center_out;
+  out vec3 position_out;
+  void main() {
+    color_out = color;
+    center_out = (model * vec4(0.0, 0.0, 0.0, 1.0)).xyz;
+    position_out = (model * vec4(vertex_position, 1.0)).xyz;
+    gl_Position = view_projection * model * vec4(vertex_position, 1.0);
+  }
+)";
+
+inline constexpr const char* kCircleFragmentShader = R"(
+  #version 410
+  in vec4 color_out;
+  in vec3 center_out;
+  in vec3 position_out;
+	out vec4 frag_color;
+  void main() {
+    frag_color = color_out;
+    if (length(position_out - center_out) > 25) {
+      frag_color.a = 0.0;
+    }
+  }
+)";
+
+
 inline constexpr const char* kFontVertexShader = R"(
   #version 410
   layout (location = 0) in vec4 text_pos;
