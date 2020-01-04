@@ -4,9 +4,9 @@
 #include "math/math.cc"
 
 #include "space/command.cc"
-#include "space/tilemap.cc"
 #include "space/gfx.cc"
 #include "space/network/server.cc"
+#include "space/tilemap.cc"
 
 // Input events capable of being processed in one game loop
 #define MAX_TICK_EVENTS 32
@@ -31,8 +31,6 @@ struct State {
   uint64_t frame_target_usec;
   // Game clock state
   Clock_t game_clock;
-  // Camera variable
-  math::Vec2f camera_translate;
   // Time it took to run a frame.
   uint64_t frame_time_usec = 0;
   // Allow yielding idle cycles to kernel
@@ -59,6 +57,7 @@ struct State {
   // Per Player
   InputBuffer player_input[MAX_PLAYER][MAX_NETQUEUE];
   bool player_received[MAX_PLAYER][MAX_NETQUEUE];
+  math::Vec2f camera_translate[MAX_PLAYER];
 };
 
 static State kGameState;
@@ -115,8 +114,10 @@ NetworkSetup()
   ++header;
   uint64_t game_id = *header;
   ++header;
-  printf("Handshake result: [ player_id %zu ] [ player_count %zu ] [ game_id %zu ] \n",
-         (size_t)player_id, (size_t)player_count, (size_t)game_id);
+  printf(
+      "Handshake result: [ player_id %zu ] [ player_count %zu ] [ game_id %zu "
+      "] \n",
+      (size_t)player_id, (size_t)player_count, (size_t)game_id);
 
   kGameState.player_id = player_id;
   kGameState.player_count = player_count;
@@ -305,11 +306,12 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
 }
 
 void
-ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent event[event_count])
+ProcessSimulation(int player_id, uint64_t event_count,
+                  PlatformEvent event[event_count])
 {
   // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
-    SimulationEvent(&event[i], &kGameState.camera_translate);
+    SimulationEvent(&event[i], &kGameState.camera_translate[player_id]);
   }
 
   if (player_id != kGameState.player_id) return;
@@ -318,7 +320,7 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent event[event
   // Player 0 ecs != Player 1 ecs
   //
   // Local player camera control
-  camera::Translate(kGameState.camera_translate);
+  camera::Translate(kGameState.camera_translate[player_id]);
 }
 
 int
