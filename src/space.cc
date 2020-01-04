@@ -63,7 +63,6 @@ struct State {
 
 static State kGameState;
 
-// gampleay uses kGameState.
 #include "space/gameplay.cc"
 
 bool
