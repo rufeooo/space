@@ -1,13 +1,13 @@
 #pragma once
 
-#include "math/vec.h"
 #include "math/mat.h"
+#include "math/quat.h"
+#include "math/vec.h"
 
 // Do our best to keep all graphics related calls in here.
 
 namespace gfx
 {
-
 // Overwrite for custom projection matrix.
 typedef math::Mat4f CreateProjectionFunctor(void);
 
@@ -29,7 +29,6 @@ void PushLine(const math::Vec3f& start, const math::Vec3f& end,
               const math::Vec4f& color);
 
 void PushGrid(float width, float height, const math::Vec4f& color);
-
 
 void PushText(const char* msg, float screen_x, float screen_y);
 
