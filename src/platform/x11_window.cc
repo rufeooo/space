@@ -210,6 +210,7 @@ PollEvent(PlatformEvent* event)
         break;
     }
 
+    event->position.y = height_pixels - event->position.y;
     return true;
   }
 
