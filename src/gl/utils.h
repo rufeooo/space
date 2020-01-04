@@ -19,7 +19,4 @@ uint32_t CreateTriangleVAO();
 // Creates a vbo for a vert list and binds / returns a vao.
 uint32_t CreateGeometryVAO(int len, GLfloat verts[len]);
 
-// Creates a vbo for a vert list of 2d vectors.
-uint32_t CreateGeometryVAO(int len, math::Vec2f verts[len]);
-
 }  // namespace gl

@@ -79,19 +79,4 @@ CreateGeometryVAO(int len, GLfloat verts[len])
   return vao;
 }
 
-// Creates a vbo for a vert list of 2d vectors.
-uint32_t
-CreateGeometryVAO(int len, math::Vec2f verts[len])
-{
-  // Might be worth a malloc if we ever create complicated geometry.
-  GLfloat* vert_list = (GLfloat*)alloca(len * 3 * sizeof(GLfloat));
-  int k = 0;
-  for (int i = 0; i < len; ++i) {
-    vert_list[k++] = verts[i].x;
-    vert_list[k++] = verts[i].y;
-    vert_list[k++] = 0.f;
-  }
-  return CreateGeometryVAO(len * 3, vert_list);
-}
-
 }  // namespace renderer

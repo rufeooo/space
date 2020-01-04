@@ -69,24 +69,22 @@ Initialize()
   assert(kRGG.color_uniform != uint32_t(-1));
 
   // Create the geometry for basic shapes.
-
-  // Triangle.
   float m = kRGG.meter_size;
-  math::Vec2f tri[3] = {
-    math::Vec2f(0.0f, m / 2.f),
-    math::Vec2f(m / 2.f, -m / 2.f),
-    math::Vec2f(-m / 2.f, -m / 2.f)};
-  kRGG.triangle_vao_reference = gl::CreateGeometryVAO(3, tri);
+  GLfloat tri[9] = {0.0f, m / 2.f, 0.f, m / 2.f, -m / 2.f, 0.f, -m / 2.f,
+                    -m / 2.f, 0.f};
+  kRGG.triangle_vao_reference = gl::CreateGeometryVAO(9, tri);
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
-  math::Vec2f square[4] = {
-    math::Vec2f(-m / 2.f, m / 2.f), math::Vec2f(m / 2.f, m / 2.f),
-    math::Vec2f(m / 2.f, -m / 2.f), math::Vec2f(-m / 2.f, -m / 2.f)};
-  kRGG.rectangle_vao_reference = gl::CreateGeometryVAO(4, square);
+  GLfloat square[12] = {
+      -m / 2.f, m / 2.f, 0.f, m / 2.f, m / 2.f, 0.f,
+      m / 2.f, -m / 2.f, 0.f, -m / 2.f, -m / 2.f, 0.f};
+  kRGG.rectangle_vao_reference = gl::CreateGeometryVAO(12, square);
 
   // Line is flat on the x-axis with distance m.
-  math::Vec2f line[2] = {math::Vec2f(-1.f, 0.f), math::Vec2f(1.f, 0.f)};
-  kRGG.line_vao_reference = gl::CreateGeometryVAO(2, line);
+  GLfloat line[6] = {-1.f, 0.f, 0.f, 1.f, 0.f, 0.f};
+  kRGG.line_vao_reference = gl::CreateGeometryVAO(6, line);
+
+  // Create the verts for
 
   if (!SetupUI()) {
     printf("Failed to setup UI.\n");
