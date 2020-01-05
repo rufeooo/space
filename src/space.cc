@@ -84,15 +84,12 @@ NetworkSetup()
   Clock_t handshake_clock;
   const uint64_t usec = 5 * 1000;
   platform::clock_init(usec, &handshake_clock);
+  Handshake h = {.num_players = kGameState.num_players};
   for (int send_count = 0; bytes_received <= 0 && send_count < 500;
        ++send_count) {
-    printf("Client: send handshake for %lu players\n", kGameState.num_players);
-    memcpy(kGameState.netbuffer, greeting, greeting_size);
-    uint64_t* header = (uint64_t*)(kGameState.netbuffer + greeting_size);
-    *header = kGameState.num_players;
-    if (!udp::Send(kGameState.socket, kGameState.netbuffer,
-                   greeting_size + sizeof(uint64_t)))
-      exit(1);
+    printf("Client: send %s for %lu players\n", h.greeting,
+           kGameState.num_players);
+    if (!udp::Send(kGameState.socket, &h, sizeof(h))) exit(1);
 
     for (int per_send = 0; per_send < 10; ++per_send) {
       if (udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
@@ -105,22 +102,16 @@ NetworkSetup()
   }
 
   printf("Client: handshake completed %d\n", bytes_received);
-  if (bytes_received != greeting_size + 3 * sizeof(uint64_t)) exit(3);
+  if (bytes_received != sizeof(NotifyStart)) exit(3);
 
-  uint64_t* header = (uint64_t*)(kGameState.netbuffer + greeting_size);
-  uint64_t player_id = *header;
-  ++header;
-  uint64_t player_count = *header;
-  ++header;
-  uint64_t game_id = *header;
-  ++header;
+  NotifyStart* ns = (NotifyStart*)kGameState.netbuffer;
   printf(
       "Handshake result: [ player_id %zu ] [ player_count %zu ] [ game_id %zu "
       "] \n",
-      (size_t)player_id, (size_t)player_count, (size_t)game_id);
+      (size_t)ns->player_id, (size_t)ns->player_count, (size_t)ns->game_id);
 
-  kGameState.player_id = player_id;
-  kGameState.player_count = player_count;
+  kGameState.player_id = ns->player_id;
+  kGameState.player_count = ns->player_count;
 
   return true;
 }

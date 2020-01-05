@@ -2,6 +2,7 @@
 #include <cstring>
 
 #include "platform/platform.cc"
+#include "protocol.cc"
 
 static ThreadInfo thread;
 
@@ -21,9 +22,6 @@ static PlayerState zero_player;
 
 static bool running = true;
 #define MAX_BUFFER (4 * 1024)
-const uint64_t greeting_size = 6;
-const uint64_t greeting_packet = greeting_size + sizeof(uint64_t);
-const char greeting[greeting_size] = {"space"};
 #define MAX_PLAYER 2
 PlayerState player[MAX_PLAYER];
 uint64_t next_game_id = 1;
@@ -44,10 +42,8 @@ GetPlayerIndexFromPeer(Udp4* peer)
 int
 GetNextPlayerIndex()
 {
-  for (int i = 0; i < MAX_PLAYER; ++i)
-  {
-    if (memcmp(&zero_player, &player[i], sizeof(PlayerState)) == 0)
-      return i;
+  for (int i = 0; i < MAX_PLAYER; ++i) {
+    if (memcmp(&zero_player, &player[i], sizeof(PlayerState)) == 0) return i;
   }
 
   return -1;
@@ -113,17 +109,16 @@ server_main(ThreadInfo* t)
     int pidx = GetPlayerIndexFromPeer(&peer);
 
     // Handshake packet
-    if (received_bytes >= greeting_packet &&
-        strncmp(greeting, (char*)buffer, greeting_size) == 0) {
+    if (received_bytes >= sizeof(Handshake) &&
+        strncmp(GREETING, (char*)buffer, greeting_size) == 0) {
       // No room for clients on this server
       int player_index = GetNextPlayerIndex();
       if (player_index == -1) continue;
       // Duplicate handshake packet, idx already assigned
       if (pidx != -1) continue;
 
-      uint64_t* header = (uint64_t*)(buffer + greeting_size);
-      uint64_t num_players = *header;
-      ++header;
+      Handshake* header = (Handshake*)(buffer);
+      uint64_t num_players = header->num_players;
       printf("Accepted %d\n", player_index);
       player[player_index].peer = peer;
       player[player_index].num_players = num_players;
@@ -138,8 +133,7 @@ server_main(ThreadInfo* t)
       }
 
       if (ready_players >= num_players) {
-        uint64_t* header = (uint64_t*)(buffer);
-        memcpy(buffer, greeting, greeting_size);
+        NotifyStart *response = (NotifyStart*)(buffer);
 
         uint64_t player_id = 0;
         for (int i = 0; i < MAX_PLAYER; ++i) {
@@ -147,15 +141,10 @@ server_main(ThreadInfo* t)
           if (player[i].num_players != num_players) continue;
 
           printf("greet player index %d\n", i);
-          header = (uint64_t*)(buffer + greeting_size);
-          *header = player_id;
-          ++header;
-          *header = num_players;
-          ++header;
-          *header = next_game_id;
-          ++header;
-          if (!udp::SendTo(location, player[i].peer, buffer,
-                           greeting_size + 3 * sizeof(uint64_t)))
+          response->player_id = player_id;
+          response->player_count = num_players;
+          response->game_id = next_game_id;
+          if (!udp::SendTo(location, player[i].peer, buffer, sizeof(NotifyStart)))
             puts("greet failed");
           player[i].game_id = next_game_id;
           ++player_id;
