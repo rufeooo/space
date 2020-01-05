@@ -22,6 +22,7 @@ Initialize()
 bool
 Update()
 {
+  using namespace tilemap;
   gfx::ResetRenderData();
   auto sz = window::GetWindowSize();
   char buffer[50];
@@ -36,8 +37,7 @@ Update()
   {
     Entity* ent = &game_entity[0];
     math::Vec3f* p = &ent->transform.position;
-    math::Vec2f grid =
-      tilemap::TilePosToWorld(tilemap::WorldToTilePos(p->xy()));
+    math::Vec2f grid = TilePosToWorld(WorldToTilePos(p->xy()));
 
     // Draw the player.
     gfx::PushRectangle(ent->transform.position, ent->transform.scale,
@@ -50,9 +50,9 @@ Update()
                          math::Quatf(0.f, 0.f, 0.f, 1.f),
                          math::Vec4f(1.f, 0.f, 0.f, .45f)); 
 
-    math::Vec2i start = tilemap::WorldToTilePos(p->xy());
+    math::Vec2i start = WorldToTilePos(p->xy());
     math::Vec2f c = camera::ScreenToWorldSpace(window::GetCursorPosition());
-    math::Vec2i end = {c.x / tilemap::kTileWidth, c.y / tilemap::kTileHeight};
+    math::Vec2i end = {c.x / kTileWidth, c.y / kTileHeight};
     sprintf(buffer, "(%i,%i) to (%i, %i)", start.x, start.y, end.x, end.y); 
     gfx::PushText(buffer, 3.f, 30.f);
 
@@ -60,7 +60,7 @@ Update()
     if (path) {
       for (int i = 0; i < path->size; ++i) {
         auto* t = &path->tile[i];
-        gfx::PushRectangle(math::Vec3f(tilemap::TilePosToWorld(*t)),
+        gfx::PushRectangle(math::Vec3f(TilePosToWorld(*t)),
                            math::Vec3f(1.f / 3.f, 1.f / 3.f, 1.f),
                            math::Quatf(0.f, 0.f, 0.f, 1.f),
                            math::Vec4f(0.33f, 0.33f, 0.66f, 0.7f)); 
@@ -71,9 +71,8 @@ Update()
   gfx::PushGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
   gfx::PushGrid(25.f, 25.f, math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
 
-  for (int i = 0; i < tilemap::kMapHeight; ++i) {
-    for (int j = 0; j < tilemap::kMapWidth; ++j) {
-      using namespace tilemap;
+  for (int i = 0; i < kMapHeight; ++i) {
+    for (int j = 0; j < kMapWidth; ++j) {
       Tile* tile = &kTilemap.map[i][j];
       if (tile->type == NONE) continue;
       gfx::PushRectangle(math::Vec3f(TileToWorld(*tile)),
