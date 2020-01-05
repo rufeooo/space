@@ -206,12 +206,9 @@ NetworkIngress()
   int16_t bytes_received;
   while (udp::ReceiveFrom(kGameState.socket, sizeof(kGameState.netbuffer),
                           kGameState.netbuffer, &bytes_received)) {
-    uint64_t* header = (uint64_t*)kGameState.netbuffer;
-    uint64_t frame = *header;
-    ++header;
-    uint64_t player_id = *header;
-    ++header;
-    uint64_t header_size = (uint8_t*)header - kGameState.netbuffer;
+    GameTurn* header = (GameTurn*)kGameState.netbuffer;
+    uint64_t frame = header->frame;
+    uint64_t player_id = header->player_id;
 #if 0
     printf("udp::ReceiveFrom [ %lu frame ] [ %lu player_id ]\n", frame,
            player_id);
@@ -220,13 +217,14 @@ NetworkIngress()
     // TODO: frame sanity
     // sanity checks
     if (player_id >= MAX_PLAYER) exit(1);
-    if (bytes_received > header_size + sizeof(InputBuffer::ievent)) exit(3);
+    if (bytes_received > sizeof(GameTurn) + sizeof(InputBuffer::ievent))
+      exit(3);
 
     uint64_t slot = FRAME_SLOT(frame);
     InputBuffer* ibuf = &kGameState.player_input[player_id][slot];
-    memcpy(ibuf->ievent, kGameState.netbuffer + header_size,
-           bytes_received - header_size);
-    ibuf->used_ievent = (bytes_received - header_size) / sizeof(PlatformEvent);
+    memcpy(ibuf->ievent, header->event, bytes_received - sizeof(GameTurn));
+    ibuf->used_ievent =
+        (bytes_received - sizeof(GameTurn)) / sizeof(PlatformEvent);
 #if 0
     printf("Copied %lu, used_ievent %lu\n", bytes_received - header_size,
            ibuf->used_ievent);
