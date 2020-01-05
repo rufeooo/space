@@ -52,12 +52,10 @@ Update()
                          math::Vec4f(1.f, 0.f, 0.f, .45f)); 
 
     math::Vec2i start = {
-      (int)(p->x - fmod(p->x, tilemap::kTileWidth)) / tilemap::kTileWidth,
-      (int)(p->y - fmod(p->y, tilemap::kTileHeight)) / tilemap::kTileHeight};
+      (int)(p->x) / tilemap::kTileWidth,
+      (int)(p->y) / tilemap::kTileHeight};
     math::Vec2f c = camera::ScreenToWorldSpace(window::GetCursorPosition());
-    math::Vec2i end = {
-      (int)(c.x - fmod(c.x, tilemap::kTileWidth)) / tilemap::kTileWidth,
-      (int)(c.y - fmod(c.y, tilemap::kTileHeight)) / tilemap::kTileHeight};
+    math::Vec2i end = {c.x / tilemap::kTileWidth, c.y / tilemap::kTileHeight};
     sprintf(buffer, "(%i,%i) to (%i, %i)", start.x, start.y, end.x, end.y); 
     gfx::PushText(buffer, 3.f, 30.f);
 
