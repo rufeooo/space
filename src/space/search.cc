@@ -105,7 +105,7 @@ PathTo(const math::Vec2i& start, const math::Vec2i& end)
     path.tile[psz++] = path_map[prev.y][prev.x].from;
   }
   // Reverse it
-  for (int i = 0, e = psz - 1; i > e; ++i, --e) {
+  for (int i = 0, e = psz - 1; i < e; ++i, --e) {
     auto t = path.tile[e];
     path.tile[e] = path.tile[i];
     path.tile[i] = t;
