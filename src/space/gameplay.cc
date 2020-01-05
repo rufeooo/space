@@ -48,24 +48,6 @@ Update()
                          math::Vec3f(1.f / 2.f, 1.f / 2.f, 1.f),
                          math::Quatf(0.f, 0.f, 0.f, 1.f),
                          math::Vec4f(1.f, 0.f, 0.f, .45f)); 
-#if 0
-    // Draw path.
-    math::Vec2i start = WorldToTilePos(p->xy());
-    math::Vec2f c = camera::ScreenToWorldSpace(window::GetCursorPosition());
-    math::Vec2i end = {c.x / kTileWidth, c.y / kTileHeight};
-    sprintf(buffer, "(%i,%i) to (%i, %i)", start.x, start.y, end.x, end.y); 
-    gfx::PushText(buffer, 3.f, 30.f);
-    auto* path = search::PathTo(start, end);
-    if (path) {
-      for (int i = 0; i < path->size; ++i) {
-        auto* t = &path->tile[i];
-        gfx::PushRectangle(math::Vec3f(TilePosToWorld(*t)),
-                           math::Vec3f(1.f / 3.f, 1.f / 3.f, 1.f),
-                           math::Quatf(0.f, 0.f, 0.f, 1.f),
-                           math::Vec4f(0.33f, 0.33f, 0.66f, 0.7f)); 
-      }
-    }
-#endif
   }
 
   gfx::PushGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
