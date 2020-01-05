@@ -36,9 +36,8 @@ Update()
   {
     Entity* ent = &game_entity[0];
     math::Vec3f* p = &ent->transform.position;
-    math::Vec2f grid = {
-      (p->x - fmod(p->x, tilemap::kTileWidth)) + tilemap::kTileWidth / 2.f,
-      (p->y - fmod(p->y, tilemap::kTileHeight)) + tilemap::kTileHeight / 2.f};
+    math::Vec2f grid =
+      tilemap::TilePosToWorld(tilemap::WorldToTilePos(p->xy()));
 
     // Draw the player.
     gfx::PushRectangle(ent->transform.position, ent->transform.scale,
@@ -51,9 +50,7 @@ Update()
                          math::Quatf(0.f, 0.f, 0.f, 1.f),
                          math::Vec4f(1.f, 0.f, 0.f, .45f)); 
 
-    math::Vec2i start = {
-      (int)(p->x) / tilemap::kTileWidth,
-      (int)(p->y) / tilemap::kTileHeight};
+    math::Vec2i start = tilemap::WorldToTilePos(p->xy());
     math::Vec2f c = camera::ScreenToWorldSpace(window::GetCursorPosition());
     math::Vec2i end = {c.x / tilemap::kTileWidth, c.y / tilemap::kTileHeight};
     sprintf(buffer, "(%i,%i) to (%i, %i)", start.x, start.y, end.x, end.y); 
