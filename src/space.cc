@@ -167,22 +167,20 @@ NetworkSend(uint64_t frame)
   if (kGameState.input_ack[slot]) return;
 
   // write frame
-  uint64_t* header = (uint64_t*)kGameState.netbuffer;
-  *header = frame;
-  ++header;
-  *header = kGameState.player_id;
-  ++header;
-  uint64_t header_size = (uint8_t*)header - kGameState.netbuffer;
+  GameTurn* header = (GameTurn*)kGameState.netbuffer;
+  header->frame = frame;
+  header->player_id = kGameState.player_id;
 #if 0
   printf("Send [ %lu frame ] [ %lu player_id ]\n", frame, kGameState.player_id);
 #endif
 
   // write input
-  memcpy(kGameState.netbuffer + header_size, ibuf->ievent,
+  memcpy(header->event, ibuf->ievent,
          sizeof(PlatformEvent) * ibuf->used_ievent);
 
-  if (!udp::Send(kGameState.socket, kGameState.netbuffer,
-                 header_size + sizeof(PlatformEvent) * ibuf->used_ievent)) {
+  if (!udp::Send(
+          kGameState.socket, kGameState.netbuffer,
+          sizeof(GameTurn) + sizeof(PlatformEvent) * ibuf->used_ievent)) {
     exit(1);
   }
 }
