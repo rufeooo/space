@@ -86,7 +86,7 @@ LineSegmentsIntersect(const math::Vec2f& a_start, const math::Vec2f& a_end,
 // https://www.geeksforgeeks.org/how-to-check-if-a-given-point-lies-inside-a-polygon/
 bool
 PointInPolygon(const math::Vec2f& point, const uint64_t polygon_size,
-               math::Vec2f polygon[polygon_size])
+               math::Vec2f* polygon)
 {
   // There must be at least 3 vertices in polygon[]
   if (polygon_size < 3) return false;

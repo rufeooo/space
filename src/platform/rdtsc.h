@@ -6,7 +6,7 @@
 #define rdtsc() __builtin_ia32_rdtsc()
 #elif _WIN32
 #include <intrin.h>
-#define rdtsc() __rdtsc();
+#define rdtsc() __rdtsc()
 #else
 #error "rdtsc() undefined for hardware"
 #endif

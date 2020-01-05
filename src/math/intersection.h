@@ -10,6 +10,6 @@ bool LineSegmentsIntersect(const math::Vec2f& a_start, const math::Vec2f& a_end,
                            float* time, math::Vec2f* position);
 
 bool PointInPolygon(const math::Vec2f& point, const uint64_t polygon_size,
-                    math::Vec2f polygon[polygon_size]);
+                    math::Vec2f* polygon);
 
 }  // namespace math

@@ -6,6 +6,7 @@
 
 #include <string.h>
 #include "math/math.cc"
+#include "platform/macro.h"
 
 struct DestinationComponent {
   math::Vec2f position;
@@ -27,7 +28,7 @@ struct Entity {
 
 #define MAX_ENTITY ((PAGE) / sizeof(Entity))
 
-static Entity game_entity[MAX_ENTITY] __attribute__((aligned(PAGE)));
+static Entity game_entity[MAX_ENTITY] ALIGN(PAGE);
 static Entity zero_entity;
 
 inline bool
