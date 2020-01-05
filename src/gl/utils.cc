@@ -1,7 +1,5 @@
 #include "utils.h"
 
-#include <alloca.h>
-
 namespace gl
 {
 const char*

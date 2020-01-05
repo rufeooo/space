@@ -18,7 +18,7 @@ whee(ThreadInfo* t)
 int
 main()
 {
-  printf("%lu\n", sizeof(pthread_t));
+  //printf("%lu\n", sizeof(pthread_t));
   static ThreadInfo t;
   platform::thread_create(&t, whee);
 
