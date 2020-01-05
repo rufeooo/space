@@ -23,7 +23,7 @@ if [ -z "$CC" ]; then
 fi
 
 if [ -z "$CXXFLAGS" ]; then
-  CXXFLAGS="-O1 -std=c++17"
+  CXXFLAGS="-O1 -fno-omit-frame-pointer -std=c++17"
 fi
 
 # Detect platform being run on.
