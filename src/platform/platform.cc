@@ -2,7 +2,9 @@
 
 #if _WIN32
 // Windows #defines min/max. This stops it from doing so.
-#define NOMINMAX
+#define NOMINMAXa
+// Reduce header size.
+#define WIN32_LEAN_AND_MEAN
 #endif
 
 #include "platform_clock.cc"

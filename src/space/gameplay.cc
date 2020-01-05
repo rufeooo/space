@@ -25,8 +25,8 @@ Update()
   gfx::ResetRenderData();
   auto sz = window::GetWindowSize();
   char buffer[50];
-  sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
-  gfx::PushText(buffer, 3.f, sz.y);
+  //sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
+  //gfx::PushText(buffer, 3.f, sz.y);
   sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
   gfx::PushText(buffer, 3.f, sz.y - 25.f);
   auto mouse = camera::ScreenToWorldSpace(window::GetCursorPosition());

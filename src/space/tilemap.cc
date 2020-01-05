@@ -95,7 +95,9 @@ TilePosToWorld(const math::Vec2i& pos)
 math::Vec2i
 WorldToTilePos(const math::Vec2f& pos)
 {
-  return {(int)pos.x / kTileWidth, (int)pos.y / kTileHeight};
+  int x = (int)pos.x / kTileWidth;
+  int y = (int)pos.y / kTileHeight;
+  return {x, y};
 }
 
 }

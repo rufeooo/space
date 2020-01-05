@@ -39,7 +39,7 @@ GLTypeToString(int type)
 }
 
 uint32_t
-CreateGeometryVAO(int len, GLfloat verts[len])
+CreateGeometryVAO(int len, GLfloat* verts)
 {
   // Create points VBO.
   GLuint points_vbo = 0;
