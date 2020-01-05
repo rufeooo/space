@@ -13,7 +13,7 @@ constexpr int kMaxTextCount = 32;
 
 constexpr int kMaxTriangleCount = 32;
 // We are going to use a lot of these for tiles.
-constexpr int kMaxRectangleCount = 128; 
+constexpr int kMaxRectangleCount = 256; 
 constexpr int kMaxCircleCount = 32;
 constexpr int kMaxLineCount = 32;
 constexpr int kMaxGridCount = 8;
@@ -75,7 +75,7 @@ SetProjection(CreateProjectionFunctor* projection)
 bool
 Initialize()
 {
-  int window_result = window::Create("Space", 640, 480);
+  int window_result = window::Create("Space", 1280, 720);
   printf("Window create result: %i\n", window_result);
   return rgg::Initialize();
 }
