@@ -22,10 +22,6 @@ sound -
 
 AI -
 
-  anthony: Apply pathfinding to moving squares on screen. A* has been repurposed from
-           4x to accomplish this so this will mostly be defining a graph that units
-           can utilize to calculate paths.
-
 engine - 
 
   anthony: Implement texture rendering. This should be as simple as attaching a component
