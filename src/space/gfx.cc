@@ -160,8 +160,6 @@ Render()
     Text& text = kGfx.text[i];
     rgg::RenderText(text.msg, text.screen_x, text.screen_y, math::Vec4f());
   }
-  
-  window::SwapBuffers();
 }
 
 template <typename T>

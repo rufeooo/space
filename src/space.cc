@@ -371,6 +371,11 @@ main(int argc, char** argv)
 
     gfx::Render();
 
+    // Capture frame time before the potential stall on vertical sync
+    kGameState.frame_time_usec = platform::delta_usec(&kGameState.game_clock);
+
+    window::SwapBuffers();
+
 #if 0
     printf("[frame %lu]\n", kGameState.game_updates);
 #endif
@@ -378,7 +383,6 @@ main(int argc, char** argv)
 
     uint64_t sleep_usec = 0;
     uint64_t sleep_count = kGameState.sleep_on_loop;
-    kGameState.frame_time_usec = platform::delta_usec(&kGameState.game_clock);
     while (!platform::clock_sync(&kGameState.game_clock, &sleep_usec)) {
       while (sleep_count) {
         --sleep_count;
