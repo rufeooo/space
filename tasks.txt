@@ -14,6 +14,9 @@ Delete items when they are done.
 
 gameplay -
 
+  anthony: Implement mining. A player should highlight a region of the map with minerals
+           or click on one and a unit should go mine it.
+
 sound -
 
   : Develop a system for playing audio / sound files. I think we should do our best to
