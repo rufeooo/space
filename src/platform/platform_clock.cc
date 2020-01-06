@@ -66,14 +66,16 @@ clock_init(uint64_t frame_goal_usec, Clock_t *out_clock)
   out_clock->median_usec_per_tsc =
       ((uint64_t)1 << 33) / out_clock->median_tsc_per_usec;
   // Init to current time
-  out_clock->tsc_clock = rdtsc();
+  uint64_t now = rdtsc();
   out_clock->jerk = 0;
+  out_clock->tsc_clock = now;
+  out_clock->frame_to_frame_tsc = now;
 }
 
 uint64_t
-tscdelta_to_usec(const Clock_t *clock, uint64_t tsc)
+tscdelta_to_usec(const Clock_t *clock, uint64_t delta_tsc)
 {
-  return (tsc * clock->median_usec_per_tsc) >> 33;
+  return (delta_tsc * clock->median_usec_per_tsc) >> 33;
 }
 
 uint64_t
@@ -83,7 +85,7 @@ delta_usec(const Clock_t *clock)
 }
 
 bool
-elapse_usec(Clock_t *clock, uint64_t *optional_sleep_usec)
+clock_sync(Clock_t *clock, uint64_t *optional_sleep_usec)
 {
   uint64_t tsc_now = rdtsc();
   uint64_t tsc_previous = clock->tsc_clock;

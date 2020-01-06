@@ -94,7 +94,7 @@ server_main(ThreadInfo* t)
     Udp4 peer;
 
     uint64_t sleep_usec;
-    if (platform::elapse_usec(&server_clock, &sleep_usec)) {
+    if (platform::clock_sync(&server_clock, &sleep_usec)) {
       realtime_usec += time_step;
     }
     if (!udp::ReceiveAny(location, MAX_BUFFER, buffer, &received_bytes,

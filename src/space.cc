@@ -96,7 +96,7 @@ NetworkSetup()
                            kGameState.netbuffer, &bytes_received))
         break;
       uint64_t sleep_usec = 0;
-      platform::elapse_usec(&handshake_clock, &sleep_usec);
+      platform::clock_sync(&handshake_clock, &sleep_usec);
       platform::sleep_usec(sleep_usec);
     }
   }
@@ -295,8 +295,7 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
 }
 
 void
-ProcessSimulation(int player_id, uint64_t event_count,
-                  PlatformEvent* event)
+ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 {
   // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
@@ -378,11 +377,13 @@ main(int argc, char** argv)
     ++kGameState.game_updates;
 
     uint64_t sleep_usec = 0;
+    uint64_t sleep_count = kGameState.sleep_on_loop;
     kGameState.frame_time_usec = platform::delta_usec(&kGameState.game_clock);
-    while (!platform::elapse_usec(&kGameState.game_clock, &sleep_usec)) {
-      if (kGameState.sleep_on_loop) {
+    while (!platform::clock_sync(&kGameState.game_clock, &sleep_usec)) {
+      while (sleep_count) {
+        --sleep_count;
         platform::sleep_usec(sleep_usec);
-      }
+      };
     }
   }
 

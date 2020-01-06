@@ -8,9 +8,10 @@ main(int argc, char** argv)
 {
   uint64_t framerate = 30;
   int runtime_seconds = 1;
+  bool yield_on_idle = false;
 
   while (1) {
-    int opt = platform_getopt(argc, argv, "f:s:");
+    int opt = platform_getopt(argc, argv, "f:s:y:");
 
     if (opt == -1) break;
 
@@ -21,6 +22,9 @@ main(int argc, char** argv)
       case 's':
         runtime_seconds = atoi(platform_optarg);
         break;
+      case 'y':
+        yield_on_idle = true;
+        break;
     }
   }
 
@@ -28,29 +32,47 @@ main(int argc, char** argv)
   Clock_t clock;
   uint64_t sleep_usec = 0;
   uint64_t frame = 0;
-  uint64_t sleep_count = 0;
+  uint64_t did_sleep = 0;
   uint64_t* delta =
       (uint64_t*)malloc(sizeof(uint64_t) * framerate * runtime_seconds);
+  uint64_t* sleep_duration =
+      (uint64_t*)malloc(sizeof(uint64_t) * framerate * runtime_seconds);
+  memset(sleep_duration, 0, sizeof(uint64_t) * framerate * runtime_seconds);
 
   platform::clock_init(target_usec, &clock);
 
   while (frame < framerate * runtime_seconds) {
     delta[frame] = platform::delta_usec(&clock);
-    while (!platform::elapse_usec(&clock, &sleep_usec)) {
-      usleep(sleep_usec);
-      ++sleep_count;
+
+    uint64_t sleep_count = yield_on_idle;
+    while (!platform::clock_sync(&clock, &sleep_usec)) {
+      while (sleep_count) {
+        --sleep_count;
+        ++did_sleep;
+        platform::sleep_usec(sleep_usec);
+        sleep_duration[frame] = sleep_usec;
+      }
     }
     ++frame;
   }
-  printf("[0x%lx tsc_clock] [ %lu sleep_usec ] [ %lu jerk ] [ %lu frame ]\n",
-         clock.tsc_clock, sleep_usec, clock.jerk, frame);
 
+  puts("frame delta usec:");
   for (int i = 0; i < frame; ++i) {
     printf("%lu ", delta[i]);
   }
   puts("");
 
-  printf("%lu sleep count, %lu frame\n", sleep_count, frame);
+  puts("sleep duration usec:");
+  for (int i = 0; i < frame; ++i) {
+    printf("%lu ", sleep_duration[i]);
+  }
+  puts("");
+
+  printf("[0x%lx tsc_clock] [ %lu jerk ] [ %lu frame ] [ %lu did_sleep ]\n",
+         clock.tsc_clock, clock.jerk, frame, did_sleep);
+
+  free(delta);
+  free(sleep_duration);
 
   return 0;
 }
