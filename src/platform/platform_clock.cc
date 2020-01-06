@@ -7,11 +7,17 @@
 #include "rdtsc.h"
 
 struct Clock_t {
+  // Conversion constants
   uint64_t median_tsc_per_usec;
   uint64_t median_usec_per_tsc;
+  // The ideal advacement cadence of tsc_clock
   uint64_t tsc_step;
-  uint64_t tsc_clock;
+  // Count the time rhythmic progression was lost
   uint64_t jerk;
+  // Rhythmic time progression
+  uint64_t tsc_clock;
+  // Used for time delta within a single frame
+  uint64_t frame_to_frame_tsc;
 };
 
 #define USEC_PER_CLOCK (1000.f / 1000.f / CLOCKS_PER_SEC)
@@ -73,7 +79,7 @@ tscdelta_to_usec(const Clock_t *clock, uint64_t tsc)
 uint64_t
 delta_usec(const Clock_t *clock)
 {
-  return tscdelta_to_usec(clock, rdtsc() - clock->tsc_clock);
+  return tscdelta_to_usec(clock, rdtsc() - clock->frame_to_frame_tsc);
 }
 
 bool
@@ -100,6 +106,7 @@ elapse_usec(Clock_t *clock, uint64_t *optional_sleep_usec)
     clock->jerk += 1;
   }
 
+  clock->frame_to_frame_tsc = tsc_now;
   return true;
 }
 }  // namespace platform
