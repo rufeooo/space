@@ -82,7 +82,7 @@ NetworkSetup()
   uint64_t jerk;
   int16_t bytes_received = 0;
   Clock_t handshake_clock;
-  const uint64_t usec = 5 * 10000;
+  const uint64_t usec = 5 * 1000;
   platform::clock_init(usec, &handshake_clock);
   Handshake h = {.num_players = kGameState.num_players};
   for (int send_count = 0; bytes_received <= 0 && send_count < 500;
