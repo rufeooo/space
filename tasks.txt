@@ -41,6 +41,7 @@ engine -
            seperately.
 
 network -
-  support >2 players
-  stand up AWS udp server that auto-restarts after each game
-  (eventually) server authoritative packet reordering
+  AWS space_server in us-west-2 (oregon)
+  server packet buffer
+  server authoritative packet reordering
+  rewrite udp_ack flow (severe packet loss cases for 2p+)
