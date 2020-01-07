@@ -129,7 +129,7 @@ ProcessInput()
       MAX_NETQUEUE)
     exit(2);
 
-#if 1
+#if 0
   printf("ProcessInput [ %lu seq ][ %lu slot ]\n", kGameState.outgoing_sequence,
          slot);
 #endif
@@ -176,7 +176,7 @@ NetworkSend(uint64_t seq)
   Turn* header = (Turn*)kGameState.netbuffer;
   header->sequence = seq;
   header->player_id = kGameState.player_id;
-#if 1
+#if 0
   printf("CliSnd [ %lu seq ] [ %lu slot ] [ %lu player_id ] [ %lu events ]\n",
          seq, slot, kGameState.player_id, ibuf->used_ievent);
 #endif
@@ -214,7 +214,7 @@ NetworkIngress()
     NotifyTurn* header = (NotifyTurn*)kGameState.netbuffer;
     uint64_t frame = header->frame;
     uint64_t player_id = header->player_id;
-#if 1
+#if 0
     printf("CliRcv [ %lu frame ] [ %lu player_id ] [ %lu ack_seq ]\n", frame,
            player_id, header->ack_sequence);
 #endif

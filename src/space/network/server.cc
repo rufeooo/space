@@ -169,7 +169,7 @@ server_main(ThreadInfo* t)
 
     Turn* packet = (Turn*)in_buffer;
     uint64_t game_id = player[pidx].game_id;
-#if 1
+#if 0
     printf(
         "SvrRcv [ %d socket ] [ %d bytes ] [ %lu sequence ] [ %lu game_id ]\n",
         location.socket, received_bytes, packet->sequence, game_id);
