@@ -17,6 +17,8 @@ struct PlayerState {
   uint64_t num_players;
   uint64_t game_id;
   uint64_t last_active;
+  uint64_t sequence;
+  uint64_t player_id;
 };
 static PlayerState zero_player;
 
@@ -66,7 +68,7 @@ server_main(ThreadInfo* t)
 {
   ServerParam* thread_param = (ServerParam*)t->arg;
 
-  uint8_t buffer[MAX_BUFFER];
+  uint8_t in_buffer[MAX_BUFFER];
   if (!udp::Init()) {
     puts("server: fail init");
     return 0;
@@ -97,7 +99,7 @@ server_main(ThreadInfo* t)
     if (platform::clock_sync(&server_clock, &sleep_usec)) {
       realtime_usec += time_step;
     }
-    if (!udp::ReceiveAny(location, MAX_BUFFER, buffer, &received_bytes,
+    if (!udp::ReceiveAny(location, MAX_BUFFER, in_buffer, &received_bytes,
                          &peer)) {
       if (udp_errno) running = false;
       if (udp_errno) printf("udp_errno %d\n", udp_errno);
@@ -110,20 +112,21 @@ server_main(ThreadInfo* t)
 
     // Handshake packet
     if (received_bytes >= sizeof(Handshake) &&
-        strncmp(GREETING, (char*)buffer, greeting_size) == 0) {
+        strncmp(GREETING, (char*)in_buffer, greeting_size) == 0) {
       // No room for clients on this server
       int player_index = GetNextPlayerIndex();
       if (player_index == -1) continue;
       // Duplicate handshake packet, idx already assigned
       if (pidx != -1) continue;
 
-      Handshake* header = (Handshake*)(buffer);
+      Handshake* header = (Handshake*)(in_buffer);
       uint64_t num_players = header->num_players;
       printf("Accepted %d\n", player_index);
       player[player_index].peer = peer;
       player[player_index].num_players = num_players;
       player[player_index].game_id = 0;
       player[player_index].last_active = realtime_usec;
+      player[player_index].sequence = 0;
 
       int ready_players = 0;
       for (int i = 0; i < MAX_PLAYER; ++i) {
@@ -133,7 +136,7 @@ server_main(ThreadInfo* t)
       }
 
       if (ready_players >= num_players) {
-        NotifyStart *response = (NotifyStart*)(buffer);
+        NotifyStart* response = (NotifyStart*)(in_buffer);
 
         uint64_t player_id = 0;
         for (int i = 0; i < MAX_PLAYER; ++i) {
@@ -144,9 +147,11 @@ server_main(ThreadInfo* t)
           response->player_id = player_id;
           response->player_count = num_players;
           response->game_id = next_game_id;
-          if (!udp::SendTo(location, player[i].peer, buffer, sizeof(NotifyStart)))
+          if (!udp::SendTo(location, player[i].peer, in_buffer,
+                           sizeof(NotifyStart)))
             puts("greet failed");
           player[i].game_id = next_game_id;
+          player[i].player_id = player_id;
           ++player_id;
         }
         ++next_game_id;
@@ -162,15 +167,32 @@ server_main(ThreadInfo* t)
     // Filter for game-ready clients
     if (!player[pidx].game_id) continue;
 
-    // Echo bytes to game participants
+    Turn* packet = (Turn*)in_buffer;
     uint64_t game_id = player[pidx].game_id;
-#if 0
-    printf("socket %d echo %d bytes to %lu game_id\n", location.socket, received_bytes, game_id);
+#if 1
+    printf(
+        "SvrRcv [ %d socket ] [ %d bytes ] [ %lu sequence ] [ %lu game_id ]\n",
+        location.socket, received_bytes, packet->sequence, game_id);
 #endif
+    // Require stream integrity
+    if (packet->sequence - player[pidx].sequence != 1) continue;
+    player[pidx].sequence = packet->sequence;
+
+    // NotifyTurn
+    uint64_t event_bytes = received_bytes - sizeof(Turn);
+    uint8_t out_buffer[MAX_BUFFER];
+    NotifyTurn* nt = (NotifyTurn*)out_buffer;
+    nt->frame = packet->sequence;
+    nt->player_id = player[pidx].player_id;
+    nt->ack_sequence = packet->sequence;
+    memcpy(nt->event, packet->event, event_bytes);
+
+    // Echo bytes to game participants
     for (int i = 0; i < MAX_PLAYER; ++i) {
       if (player[i].game_id != game_id) continue;
 
-      if (!udp::SendTo(location, player[i].peer, buffer, received_bytes)) {
+      if (!udp::SendTo(location, player[i].peer, out_buffer,
+                       event_bytes + sizeof(NotifyTurn))) {
         puts("server send failed");
         break;
       }

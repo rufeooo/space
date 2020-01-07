@@ -18,8 +18,15 @@ struct NotifyStart {
   uint64_t player_count;
 };
 
-struct GameTurn {
+struct Turn {
+  uint64_t sequence;
+  uint64_t player_id;
+  PlatformEvent event[];
+};
+
+struct NotifyTurn {
   uint64_t frame;
   uint64_t player_id;
+  uint64_t ack_sequence;
   PlatformEvent event[];
 };
