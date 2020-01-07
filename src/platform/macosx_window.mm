@@ -130,6 +130,10 @@ CreateOpenGLContext()
   assert(!error);
   assert(context);
 
+  // Disable vsync
+  GLint sync = 0;
+  CGLSetParameter (context, kCGLCPSwapInterval, &sync);
+
   return [[NSOpenGLContext alloc] initWithCGLContextObj:context];
 }
 
