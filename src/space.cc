@@ -348,6 +348,9 @@ main(int argc, char** argv)
   memset(kGameState.input_ack, 1, sizeof(State::input_ack));
   kGameState.frame_target_usec = 1000.f * 1000.f / kGameState.framerate;
 
+  // If vsync is enabled, force the clock_init to align with clock_sync
+  // TODO: We should also enforce framerate is equal to refresh rate
+  window::SwapBuffers();
   // Reset the clock for gameplay
   platform::clock_init(kGameState.frame_target_usec, &kGameState.game_clock);
   while (!window::ShouldClose()) {
