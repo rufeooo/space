@@ -1,4 +1,3 @@
-#include "camera.h"
 
 #include "math/math.cc"
 #include "platform/platform.cc"
@@ -9,58 +8,37 @@ typedef math::Mat4f CreateProjectionFunctor(void);
 struct Camera {
   math::Vec3f position;
   math::Quatf orientation;
+  math::Mat4f projection;
+  // Useful for stateful translation (i.e. continue change for duration of
+  // keypress)
+  math::Vec2f translation;
 };
 
 namespace camera
 {
 CreateProjectionFunctor* _custom_projection = nullptr;
-static Camera kCamera;
 
 void
-Initialize()
+AimAt(const math::Vec3f& dir, Camera* cam)
 {
-  camera::MoveTo(math::Vec3f(400.f, 400.f, 0.f));
-}
-
-void
-MoveTo(const math::Vec3f& position)
-{
-  kCamera.position = position;
-}
-
-void
-Translate(const math::Vec3f& translation)
-{
-  kCamera.position += translation;
-}
-
-void
-AimAt(const math::Vec3f& dir)
-{
-  kCamera.orientation.Set(0.f, dir);
-}
-
-math::Vec3f
-position()
-{
-  return kCamera.position;
+  cam->orientation.Set(0.f, dir);
 }
 
 math::Mat4f
-transform_matrix()
+transform_matrix(const Camera* cam)
 {
-  return math::CreateTranslationMatrix(kCamera.position) *
-         math::CreateRotationMatrix(kCamera.orientation);
+  return math::CreateTranslationMatrix(cam->position) *
+         math::CreateRotationMatrix(cam->orientation);
 }
 
 math::Mat4f
-view_matrix()
+view_matrix(const Camera* cam)
 {
-  return math::CreateViewMatrix<float>(kCamera.position, kCamera.orientation);
+  return math::CreateViewMatrix<float>(cam->position, cam->orientation);
 }
 
 math::Vec2f
-ScreenToWorldSpace(const math::Vec2f& screen_pos)
+ScreenToWorldSpace(const Camera* cam, const math::Vec2f& screen_pos)
 {
   auto dims = window::GetWindowSize();
   // Inner expression is orienting the click position to have (0,0) be the
@@ -68,24 +46,25 @@ ScreenToWorldSpace(const math::Vec2f& screen_pos)
   //
   // Transform matrix is orientating the click to take into consideration
   // camera rotation / scale / translation.
-  return (transform_matrix() * math::Vec3f(screen_pos - dims / 2.f)).xy();
+  return (transform_matrix(cam) * math::Vec3f(screen_pos - dims / 2.f)).xy();
 }
 
 void
-UpdateView()
+InitialCamera(Camera* cam)
 {
+  cam->position = math::Vec3f(400.f, 400.f, 0.f);
+
+  // TODO: don't assume every camera uses local window size
   math::Vec2f dims = window::GetWindowSize();
-  // TODO: Take into consideration camera.
-  math::Mat4f projection;
-  if (!_custom_projection) {
-    projection = math::CreateOrthographicMatrix<float>(
-        dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
-  } else {
-    projection = _custom_projection();
-  }
-  rgg::SetProjectionMatrix(projection);
-  rgg::SetViewMatrix(camera::view_matrix());
-  rgg::SetCameraTransformMatrix(camera::transform_matrix());
+  cam->projection = math::CreateOrthographicMatrix<float>(
+      dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+}
+
+void
+CustomCamera(Camera* cam, math::Mat4f custom_projection)
+{
+  cam->position = math::Vec3f(400.f, 400.f, 0.f);
+  cam->projection = custom_projection;
 }
 
 }  // namespace camera

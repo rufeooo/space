@@ -57,7 +57,7 @@ struct State {
   // Per Player
   InputBuffer player_input[MAX_PLAYER][MAX_NETQUEUE];
   bool player_received[MAX_PLAYER][MAX_NETQUEUE];
-  math::Vec2f camera_translate[MAX_PLAYER];
+  Camera player_camera[MAX_PLAYER];
   uint64_t outgoing_ack[MAX_PLAYER];
 };
 
@@ -241,30 +241,31 @@ NetworkIngress()
 }
 
 void
-SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
+SimulationEvent(const PlatformEvent* event, const Camera* camera,
+                math::Vec2f* translation)
 {
   switch (event->type) {
     case MOUSE_DOWN: {
       if (event->button == BUTTON_LEFT) {
         command::Move move;
         move.entity_id = 0;
-        move.position = camera::ScreenToWorldSpace(event->position);
+        move.position = camera::ScreenToWorldSpace(camera, event->position);
         command::Execute(move);
       }
     } break;
     case KEY_DOWN: {
       switch (event->key) {
         case 'w': {
-          camera->y = 1.f;
+          translation->y = 1.f;
         } break;
         case 'a': {
-          camera->x = -1.f;
+          translation->x = -1.f;
         } break;
         case 's': {
-          camera->y = -1.f;
+          translation->y = -1.f;
         } break;
         case 'd': {
-          camera->x = 1.f;
+          translation->x = 1.f;
         } break;
         default:
           break;
@@ -273,16 +274,16 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
     case KEY_UP: {
       switch (event->key) {
         case 'w': {
-          camera->y = 0.f;
+          translation->y = 0.f;
         } break;
         case 'a': {
-          camera->x = 0.f;
+          translation->x = 0.f;
         } break;
         case 's': {
-          camera->y = 0.f;
+          translation->y = 0.f;
         } break;
         case 'd': {
-          camera->x = 0.f;
+          translation->x = 0.f;
         } break;
         default:
           break;
@@ -294,17 +295,14 @@ SimulationEvent(PlatformEvent* event, math::Vec2f* camera)
 }
 
 void
-ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
+ProcessSimulation(int player_id, uint64_t event_count,
+                  const PlatformEvent* event)
 {
   // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
-    SimulationEvent(&event[i], &kGameState.camera_translate[player_id]);
+    SimulationEvent(&event[i], &kGameState.player_camera[player_id],
+                    &kGameState.player_camera[player_id].translation);
   }
-
-  if (player_id != kGameState.player_id) return;
-
-  // camera does some singleton type stuff so this is not ok...
-  camera::Translate(kGameState.camera_translate[player_id]);
 }
 
 int
@@ -329,11 +327,21 @@ main(int argc, char** argv)
   printf("Client will connect to game at %s:%s\n", kGameState.server_ip,
          kGameState.server_port);
 
-  camera::Initialize();
+  // Platform & Gfx init
   if (!gfx::Initialize()) {
     return 1;
   }
 
+  // Camera init
+  for (int i = 0; i < MAX_PLAYER; ++i) {
+    camera::InitialCamera(&kGameState.player_camera[i]);
+  }
+  const Camera* cam = &kGameState.player_camera[kGameState.player_id];
+  rgg::SetProjectionMatrix(cam->projection);
+  rgg::SetViewMatrix(camera::view_matrix(cam));
+  rgg::SetCameraTransformMatrix(camera::transform_matrix(cam));
+
+  // Game init
   if (!gameplay::Initialize()) {
     return 1;
   }
@@ -365,24 +373,40 @@ main(int argc, char** argv)
 
     uint64_t slot = NETQUEUE_SLOT(kGameState.logic_updates);
     if (SlotReceived(slot)) {
+      // Apply player commands for turn N
       for (int i = 0; i < kGameState.player_count; ++i) {
         InputBuffer* ibuf = &kGameState.player_input[i][slot];
         ProcessSimulation(i, ibuf->used_ievent, ibuf->ievent);
         kGameState.player_received[i][slot] = false;
       }
 
+      // Begin Render Mutation
       gfx::ResetRenderData();
+
+      // Misc debug/feedback
       auto sz = window::GetWindowSize();
       char buffer[50];
       sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
       gfx::PushText(buffer, 3.f, sz.y);
       sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
       gfx::PushText(buffer, 3.f, sz.y - 25.f);
-      auto mouse = camera::ScreenToWorldSpace(window::GetCursorPosition());
+      auto mouse = camera::ScreenToWorldSpace(
+          &kGameState.player_camera[kGameState.player_id],
+          window::GetCursorPosition());
       sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
       gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
-      camera::UpdateView();
+      // Camera
+      for (int i = 0; i < kGameState.player_count; ++i) {
+        kGameState.player_camera[i].position +=
+            kGameState.player_camera[i].translation;
+      }
+      const Camera* cam = &kGameState.player_camera[kGameState.player_id];
+      rgg::SetProjectionMatrix(cam->projection);
+      rgg::SetViewMatrix(camera::view_matrix(cam));
+      rgg::SetCameraTransformMatrix(camera::transform_matrix(cam));
+
+      // Game
       gameplay::Update();
 
       // Give the user an update tick. The engine runs with
