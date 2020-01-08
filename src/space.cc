@@ -4,7 +4,7 @@
 #include "math/math.cc"
 
 #include "space/command.cc"
-#include "space/gfx.cc"
+#include "space/gameplay.cc"
 #include "space/network/server.cc"
 #include "space/tilemap.cc"
 
@@ -62,8 +62,6 @@ struct State {
 };
 
 static State kGameState;
-
-#include "space/gameplay.cc"
 
 bool
 NetworkSetup()
@@ -371,10 +369,22 @@ main(int argc, char** argv)
         kGameState.player_received[i][slot] = false;
       }
 
+      gfx::ResetRenderData();
+      auto sz = window::GetWindowSize();
+      char buffer[50];
+      sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
+      gfx::PushText(buffer, 3.f, sz.y);
+      sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
+      gfx::PushText(buffer, 3.f, sz.y - 25.f);
+      auto mouse = camera::ScreenToWorldSpace(window::GetCursorPosition());
+      sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
+      gfx::PushText(buffer, 3.f, sz.y - 50.f);
+
+      gameplay::Update();
+
       // Give the user an update tick. The engine runs with
       // a fixed delta so no need to provide a delta time.
       ++kGameState.logic_updates;
-      gameplay::Update();
     }
 
     gfx::Render();

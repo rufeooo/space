@@ -1,7 +1,8 @@
+#include "gfx.cc"
 #include "search.cc"
 
-namespace gameplay {
-
+namespace gameplay
+{
 bool
 Initialize()
 {
@@ -22,16 +23,6 @@ bool
 Update()
 {
   using namespace tilemap;
-  gfx::ResetRenderData();
-  auto sz = window::GetWindowSize();
-  char buffer[50];
-  sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
-  gfx::PushText(buffer, 3.f, sz.y);
-  sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
-  gfx::PushText(buffer, 3.f, sz.y - 25.f);
-  auto mouse = camera::ScreenToWorldSpace(window::GetCursorPosition());
-  sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
-  gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
   {
     Entity* ent = &game_entity[0];
@@ -44,10 +35,9 @@ Update()
                        math::Vec4f(0.26f, 0.33f, 0.78f, 1.f));
 
     // Highlight the tile the player is on.
-    gfx::PushRectangle(math::Vec3f(grid),
-                         math::Vec3f(1.f / 2.f, 1.f / 2.f, 1.f),
-                         math::Quatf(0.f, 0.f, 0.f, 1.f),
-                         math::Vec4f(1.f, 0.f, 0.f, .45f)); 
+    gfx::PushRectangle(
+        math::Vec3f(grid), math::Vec3f(1.f / 2.f, 1.f / 2.f, 1.f),
+        math::Quatf(0.f, 0.f, 0.f, 1.f), math::Vec4f(1.f, 0.f, 0.f, .45f));
   }
 
   gfx::PushGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
@@ -61,7 +51,7 @@ Update()
       gfx::PushRectangle(math::Vec3f(TileToWorld(*tile)),
                          math::Vec3f(1.f / 2.f, 1.f / 2.f, 1.f),
                          math::Quatf(0.f, 0.f, 0.f, 1.f),
-                         math::Vec4f(1.f, 1.f, 1.f, 1.f)); 
+                         math::Vec4f(1.f, 1.f, 1.f, 1.f));
     }
   }
 
@@ -73,7 +63,8 @@ Update()
     math::Vec2i start = WorldToTilePos(transform->position.xy());
     math::Vec2i end = WorldToTilePos(destination->position);
 
-    sprintf(buffer, "(%i,%i) to (%i, %i)", start.x, start.y, end.x, end.y); 
+    char buffer[50];
+    sprintf(buffer, "(%i,%i) to (%i, %i)", start.x, start.y, end.x, end.y);
     gfx::PushText(buffer, 3.f, 30.f);
 
     auto* path = search::PathTo(start, end);
@@ -83,7 +74,7 @@ Update()
         gfx::PushRectangle(math::Vec3f(TilePosToWorld(*t)),
                            math::Vec3f(1.f / 3.f, 1.f / 3.f, 1.f),
                            math::Quatf(0.f, 0.f, 0.f, 1.f),
-                           math::Vec4f(0.33f, 0.33f, 0.66f, 0.7f)); 
+                           math::Vec4f(0.33f, 0.33f, 0.66f, 0.7f));
       }
       math::Vec3f dest = TilePosToWorld(path->tile[1]);
       auto dir = math::Normalize(dest - transform->position.xy());
@@ -94,4 +85,4 @@ Update()
   return true;
 }
 
-}
+}  // namespace gameplay

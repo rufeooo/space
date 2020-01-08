@@ -1,5 +1,9 @@
-namespace search {
+#include <cstring>
 
+#include "tilemap.cc"
+
+namespace search
+{
 struct PathNode {
   math::Vec2i from;
   bool checked;
@@ -25,7 +29,7 @@ static Search kSearch;
 
 struct NeighborSet {
   math::Vec2i neighbor[8];
-  int count; // Count of reachable neighbors.
+  int count;  // Count of reachable neighbors.
 };
 
 // If the node should be checked.
@@ -86,7 +90,7 @@ PathTo(const math::Vec2i& start, const math::Vec2i& end)
     ++i;
     if (node == end) {
       found = true;
-      break; // Found!
+      break;  // Found!
     }
     Neighbors(node, &neighbor_set);
     for (int i = 0; i < neighbor_set.count; ++i) {
@@ -119,4 +123,4 @@ PathTo(const math::Vec2i& start, const math::Vec2i& end)
   return &kSearch.path;
 }
 
-}
+}  // namespace search
