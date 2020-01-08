@@ -3,6 +3,7 @@
 #include <assert.h>
 #include <stdarg.h>
 #include <cstdio>
+#include <cstring>
 
 #include "vec.h"
 

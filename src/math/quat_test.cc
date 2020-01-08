@@ -1,8 +1,11 @@
+#include <cassert>
+
 #include "quat.h"
 
-#include "gtest/gtest.h"
+#define ASSERT_NEAR(a, b, delta) (a - b <= delta)
 
-TEST(QuatTest, Initialization)
+void
+Initialization()
 {
   math::Quat<float> q(90.0f, math::Vec3f(0.0f, 1.0f, 0.0f));
   // I guess this is a property of a versor. The sum of the components
@@ -16,7 +19,8 @@ TEST(QuatTest, Initialization)
               0.0001f);
 }
 
-TEST(QuatTest, Up)
+void
+Up()
 {
   {
     math::Quat<float> up(0.f, math::Vec3f(0.f, 0.f, 1.f));
@@ -38,6 +42,7 @@ TEST(QuatTest, Up)
 int
 main(int argc, char** argv)
 {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  Initialization();
+  Up();
+  return 0;
 }

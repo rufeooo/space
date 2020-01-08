@@ -1,8 +1,11 @@
+#include <cassert>
+
 #include "vec.h"
 
-#include "gtest/gtest.h"
+#define ASSERT_TRUE(x) assert(x)
 
-TEST(VectorTest, VectorAddition)
+void
+VectorAddition()
 {
   math::Vec2i a(3, 4);
   math::Vec2i b(9, 2);
@@ -34,7 +37,8 @@ TEST(VectorTest, VectorAddition)
   ASSERT_TRUE(aa.z == 14);
 }
 
-TEST(VectorTest, VectorSubtraction)
+void
+VectorSubtraction()
 {
   math::Vec2i a(3, 4);
   math::Vec2i b(9, 2);
@@ -46,7 +50,8 @@ TEST(VectorTest, VectorSubtraction)
   ASSERT_TRUE(a.y == 2);
 }
 
-TEST(VectorTest, VectorScalarMultiplication)
+void
+VectorScalarMultiplication()
 {
   math::Vec2i a(3, 4);
   int b = 3;
@@ -58,7 +63,8 @@ TEST(VectorTest, VectorScalarMultiplication)
   ASSERT_TRUE(a.y == 12);
 }
 
-TEST(VectorTest, VectorScalarDivision)
+void
+VectorScalarDivision()
 {
   math::Vec2i a(9, 6);
   int b = 3;
@@ -70,14 +76,16 @@ TEST(VectorTest, VectorScalarDivision)
   ASSERT_TRUE(a.y == 2);
 }
 
-TEST(VectorTest, VectorDotProduct)
+void
+VectorDotProduct()
 {
   math::Vec2i a(3, 4);
   math::Vec2i b(9, 2);
   ASSERT_TRUE(math::Dot(a, b) == 35);
 }
 
-TEST(VectorTest, VectorNormalization)
+void
+VectorNormalization()
 {
   math::Vec2f a(3.0f, 4.0f);
   math::Vec2f b = math::Normalize(a);
@@ -86,13 +94,15 @@ TEST(VectorTest, VectorNormalization)
   ASSERT_TRUE(math::Length(b) == 1.0f);
 }
 
-TEST(VectorTest, VectorSquaredLength)
+void
+VectorSquaredLength()
 {
   math::Vec2i a(3, 4);
   ASSERT_TRUE(math::LengthSquared(a) == 25.0f);
 }
 
-TEST(VectorTest, VectorZeroInitialization)
+void
+VectorZeroInitialization()
 {
   math::Vec2i a;
   math::Vec2f b;
@@ -108,6 +118,13 @@ TEST(VectorTest, VectorZeroInitialization)
 int
 main(int argc, char** argv)
 {
-  ::testing::InitGoogleTest(&argc, argv);
-  return RUN_ALL_TESTS();
+  VectorAddition();
+  VectorSubtraction();
+  VectorScalarMultiplication();
+  VectorScalarDivision();
+  VectorDotProduct();
+  VectorNormalization();
+  VectorSquaredLength();
+  VectorZeroInitialization();
+  return 0;
 }
