@@ -150,6 +150,7 @@ Create(const char*, int width, int height)
   }
 
   XMapWindow(display, window_id);
+  XStoreName(display, window_id, "Space");
 
   attrib[0] = EGL_NONE;
   attrib[1] = EGL_NONE;
@@ -168,6 +169,8 @@ Create(const char*, int width, int height)
   XSetErrorHandler(x11_error_handler);
   XSetIOErrorHandler(x11_ioerror_handler);
   eglMakeCurrent(egl_display, egl_surface, egl_surface, egl_context);
+
+  glViewport(0, 0, surface_width, surface_height-15);
 
   return 1;
 }
