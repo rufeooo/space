@@ -1,3 +1,5 @@
+#pragma once
+
 #include "renderer.h"
 
 #include "platform/platform.cc"

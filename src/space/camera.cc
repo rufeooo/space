@@ -2,15 +2,25 @@
 
 #include "math/math.cc"
 #include "platform/platform.cc"
+#include "renderer/renderer.cc"
 
-namespace camera
-{
+typedef math::Mat4f CreateProjectionFunctor(void);
+
 struct Camera {
   math::Vec3f position;
   math::Quatf orientation;
 };
 
+namespace camera
+{
+CreateProjectionFunctor* _custom_projection = nullptr;
 static Camera kCamera;
+
+void
+Initialize()
+{
+  camera::MoveTo(math::Vec3f(400.f, 400.f, 0.f));
+}
 
 void
 MoveTo(const math::Vec3f& position)
@@ -59,6 +69,23 @@ ScreenToWorldSpace(const math::Vec2f& screen_pos)
   // Transform matrix is orientating the click to take into consideration
   // camera rotation / scale / translation.
   return (transform_matrix() * math::Vec3f(screen_pos - dims / 2.f)).xy();
+}
+
+void
+UpdateView()
+{
+  math::Vec2f dims = window::GetWindowSize();
+  // TODO: Take into consideration camera.
+  math::Mat4f projection;
+  if (!_custom_projection) {
+    projection = math::CreateOrthographicMatrix<float>(
+        dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  } else {
+    projection = _custom_projection();
+  }
+  rgg::SetProjectionMatrix(projection);
+  rgg::SetViewMatrix(camera::view_matrix());
+  rgg::SetCameraTransformMatrix(camera::transform_matrix());
 }
 
 }  // namespace camera

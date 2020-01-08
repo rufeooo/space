@@ -3,10 +3,10 @@
 
 #include "math/math.cc"
 
-#include "space/command.cc"
-#include "space/gameplay.cc"
+#include "space/camera.cc"
 #include "space/network/server.cc"
-#include "space/tilemap.cc"
+#include "space/simulation/command.cc"
+#include "space/simulation/update.cc"
 
 // Input events capable of being processed in one game loop
 #define MAX_TICK_EVENTS 32
@@ -303,10 +303,7 @@ ProcessSimulation(int player_id, uint64_t event_count, PlatformEvent* event)
 
   if (player_id != kGameState.player_id) return;
 
-  // TODO: ecs data segregation
-  // Player 0 ecs != Player 1 ecs
-  //
-  // Local player camera control
+  // camera does some singleton type stuff so this is not ok...
   camera::Translate(kGameState.camera_translate[player_id]);
 }
 
@@ -331,6 +328,11 @@ main(int argc, char** argv)
   }
   printf("Client will connect to game at %s:%s\n", kGameState.server_ip,
          kGameState.server_port);
+
+  camera::Initialize();
+  if (!gfx::Initialize()) {
+    return 1;
+  }
 
   if (!gameplay::Initialize()) {
     return 1;
@@ -380,6 +382,7 @@ main(int argc, char** argv)
       sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
       gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
+      camera::UpdateView();
       gameplay::Update();
 
       // Give the user an update tick. The engine runs with

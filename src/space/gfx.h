@@ -8,11 +8,6 @@
 
 namespace gfx
 {
-// Overwrite for custom projection matrix.
-typedef math::Mat4f CreateProjectionFunctor(void);
-
-void SetProjection(CreateProjectionFunctor* projection);
-
 bool Initialize();
 
 void Render();

@@ -1,14 +1,14 @@
 #include "entity.cc"
-#include "gfx.cc"
 #include "search.cc"
+
+// TODO: Invert this dependency, gfx should perform read-only access to gameplay
+#include "../gfx.cc"
 
 namespace gameplay
 {
 bool
 Initialize()
 {
-  if (!gfx::Initialize()) return false;
-
   math::Vec3f pos[] = {
       math::Vec3f(300.f, 300.f, 0.f), math::Vec3f(100.f, 130.f, 0),
       math::Vec3f(300.f, 400.f, 0), math::Vec3f(650.f, 500.f, 0)};
@@ -19,7 +19,6 @@ Initialize()
   }
   game_entity[0].kind = 1;
 
-  camera::MoveTo(math::Vec3f(400.f, 400.f, 0.f));
   tilemap::Initialize();
 
   return true;
