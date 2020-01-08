@@ -6,7 +6,7 @@
 #include "space/camera.cc"
 #include "space/network/server.cc"
 #include "space/simulation/command.cc"
-#include "space/simulation/update.cc"
+#include "space/simulation/simulation.cc"
 
 // Input events capable of being processed in one game loop
 #define MAX_TICK_EVENTS 32
