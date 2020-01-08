@@ -396,6 +396,9 @@ main(int argc, char** argv)
       sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
       gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
+      // Game
+      gameplay::Update();
+
       // Camera
       for (int i = 0; i < kGameState.player_count; ++i) {
         kGameState.player_camera[i].position +=
@@ -405,9 +408,6 @@ main(int argc, char** argv)
       rgg::SetProjectionMatrix(cam->projection);
       rgg::SetViewMatrix(camera::view_matrix(cam));
       rgg::SetCameraTransformMatrix(camera::transform_matrix(cam));
-
-      // Game
-      gameplay::Update();
 
       // Give the user an update tick. The engine runs with
       // a fixed delta so no need to provide a delta time.
