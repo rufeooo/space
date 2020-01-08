@@ -18,3 +18,8 @@
 #else
 #define ALIGN(n) __attribute__((aligned(n)))
 #endif
+
+#ifndef ARRAY_LENGTH
+#define ARRAY_LENGTH(x) (sizeof(x) / sizeof(x[0]))
+#endif
+

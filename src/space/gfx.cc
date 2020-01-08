@@ -1,7 +1,6 @@
 #include "gfx.h"
 
 #include "camera.cc"
-#include "entity.cc"
 #include "renderer/renderer.cc"
 
 namespace gfx

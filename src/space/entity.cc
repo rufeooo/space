@@ -24,6 +24,7 @@ static TransformComponent zero_transform;
 struct Entity {
   DestinationComponent destination;
   TransformComponent transform;
+  uint64_t kind;
 };
 
 #define MAX_ENTITY ((PAGE) / sizeof(Entity))
@@ -32,18 +33,17 @@ static Entity game_entity[MAX_ENTITY] ALIGN(PAGE);
 static Entity zero_entity;
 
 inline bool
-EntityExists(int entity)
+EntityExists(Entity* ent)
 {
-  return memcmp(&game_entity[entity], &zero_entity, sizeof(Entity)) != 0;
+  return memcmp(ent, &zero_entity, sizeof(Entity)) != 0;
 }
 
 inline void
-EntityReset(int entity)
+EntityReset(Entity* ent)
 {
-  memcpy(&game_entity[entity], &zero_entity, sizeof(Entity));
+  memcpy(ent, &zero_entity, sizeof(Entity));
 }
 
 #define CONCAT(a, b) a##b
-#define COMPONENT_RESET(i, c) (game_entity[i].c = zero_##c)
-#define COMPONENT_EXISTS(i, c) \
-  (memcmp(&game_entity[i].c, &zero_##c, sizeof(zero_##c)) != 0)
+#define COMPONENT_RESET(e, c) (e->c = zero_##c)
+#define COMPONENT_EXISTS(e, c) (memcmp(&e->c, &zero_##c, sizeof(zero_##c)) != 0)
