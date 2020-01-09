@@ -25,6 +25,12 @@ Initialize()
   return true;
 }
 
+bool
+VerifyIntegrity()
+{
+  return memcmp(kWriteEntity, kReadEntity, sizeof(kReadEntity)) == 0;
+}
+
 void
 Update()
 {
@@ -33,24 +39,15 @@ Update()
   const Entity* ent_end = kWriteEntity + MAX_ENTITY;
   for (Entity* ent = kWriteEntity; ent < ent_end; ++ent) {
     if (!COMPONENT_EXISTS(ent, destination)) continue;
-    DestinationComponent* destination = &ent->destination;
     TransformComponent* transform = &ent->transform;
 
     math::Vec2i start = WorldToTilePos(transform->position.xy());
-    math::Vec2i end = WorldToTilePos(destination->position);
+    math::Vec2i end = WorldToTilePos(ent->destination.position);
 
     auto* path = search::PathTo(start, end);
     if (!path || path->size <= 1) {
       COMPONENT_RESET(ent, destination);
       continue;
-    }
-
-    for (int i = 0; i < path->size; ++i) {
-      auto* t = &path->tile[i];
-      gfx::PushRectangle(math::Vec3f(TilePosToWorld(*t)),
-                         math::Vec3f(1.f / 3.f, 1.f / 3.f, 1.f),
-                         math::Quatf(0.f, 0.f, 0.f, 1.f),
-                         math::Vec4f(0.33f, 0.33f, 0.66f, 0.7f));
     }
 
     math::Vec3f dest = TilePosToWorld(path->tile[1]);
@@ -60,7 +57,7 @@ Update()
 }
 
 void
-RenderBeforeApply()
+ToRenderer()
 {
   using namespace tilemap;
 
@@ -153,11 +150,6 @@ void
 ApplyUpdate()
 {
   EntityAdvance();
-}
-
-void
-RenderAfterApply()
-{
 }
 
 }  // namespace simulation

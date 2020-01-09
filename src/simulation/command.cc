@@ -16,7 +16,7 @@ struct Move {
 void
 Execute(const Move& move)
 {
-  kGameEntity[move.entity_id].destination.position = move.position;
+  kWriteEntity[move.entity_id].destination.position = move.position;
 }
 
 }  // namespace command

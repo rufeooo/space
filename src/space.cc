@@ -375,12 +375,17 @@ main(int argc, char** argv)
 
     uint64_t slot = NETQUEUE_SLOT(kGameState.logic_updates);
     if (SlotReceived(slot)) {
-      // Apply player commands for turn N
+      // Verify the simulation has not changed outside this block
+      if (!simulation::VerifyIntegrity()) exit(4);
+
+      // Game Mutation: Apply player commands for turn N
       for (int i = 0; i < kGameState.player_count; ++i) {
         InputBuffer* ibuf = &kGameState.player_input[i][slot];
         ProcessSimulation(i, ibuf->used_input_event, ibuf->input_event);
         kGameState.player_received[i][slot] = false;
       }
+      // Game Mutation: continue simulation
+      simulation::Update();
 
       // Begin Render Mutation
       gfx::ResetRenderData();
@@ -398,11 +403,11 @@ main(int argc, char** argv)
       sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
       gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
-      // Game
-      simulation::Update();
-      simulation::RenderBeforeApply();
+      // Game simulation to renderer
+      simulation::ToRenderer();
+
+      // Commit new simulation state
       simulation::ApplyUpdate();
-      simulation::RenderAfterApply();
 
       // Camera
       for (int i = 0; i < kGameState.player_count; ++i) {
