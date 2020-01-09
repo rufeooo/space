@@ -262,19 +262,19 @@ struct Vec3 {
   }
 
   Vec2<T>
-  xy()
+  xy() const
   {
     return Vec2<T>(x, y);
   }
 
   Vec2<T>
-  yz()
+  yz() const
   {
     return Vec2<T>(y, z);
   }
 
   Vec2<T>
-  xz()
+  xz() const
   {
     return Vec2<T>(x, z);
   }
@@ -334,10 +334,12 @@ struct Vec4 {
     x = T(0);
     y = T(0);
     z = T(0);
-    w = T(1); // Worthwhile default for homogeneous cords and color.
+    w = T(1);  // Worthwhile default for homogeneous cords and color.
   }
 
-  Vec4(const T& x, const T& y, const T& z, const T& w) : x(x), y(y), z(z), w(w) {}
+  Vec4(const T& x, const T& y, const T& z, const T& w) : x(x), y(y), z(z), w(w)
+  {
+  }
 
   void
   operator+=(const Vec4<T>& rhs)
