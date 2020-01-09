@@ -183,8 +183,9 @@ NetworkSend(uint64_t seq)
   memcpy(header->event, ibuf->input_event,
          sizeof(PlatformEvent) * ibuf->used_input_event);
 
-  if (!udp::Send(kGameState.socket, kGameState.netbuffer,
-                 sizeof(Turn) + sizeof(PlatformEvent) * ibuf->used_input_event)) {
+  if (!udp::Send(
+          kGameState.socket, kGameState.netbuffer,
+          sizeof(Turn) + sizeof(PlatformEvent) * ibuf->used_input_event)) {
     exit(1);
   }
 }
@@ -226,7 +227,8 @@ NetworkIngress()
 
     uint64_t slot = NETQUEUE_SLOT(frame);
     InputBuffer* ibuf = &kGameState.player_input[player_id][slot];
-    memcpy(ibuf->input_event, header->event, bytes_received - sizeof(NotifyTurn));
+    memcpy(ibuf->input_event, header->event,
+           bytes_received - sizeof(NotifyTurn));
     ibuf->used_input_event =
         (bytes_received - sizeof(NotifyTurn)) / sizeof(PlatformEvent);
 #if 0
@@ -398,6 +400,9 @@ main(int argc, char** argv)
 
       // Game
       simulation::Update();
+      simulation::RenderBeforeApply();
+      simulation::ApplyUpdate();
+      simulation::RenderAfterApply();
 
       // Camera
       for (int i = 0; i < kGameState.player_count; ++i) {

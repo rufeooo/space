@@ -29,15 +29,15 @@ struct Entity {
 
 #define MAX_ENTITY ((PAGE) / sizeof(Entity))
 
-// Provide explicit read-only access to kGameEntity
-static const Entity* kConstGameEntity;
-// All the game entities
-static Entity kGameEntity[MAX_ENTITY] ALIGNAS(PAGE);
+// Provide explicit read-only access to game entities
+static const Entity kReadEntity[MAX_ENTITY] ALIGNAS(PAGE) = {};
+// Read/write access to all game entities
+static Entity kWriteEntity[MAX_ENTITY] ALIGNAS(PAGE);
 // The memory layout of an uused game entity
 static Entity kZeroEntity;
 
 inline bool
-EntityExists(Entity* ent)
+EntityExists(const Entity* ent)
 {
   return memcmp(ent, &kZeroEntity, sizeof(Entity)) != 0;
 }
@@ -46,6 +46,15 @@ inline void
 EntityReset(Entity* ent)
 {
   memcpy(ent, &kZeroEntity, sizeof(Entity));
+}
+
+// EntityAdvance is the only mutation of kReadEntity
+void
+EntityAdvance()
+{
+  Entity* previous = (Entity*)kReadEntity;
+  Entity* current = kWriteEntity;
+  memcpy(previous, current, sizeof(kReadEntity));
 }
 
 #define CONCAT(a, b) a##b
