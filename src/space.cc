@@ -20,8 +20,8 @@
 #define PAGE (4 * 1024)
 
 struct InputBuffer {
-  PlatformEvent ievent[MAX_TICK_EVENTS];
-  uint64_t used_ievent = 0;
+  PlatformEvent input_event[MAX_TICK_EVENTS];
+  uint64_t used_input_event = 0;
 };
 
 struct State {
@@ -143,13 +143,13 @@ ProcessInput()
       case MOUSE_UP:
       case KEY_DOWN:
       case KEY_UP:
-        ibuf->ievent[event_count] = pevent;
+        ibuf->input_event[event_count] = pevent;
         ++event_count;
         break;
     }
   }
 
-  ibuf->used_ievent = event_count;
+  ibuf->used_input_event = event_count;
   kGameState.outgoing_sequence += 1;
   return true;
 }
@@ -176,15 +176,15 @@ NetworkSend(uint64_t seq)
   header->player_id = kGameState.player_id;
 #if 0
   printf("CliSnd [ %lu seq ] [ %lu slot ] [ %lu player_id ] [ %lu events ]\n",
-         seq, slot, kGameState.player_id, ibuf->used_ievent);
+         seq, slot, kGameState.player_id, ibuf->used_input_event);
 #endif
 
   // write input
-  memcpy(header->event, ibuf->ievent,
-         sizeof(PlatformEvent) * ibuf->used_ievent);
+  memcpy(header->event, ibuf->input_event,
+         sizeof(PlatformEvent) * ibuf->used_input_event);
 
   if (!udp::Send(kGameState.socket, kGameState.netbuffer,
-                 sizeof(Turn) + sizeof(PlatformEvent) * ibuf->used_ievent)) {
+                 sizeof(Turn) + sizeof(PlatformEvent) * ibuf->used_input_event)) {
     exit(1);
   }
 }
@@ -221,17 +221,17 @@ NetworkIngress()
     if (frame < kGameState.logic_updates) continue;
     // Personal boundaries
     if (player_id >= MAX_PLAYER) exit(1);
-    if (bytes_received > sizeof(NotifyTurn) + sizeof(InputBuffer::ievent))
+    if (bytes_received > sizeof(NotifyTurn) + sizeof(InputBuffer::input_event))
       exit(3);
 
     uint64_t slot = NETQUEUE_SLOT(frame);
     InputBuffer* ibuf = &kGameState.player_input[player_id][slot];
-    memcpy(ibuf->ievent, header->event, bytes_received - sizeof(NotifyTurn));
-    ibuf->used_ievent =
+    memcpy(ibuf->input_event, header->event, bytes_received - sizeof(NotifyTurn));
+    ibuf->used_input_event =
         (bytes_received - sizeof(NotifyTurn)) / sizeof(PlatformEvent);
 #if 0
-    printf("Copied %lu, used_ievent %lu\n", bytes_received - header_size,
-           ibuf->used_ievent);
+    printf("Copied %lu, used_input_event %lu\n", bytes_received - header_size,
+           ibuf->used_input_event);
 #endif
     kGameState.player_received[player_id][slot] = true;
     // Accept highest received ack_sequence
@@ -376,7 +376,7 @@ main(int argc, char** argv)
       // Apply player commands for turn N
       for (int i = 0; i < kGameState.player_count; ++i) {
         InputBuffer* ibuf = &kGameState.player_input[i][slot];
-        ProcessSimulation(i, ibuf->used_ievent, ibuf->ievent);
+        ProcessSimulation(i, ibuf->used_input_event, ibuf->input_event);
         kGameState.player_received[i][slot] = false;
       }
 

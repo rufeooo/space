@@ -9,6 +9,7 @@ namespace gameplay
 bool
 Initialize()
 {
+  kConstGameEntity = kGameEntity;
   math::Vec3f pos[] = {
       math::Vec3f(300.f, 300.f, 0.f), math::Vec3f(100.f, 130.f, 0),
       math::Vec3f(300.f, 400.f, 0), math::Vec3f(650.f, 500.f, 0)};

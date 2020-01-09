@@ -29,7 +29,11 @@ struct Entity {
 
 #define MAX_ENTITY ((PAGE) / sizeof(Entity))
 
+// Provide explicit read-only access to kGameEntity
+static const Entity* kConstGameEntity;
+// All the game entities
 static Entity kGameEntity[MAX_ENTITY] ALIGNAS(PAGE);
+// The memory layout of an uused game entity
 static Entity kZeroEntity;
 
 inline bool
