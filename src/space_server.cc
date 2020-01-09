@@ -1,5 +1,5 @@
 
-#include "space/network/server.cc"
+#include "network/server.cc"
 
 #include <cstdio>
 

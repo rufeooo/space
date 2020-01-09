@@ -2,7 +2,7 @@
 #include "search.cc"
 
 // TODO: Invert this dependency, gfx should perform read-only access to gameplay
-#include "../gfx.cc"
+#include "../gfx/gfx.cc"
 
 namespace gameplay
 {

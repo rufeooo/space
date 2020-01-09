@@ -1,4 +1,16 @@
 
+/*
+ * While painting "broad strokes" of the game it it suitable to place camera into the simulation:
+ *   ( this means player cameras are network synchronized )
+ *   - platform inputs are dispatched unconditionally, and therefore easy to reason about
+ *   - gameplay dev should be aware of the latency of inputs
+ *   - increases information sharing, which is in the spirit of co-op
+ *
+ * The shipping game is unlikely to maintain this behavior. Update this list as we go:
+ *   - Camera movement is a common activity, it should not feel "sluggish" due to network dependencies
+ *   - How useful is it to see where other player's are looking? Does it add a liveliness to the world?
+ *   - Window size changes the camera, so how do we handle initialization or a window resize during pause?
+ */
 #include "math/math.cc"
 #include "platform/platform.cc"
 #include "renderer/renderer.cc"

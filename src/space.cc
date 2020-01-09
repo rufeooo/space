@@ -3,10 +3,10 @@
 
 #include "math/math.cc"
 
-#include "space/camera.cc"
-#include "space/network/server.cc"
-#include "space/simulation/command.cc"
-#include "space/simulation/simulation.cc"
+#include "network/server.cc"
+#include "simulation/camera.cc"
+#include "simulation/command.cc"
+#include "simulation/simulation.cc"
 
 // Input events capable of being processed in one game loop
 #define MAX_TICK_EVENTS 32
