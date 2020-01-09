@@ -29,7 +29,7 @@ struct Entity {
 
 #define MAX_ENTITY ((PAGE) / sizeof(Entity))
 
-static Entity game_entity[MAX_ENTITY] ALIGN(PAGE);
+static Entity game_entity[MAX_ENTITY] ALIGNAS(PAGE);
 static Entity zero_entity;
 
 inline bool
