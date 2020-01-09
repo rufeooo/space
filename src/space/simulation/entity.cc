@@ -29,19 +29,19 @@ struct Entity {
 
 #define MAX_ENTITY ((PAGE) / sizeof(Entity))
 
-static Entity game_entity[MAX_ENTITY] ALIGNAS(PAGE);
-static Entity zero_entity;
+static Entity kGameEntity[MAX_ENTITY] ALIGNAS(PAGE);
+static Entity kZeroEntity;
 
 inline bool
 EntityExists(Entity* ent)
 {
-  return memcmp(ent, &zero_entity, sizeof(Entity)) != 0;
+  return memcmp(ent, &kZeroEntity, sizeof(Entity)) != 0;
 }
 
 inline void
 EntityReset(Entity* ent)
 {
-  memcpy(ent, &zero_entity, sizeof(Entity));
+  memcpy(ent, &kZeroEntity, sizeof(Entity));
 }
 
 #define CONCAT(a, b) a##b
