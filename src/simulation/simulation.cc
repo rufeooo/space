@@ -1,10 +1,9 @@
 #include "entity.cc"
 #include "search.cc"
 
-// TODO: Invert this dependency, gfx should perform read-only access to gameplay
 #include "../gfx/gfx.cc"
 
-namespace gameplay
+namespace simulation
 {
 bool
 Initialize()
@@ -96,31 +95,30 @@ Update()
     if (!COMPONENT_EXISTS(ent, destination)) continue;
     DestinationComponent* destination = &ent->destination;
     TransformComponent* transform = &ent->transform;
-    if (destination) {
-      math::Vec2i start = WorldToTilePos(transform->position.xy());
-      math::Vec2i end = WorldToTilePos(destination->position);
 
-      auto* path = search::PathTo(start, end);
-      if (!path || path->size <= 1) {
-        COMPONENT_RESET(ent, destination);
-        continue;
-      }
+    math::Vec2i start = WorldToTilePos(transform->position.xy());
+    math::Vec2i end = WorldToTilePos(destination->position);
 
-      for (int i = 0; i < path->size; ++i) {
-        auto* t = &path->tile[i];
-        gfx::PushRectangle(math::Vec3f(TilePosToWorld(*t)),
-                           math::Vec3f(1.f / 3.f, 1.f / 3.f, 1.f),
-                           math::Quatf(0.f, 0.f, 0.f, 1.f),
-                           math::Vec4f(0.33f, 0.33f, 0.66f, 0.7f));
-      }
-
-      math::Vec3f dest = TilePosToWorld(path->tile[1]);
-      auto dir = math::Normalize(dest - transform->position.xy());
-      transform->position += dir * 1.f;
+    auto* path = search::PathTo(start, end);
+    if (!path || path->size <= 1) {
+      COMPONENT_RESET(ent, destination);
+      continue;
     }
+
+    for (int i = 0; i < path->size; ++i) {
+      auto* t = &path->tile[i];
+      gfx::PushRectangle(math::Vec3f(TilePosToWorld(*t)),
+                         math::Vec3f(1.f / 3.f, 1.f / 3.f, 1.f),
+                         math::Quatf(0.f, 0.f, 0.f, 1.f),
+                         math::Vec4f(0.33f, 0.33f, 0.66f, 0.7f));
+    }
+
+    math::Vec3f dest = TilePosToWorld(path->tile[1]);
+    auto dir = math::Normalize(dest - transform->position.xy());
+    transform->position += dir * 1.f;
   }
 
   return true;
 }
 
-}  // namespace gameplay
+}  // namespace simulation

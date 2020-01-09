@@ -342,7 +342,7 @@ main(int argc, char** argv)
   rgg::SetCameraTransformMatrix(camera::transform_matrix(cam));
 
   // Game init
-  if (!gameplay::Initialize()) {
+  if (!simulation::Initialize()) {
     return 1;
   }
 
@@ -364,7 +364,7 @@ main(int argc, char** argv)
   // If vsync is enabled, force the clock_init to align with clock_sync
   // TODO: We should also enforce framerate is equal to refresh rate
   window::SwapBuffers();
-  // Reset the clock for gameplay
+  // Reset the clock for simulation
   platform::clock_init(kGameState.frame_target_usec, &kGameState.game_clock);
   while (!window::ShouldClose()) {
     ProcessInput();
@@ -397,7 +397,7 @@ main(int argc, char** argv)
       gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
       // Game
-      gameplay::Update();
+      simulation::Update();
 
       // Camera
       for (int i = 0; i < kGameState.player_count; ++i) {
