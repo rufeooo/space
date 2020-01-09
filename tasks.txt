@@ -16,6 +16,7 @@ gameplay -
 
   anthony: Implement mining. A player should highlight a region of the map with minerals
            or click on one and a unit should go mine it.
+  anthony: Show a scrolling background when the engines are 'on'.
 
 sound -
 
@@ -39,6 +40,7 @@ engine -
 
            This avoids the unnecessary complexity of defining UI layout and functionality
            seperately.
+  anthony: Load a large texture to be used for the background.
 
 network -
   AWS space_server in us-west-2 (oregon)
