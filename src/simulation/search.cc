@@ -40,7 +40,7 @@ AddIfOpen(const math::Vec2i& pos, NeighborSet* neighbor_set)
   if (pos.y >= tilemap::kMapHeight || pos.y < 0) return;
   if (kSearch.path_map[pos.y][pos.x].checked == true) return;
   auto& tile = tilemap::kTilemap.map[pos.y][pos.x];
-  if (tile.type == tilemap::BLOCK) return;
+  if (tile.type != tilemap::NONE) return;
   neighbor_set->neighbor[neighbor_set->count++] = pos;
 }
 

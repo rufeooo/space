@@ -104,11 +104,28 @@ ToRenderer()
   for (int i = 0; i < kMapHeight; ++i) {
     for (int j = 0; j < kMapWidth; ++j) {
       Tile* tile = &kTilemap.map[i][j];
-      if (tile->type == NONE) continue;
+      uint64_t type_id = tile->type;
+
+      if (type_id == NONE) continue;
+
+      math::Vec4f color;
+      switch (type_id) {
+        case 1:
+          color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
+          break;
+        case 2:
+          color = math::Vec4f(1.0f, 0.0f, 0.f, 1.0f);
+          break;
+        case 3:
+          color = math::Vec4f(0.0f, 0.0f, 0.75f, 1.0f);
+          break;
+        case 4:
+          color = math::Vec4f(0.0, 0.75f, 0.0f, 1.0f);
+      };
+
       gfx::PushRectangle(math::Vec3f(TileToWorld(*tile)),
                          math::Vec3f(1.f / 2.f, 1.f / 2.f, 1.f),
-                         math::Quatf(0.f, 0.f, 0.f, 1.f),
-                         math::Vec4f(1.f, 1.f, 1.f, 1.f));
+                         math::Quatf(0.f, 0.f, 0.f, 1.f), color);
     }
   }
 
