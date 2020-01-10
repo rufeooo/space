@@ -19,11 +19,6 @@ void RenderTriangle(const math::Vec3f& position,
                     const math::Quatf& orientation,
                     const math::Vec4f& color);
 
-enum RectFlags {
-  NONE = 0x0,
-  FILL = 0x1,
-};
-
 void RenderRectangle(const math::Vec3f& position,
                      const math::Vec3f& scale,
                      const math::Quatf& orientation,

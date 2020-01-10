@@ -27,9 +27,6 @@ int
 main(int argc, char** argv)
 {
   if (!window::Create("Graphics Explore", 800, 800)) return 1;
-
-  //camera::Translate(math::Vec3f(0.f, 0.f, 0.0f));
-  //camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
   
   rgg::Initialize();
 
