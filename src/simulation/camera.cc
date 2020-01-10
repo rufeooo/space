@@ -1,4 +1,5 @@
 
+// clang-format off
 /*
  * While painting "broad strokes" of the game it it suitable to place camera into the simulation:
  *   ( this means player cameras are network synchronized )
@@ -10,7 +11,9 @@
  *   - Camera movement is a common activity, it should not feel "sluggish" due to network dependencies
  *   - How useful is it to see where other player's are looking? Does it add a liveliness to the world?
  *   - Window size changes the camera, so how do we handle initialization or a window resize during pause?
+ * 
  */
+// clang-format on
 #include "math/math.cc"
 #include "platform/platform.cc"
 #include "renderer/renderer.cc"
@@ -62,12 +65,9 @@ ScreenToWorldSpace(const Camera* cam, const math::Vec2f& screen_pos)
 }
 
 void
-InitialCamera(Camera* cam)
+InitialCamera(Camera* cam, math::Vec2f dims)
 {
   cam->position = math::Vec3f(400.f, 400.f, 0.f);
-
-  // TODO: don't assume every camera uses local window size
-  math::Vec2f dims = window::GetWindowSize();
   cam->projection = math::CreateOrthographicMatrix<float>(
       dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
 }

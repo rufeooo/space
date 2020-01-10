@@ -115,23 +115,9 @@ NetworkSetup()
   return true;
 }
 
-bool
-ProcessInput()
+uint64_t
+ProcessWindowInput(InputBuffer* input_buffer)
 {
-  uint64_t slot = NETQUEUE_SLOT(kGameState.outgoing_sequence);
-  InputBuffer* ibuf = &kGameState.input[slot];
-
-  // If unacknowledged packets exceed the queue, give up
-  if (kGameState.outgoing_sequence -
-          kGameState.outgoing_ack[kGameState.player_id] >=
-      MAX_NETQUEUE)
-    exit(2);
-
-#if 0
-  printf("ProcessInput [ %lu seq ][ %lu slot ]\n", kGameState.outgoing_sequence,
-         slot);
-#endif
-
   uint64_t event_count = 0;
   while (event_count < MAX_TICK_EVENTS) {
     PlatformEvent pevent;
@@ -143,14 +129,39 @@ ProcessInput()
       case MOUSE_UP:
       case KEY_DOWN:
       case KEY_UP:
-        ibuf->input_event[event_count] = pevent;
+        input_buffer->input_event[event_count] = pevent;
         ++event_count;
         break;
     }
   }
 
-  ibuf->used_input_event = event_count;
+  return event_count;
+}
+
+bool
+ProcessInput()
+{
+  uint64_t slot = NETQUEUE_SLOT(kGameState.outgoing_sequence);
+  uint64_t event_count = 0;
+
+#if 0
+  printf("ProcessInput [ %lu seq ][ %lu slot ]\n", kGameState.outgoing_sequence,
+         slot);
+#endif
+
+  // If unacknowledged packets exceed the queue, give up
+  if (kGameState.outgoing_sequence -
+          kGameState.outgoing_ack[kGameState.player_id] >=
+      MAX_NETQUEUE)
+    exit(2);
+
+#ifndef HEADLESS
+  event_count = ProcessWindowInput(&kGameState.input[slot]);
+#endif
+
+  kGameState.input[slot].used_input_event = event_count;
   kGameState.outgoing_sequence += 1;
+
   return true;
 }
 
@@ -329,14 +340,22 @@ main(int argc, char** argv)
   printf("Client will connect to game at %s:%s\n", kGameState.server_ip,
          kGameState.server_port);
 
+#ifndef HEADLESS
   // Platform & Gfx init
   if (!gfx::Initialize()) {
     return 1;
   }
+#endif
 
   // Camera init
+  // TODO (AN): don't assume every camera uses local window size
+#ifndef HEADLESS
+  math::Vec2f dims = window::GetWindowSize();
+#else
+  math::Vec2f dims = {1280.0f, 720.0f};
+#endif
   for (int i = 0; i < MAX_PLAYER; ++i) {
-    camera::InitialCamera(&kGameState.player_camera[i]);
+    camera::InitialCamera(&kGameState.player_camera[i], dims);
   }
   const Camera* cam = &kGameState.player_camera[kGameState.player_id];
   rgg::SetProjectionMatrix(cam->projection);
@@ -363,9 +382,11 @@ main(int argc, char** argv)
     kGameState.player_received[i][0] = true;
   }
 
+#ifndef HEADLESS
   // If vsync is enabled, force the clock_init to align with clock_sync
   // TODO: We should also enforce framerate is equal to refresh rate
   window::SwapBuffers();
+#endif
   // Reset the clock for simulation
   platform::clock_init(kGameState.frame_target_usec, &kGameState.game_clock);
   while (!window::ShouldClose()) {
@@ -424,12 +445,16 @@ main(int argc, char** argv)
       ++kGameState.logic_updates;
     }
 
+#ifndef HEADLESS
     gfx::Render();
+#endif
 
     // Capture frame time before the potential stall on vertical sync
     kGameState.frame_time_usec = platform::delta_usec(&kGameState.game_clock);
 
+#ifndef HEADLESS
     window::SwapBuffers();
+#endif
 
 #if 0
     printf("[frame %lu]\n", kGameState.game_updates);
