@@ -48,6 +48,7 @@ LoadFntMetadata(const char* file)
     row->yoffset = atoi(&line[76]);
     row->xadvance = atoi(&line[91]);
   }
+  fclose(fptr);
   return metadata;
 }
 
@@ -101,5 +102,6 @@ LoadTGA(const char* file, uint8_t** image_bytes,
   memcpy(*image_bytes, &buffer[sizeof(TgaHeader) + sizeof(TgaImageSpec)], image_bytes_size);
   // Free buffer used to read in file.
   free(buffer);
+  fclose(fptr);
   return true;
 }
