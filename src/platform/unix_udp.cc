@@ -64,7 +64,7 @@ BindAddr(Udp4 peer, const char* host, const char* service_or_port)
 bool
 Send(Udp4 peer, const void* buffer, uint16_t len)
 {
-  ssize_t bytes = sendto(peer.socket, buffer, len, MSG_NOSIGNAL | MSG_DONTWAIT,
+  ssize_t bytes = sendto(peer.socket, buffer, len, MSG_DONTWAIT,
                          (const struct sockaddr*)peer.socket_address,
                          sizeof(struct sockaddr_in));
   return bytes == len;
@@ -73,9 +73,9 @@ Send(Udp4 peer, const void* buffer, uint16_t len)
 bool
 SendTo(Udp4 location, Udp4 peer, const void* buffer, uint16_t len)
 {
-  ssize_t bytes = sendto(
-      location.socket, buffer, len, MSG_NOSIGNAL | MSG_DONTWAIT,
-      (const struct sockaddr*)peer.socket_address, sizeof(struct sockaddr_in));
+  ssize_t bytes = sendto(location.socket, buffer, len, MSG_DONTWAIT,
+                         (const struct sockaddr*)peer.socket_address,
+                         sizeof(struct sockaddr_in));
 
   return bytes == len;
 }
