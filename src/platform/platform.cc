@@ -7,6 +7,12 @@
 #define WIN32_LEAN_AND_MEAN
 #endif
 
+#ifdef __x86_64__
+#include "x64_intrin.h"
+#else
+#error "No defined cpu intrinsics"
+#endif
+
 #include "platform_clock.cc"
 #include "platform_getopt.cc"
 #include "window.cc"

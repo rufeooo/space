@@ -15,9 +15,11 @@
 
 #if _WIN32
 #define ALIGNAS(n) alignas(n)
+#define INLINE __forceinline
 #else
 // ALIGN macro taken in macos.
 #define ALIGNAS(n) __attribute__((aligned(PAGE)))
+#define INLINE __attribute__((always_inline)) inline
 #endif
 
 #ifndef ARRAY_LENGTH
