@@ -2,7 +2,7 @@
 #include "platform/platform.cc"
 #include "gl/gl.cc"
 #include "renderer/renderer.cc"
-#include "space/camera.cc"
+#include "simulation/camera.cc"
 
 // ORTHO:
 //0.002500,0.000000,0.000000,-1.000000
@@ -28,13 +28,13 @@ main(int argc, char** argv)
 {
   if (!window::Create("Graphics Explore", 800, 800)) return 1;
 
-  camera::Translate(math::Vec3f(0.f, 0.f, 0.0f));
-  camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
+  //camera::Translate(math::Vec3f(0.f, 0.f, 0.0f));
+  //camera::AimAt(math::Vec3f(0.f, 0.f, -1.f));
   
   rgg::Initialize();
 
-  rgg::SetCameraTransformMatrix(camera::transform_matrix());
-  rgg::SetViewMatrix(camera::view_matrix());
+  rgg::SetCameraTransformMatrix(math::CreateIdentityMatrix<float, 4>());
+  rgg::SetViewMatrix(math::CreateIdentityMatrix<float, 4>());
 
   while (!window::ShouldClose()) {
     PlatformEvent event;
