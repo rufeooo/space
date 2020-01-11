@@ -386,6 +386,7 @@ main(int argc, char** argv)
   // If vsync is enabled, force the clock_init to align with clock_sync
   // TODO: We should also enforce framerate is equal to refresh rate
   window::SwapBuffers();
+  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
   // Reset the clock for simulation
   platform::clock_init(kGameState.frame_target_usec, &kGameState.game_clock);
@@ -454,6 +455,7 @@ main(int argc, char** argv)
 
 #ifndef HEADLESS
     window::SwapBuffers();
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 #endif
 
 #if 0

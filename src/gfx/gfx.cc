@@ -151,7 +151,11 @@ RenderAsteroids()
 void
 Render()
 {
-  glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+  // Draw all text.
+  for (int i = 0; i < kGfx.text_count; ++i) {
+    Text& text = kGfx.text[i];
+    rgg::RenderText(text.msg, text.screen_x, text.screen_y, math::Vec4f());
+  }
 
   // For now draw all primitives as wireframe.
   glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
@@ -172,13 +176,6 @@ Render()
 #endif
 
   RenderGrids();
-
-  // Draw all text.
-  glClear(GL_DEPTH_BUFFER_BIT);
-  for (int i = 0; i < kGfx.text_count; ++i) {
-    Text& text = kGfx.text[i];
-    rgg::RenderText(text.msg, text.screen_x, text.screen_y, math::Vec4f());
-  }
 }
 
 template <typename T>
