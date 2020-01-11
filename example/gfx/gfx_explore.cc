@@ -65,16 +65,17 @@ main(int argc, char** argv)
         math::Vec3f(0.f, -500.f, 0.f),
         math::Vec3f(0.f, 500.f, 0.f),
         math::Vec4f(0.f, 1.f, 0.f, 0.75f));
-
     rgg::RenderTag(
         tag,
         math::Vec3f(0.f, 0.f, 0.f),
         math::Vec3f(1.f, 1.f, 1.f),
         math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
         math::Vec4f(1.f, 0.f, 0.f, 0.5f));
-   
     rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
     rgg::RenderGrid(25.f, 25.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.55f));
+
+    glClear(GL_COLOR_DEPTH_BUFFER_BIT);
+    rgg::RenderText("Test", 10.f, 50.f, math::Vec4f(1.f, 1.f, 1.f, 1.f));
 
     window::SwapBuffers();
   }

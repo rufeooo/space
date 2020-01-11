@@ -75,12 +75,12 @@ SetupUI()
 
   // Setup font vbo / vao.
   glGenBuffers(1, &font.vbo);
-  glBindBuffer(GL_ARRAY_BUFFER, font.vbo);
 
   glGenVertexArrays(1, &font.vao);
   glBindVertexArray(font.vao);
-  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
   glEnableVertexAttribArray(0);
+  glBindBuffer(GL_ARRAY_BUFFER, font.vbo);
+  glVertexAttribPointer(0, 4, GL_FLOAT, GL_FALSE, 0, NULL);
 
   return true;
 }
@@ -97,8 +97,8 @@ DrawString(const char* msg, float x, float y, const math::Vec4f& color)
   };
 
   auto& font = kUI.font;
-  glBindTexture(GL_TEXTURE_2D, font.texture);
   glBindVertexArray(font.vao);
+  glBindTexture(GL_TEXTURE_2D, font.texture);
 
   auto sz = window::GetWindowSize();
   math::Mat4f projection = math::CreateOrthographicMatrix2<float>(
@@ -155,6 +155,7 @@ DrawString(const char* msg, float x, float y, const math::Vec4f& color)
     text_point[4].Pr();
     text_point[5].Pr();
 #endif
+    glBindBuffer(GL_ARRAY_BUFFER, font.vbo);
     glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
     glDrawArrays(GL_TRIANGLES, 0, 6);  // Draw the character 
     x += v_w;
