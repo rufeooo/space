@@ -6,9 +6,9 @@ struct ThreadInfo;
 typedef void* (*ThreadFunc)(const ThreadInfo*);
 
 struct ThreadInfo {
+  uint64_t id;
   ThreadFunc func;
   void* arg;
-  uint64_t id;
   uint64_t return_value;
 } ti;
 
