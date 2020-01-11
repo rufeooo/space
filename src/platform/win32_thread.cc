@@ -14,31 +14,31 @@ namespace platform {
 struct Thread {
   HANDLE handle;
   DWORD thread_id;
-  ThreadFunc thread_func;
-  ThreadInfo thread_info;
 };
 
 static Thread kThread;
 
-DWORD WINAPI Win32ThreadFunc(LPVOID lpParam) 
+DWORD WINAPI Win32ThreadFunc( LPVOID lpParam )
 {
-  kThread.thread_func(&kThread.thread_info);
-  return 0;
+	const ThreadInfo* ti = (const ThreadInfo*)lpParam;
+	ti->func(ti);
+	return 0;
 }
 
 bool
-thread_create(ThreadInfo* t, ThreadFunc func)
+thread_create(ThreadInfo* t)
 {
   if (t->id) return false;
 
-  kThread.thread_func = func;
   kThread.handle = CreateThread(
       NULL,
       0/* Default stack size */,
       Win32ThreadFunc,
-      t->arg,
+      t,
       0,
       &kThread.thread_id);
+
+  t->id = kThread.thread_id;
 
   return true;
 }
@@ -52,6 +52,7 @@ bool
 thread_join(ThreadInfo* t)
 {
   WaitForSingleObject(kThread.handle, INFINITE);
+  GetExitCodeThread(kThread.handle, (LPDWORD)&t->return_value);
   return 0;
 }
 

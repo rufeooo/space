@@ -13,13 +13,13 @@ typedef void* (*PThreadFunc)(void*);
 namespace platform
 {
 bool
-thread_create(ThreadInfo* t, ThreadFunc func)
+thread_create(ThreadInfo* t)
 {
   if (t->id) return false;
 
   pthread_attr_t attr;
   pthread_attr_init(&attr);
-  pthread_create((pthread_t*)t, &attr, (PThreadFunc)func, t);
+  pthread_create((pthread_t*)t, &attr, (PThreadFunc)t->func, t);
 
   return true;
 }

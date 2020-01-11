@@ -64,9 +64,9 @@ drop_inactive_players(uint64_t rt_usec)
 }
 
 void*
-server_main(ThreadInfo* t)
+server_main(const ThreadInfo* t)
 {
-  ServerParam* thread_param = (ServerParam*)t->arg;
+  ServerParam* arg = (ServerParam*)t->arg;
 
   uint8_t in_buffer[MAX_BUFFER];
   if (!udp::Init()) {
@@ -75,14 +75,14 @@ server_main(ThreadInfo* t)
   }
 
   Udp4 location;
-  if (!udp::GetAddr4(thread_param->ip, thread_param->port, &location)) {
+  if (!udp::GetAddr4(arg->ip, arg->port, &location)) {
     puts("server: fail GetAddr4");
-    puts(thread_param->ip);
-    puts(thread_param->port);
+    puts(arg->ip);
+    puts(arg->port);
     return 0;
   }
 
-  printf("Server binding %s:%s\n", thread_param->ip, thread_param->port);
+  printf("Server binding %s:%s\n", arg->ip, arg->port);
   if (!udp::Bind(location)) {
     puts("server: fail Bind");
     return 0;
@@ -207,12 +207,11 @@ CreateNetworkServer(const char* ip, const char* port)
 {
   if (thread.id) return false;
 
+  thread.func = server_main;
   thread.arg = &thread_param;
   thread_param.ip = ip;
   thread_param.port = port;
-  platform::thread_create(&thread, server_main);
-
-  return true;
+  return platform::thread_create(&thread);
 }
 
 uint64_t
