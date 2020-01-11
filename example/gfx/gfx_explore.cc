@@ -33,6 +33,21 @@ main(int argc, char** argv)
   rgg::SetCameraTransformMatrix(math::CreateIdentityMatrix<float, 4>());
   rgg::SetViewMatrix(math::CreateIdentityMatrix<float, 4>());
 
+  // 29
+  constexpr int kVertCount = 29;
+  constexpr int kFloatCount = kVertCount * 3;
+  GLfloat asteroid[kFloatCount] = {
+      0.f, 1.6f, 0.f, 0.2f, 1.5f, 0.f, 0.4f, 1.6f, 0.f, 0.6f, 1.6f, 0.f,
+      0.68f, 1.9f, 0.f, 1.1f, 1.8f, 0.f, 1.6f, 1.7f, 0.f, 1.8f, 0.9f, 0.f,
+      2.3f, 0.3f, 0.f, 2.4f, -0.5f, 0.f, 2.f, -0.8f, 0.f, 1.5f, -1.1f, 0.f,
+      0.7f, -1.f, 0.f, 0.5f, -1.1f, 0.f, 0.2f, -1.3f, 0.f, -0.3f, -1.4f, 0.f,
+      -1.1f, -1.1f, 0.f, -1.3f, -0.6f, 0.f, -1.25f, -0.2f, 0.f, -1.5f, 0.5f, 0.f,
+      -1.4f, 0.4f, 0.f, -1.65f, 1.f, 0.f, -1.6f, 1.3f, 0.f, -1.6f, 1.7f, 0.f,
+      -1.4f, 1.9f, 0.f, -1.f, 2.05f, 0.f, -0.7f, 2.07f, 0.f, -0.65f, 2.2f, 0.f,
+      -0.5f, 2.25f, 0.f};
+  for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 50.f;
+  rgg::Tag tag = rgg::CreateRenderable(kVertCount, asteroid, GL_LINE_LOOP);
+
   while (!window::ShouldClose()) {
     PlatformEvent event;
     while (window::PollEvent(&event)) {}
@@ -50,6 +65,13 @@ main(int argc, char** argv)
         math::Vec3f(0.f, -500.f, 0.f),
         math::Vec3f(0.f, 500.f, 0.f),
         math::Vec4f(0.f, 1.f, 0.f, 0.75f));
+
+    rgg::RenderTag(
+        tag,
+        math::Vec3f(0.f, 0.f, 0.f),
+        math::Vec3f(1.f, 1.f, 1.f),
+        math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
+        math::Vec4f(1.f, 0.f, 0.f, 0.5f));
    
     rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
     rgg::RenderGrid(25.f, 25.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.55f));

@@ -6,6 +6,13 @@
 
 namespace rgg {
 
+struct Tag {
+  // TODO(abrunasso): Support custom shaders.
+  GLuint vao_reference;
+  GLuint vert_count;
+  GLenum mode;
+};
+
 bool Initialize();
 
 void SetProjectionMatrix(const math::Mat4f& projection);
@@ -13,6 +20,14 @@ void SetProjectionMatrix(const math::Mat4f& projection);
 void SetViewMatrix(const math::Mat4f& view);
 
 void SetCameraTransformMatrix(const math::Mat4f& camera_transform);
+
+Tag CreateRenderable(int vert_count, GLfloat* verts, GLenum mode);
+
+void RenderTag(const Tag& tag,
+               const math::Vec3f& position,
+               const math::Vec3f& scale,
+               const math::Quatf& orientation,
+               const math::Vec4f& color);
 
 void RenderTriangle(const math::Vec3f& position,
                     const math::Vec3f& scale,

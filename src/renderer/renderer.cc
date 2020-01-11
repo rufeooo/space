@@ -176,6 +176,36 @@ SetCameraTransformMatrix(const math::Mat4f& camera_transform)
   kRGG.camera_transform = camera_transform;
 }
 
+
+Tag
+CreateRenderable(int vert_count, GLfloat* verts, GLenum mode)
+{
+  Tag tag = {};
+  tag.vao_reference = gl::CreateGeometryVAO(vert_count * 3, verts);
+  tag.vert_count = vert_count;
+  tag.mode = mode;
+  return tag;
+}
+
+void
+RenderTag(const Tag& tag, const math::Vec3f& position,
+          const math::Vec3f& scale, const math::Quatf& orientation,
+          const math::Vec4f& color) {
+  glUseProgram(kRGG.geometry_program.reference);
+  glBindVertexArray(tag.vao_reference);
+   // Translate and rotate the triangle appropriately.
+  math::Mat4f model = math::CreateTranslationMatrix(position) *
+                      math::CreateScaleMatrix(scale) *
+                      math::CreateRotationMatrix(orientation);
+  math::Mat4f matrix = kRGG.projection * kRGG.view * model;
+  glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
+              color.w);
+  glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
+                     &matrix[0]);
+  glDrawArrays(tag.mode, 0, tag.vert_count);
+}
+
+
 void
 RenderTriangle(const math::Vec3f& position, const math::Vec3f& scale,
                const math::Quatf& orientation, const math::Vec4f& color)
