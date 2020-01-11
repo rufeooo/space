@@ -14,8 +14,6 @@ void Render();
 
 void ResetRenderData();
 
-int CreateCustom
-
 void PushTriangle(const math::Vec3f& position, const math::Vec3f& scale,
                   const math::Quatf& orientation, const math::Vec4f& color);
 
