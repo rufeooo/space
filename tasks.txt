@@ -14,7 +14,6 @@ Delete items when they are done.
 
 gameplay -
 
-  anthony: Have asteroids fly by sometimes. This will be what the player mines.
   anthony: Implement mining. A player should highlight a region of the map with minerals
            or click on one and a unit should go mine it.
   anthony: Show a scrolling background when the engines are 'on'.
