@@ -85,7 +85,7 @@ Initialize()
     -1.4f, 0.4f, 0.f, -1.65f, 1.f, 0.f, -1.6f, 1.3f, 0.f, -1.6f, 1.7f, 0.f,
     -1.4f, 1.9f, 0.f, -1.f, 2.05f, 0.f, -0.7f, 2.07f, 0.f, -0.65f, 2.2f, 0.f,
     -0.5f, 2.25f, 0.f};
-  for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 25.f;
+  for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 15.f; // HA
   kGfx.asteroid_tag = rgg::CreateRenderable(kVertCount, asteroid, GL_LINE_LOOP);
   return status;
 }

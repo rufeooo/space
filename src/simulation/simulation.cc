@@ -62,9 +62,13 @@ ToRenderer()
   using namespace tilemap;
 
   const Entity* ent_end = kReadEntity + MAX_ENTITY;
+
+  static math::Vec3f asteroid_pos(400.f, 750.f, 0.f);
+  asteroid_pos.x -= 1.f;
+  if (asteroid_pos.x < 0.f) asteroid_pos.x = 800.f;
   
   gfx::PushAsteroid(
-      math::Vec3f(0.f, 0.f, 0.f),
+      asteroid_pos,
       math::Vec3f(1.f, 1.f, 1.f),
       math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
       math::Vec4f(1.f, 1.f, 1.f, 1.0f));
