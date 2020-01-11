@@ -14,6 +14,7 @@ constexpr int kMaxRectangleCount = 256;
 constexpr int kMaxCircleCount = 32;
 constexpr int kMaxLineCount = 32;
 constexpr int kMaxGridCount = 8;
+constexpr int kMaxAsteroidCount = 8;
 
 struct Text {
   char msg[kMaxTextSize];
@@ -59,6 +60,10 @@ struct Gfx {
 
   Grid grid[kMaxGridCount];
   int grid_count;
+
+  rgg::Tag asteroid_tag;
+  Primitive asteroid[kMaxAsteroidCount];
+  int asteroid_count;
 };
 
 static Gfx kGfx;
@@ -68,7 +73,21 @@ Initialize()
 {
   int window_result = window::Create("Space", 1280, 720);
   printf("Window create result: %i\n", window_result);
-  return rgg::Initialize();
+  auto status = rgg::Initialize();
+  constexpr int kVertCount = 29;
+  constexpr int kFloatCount = kVertCount * 3;
+  GLfloat asteroid[kFloatCount] = {
+    0.f, 1.6f, 0.f, 0.2f, 1.5f, 0.f, 0.4f, 1.6f, 0.f, 0.6f, 1.6f, 0.f,
+    0.68f, 1.9f, 0.f, 1.1f, 1.8f, 0.f, 1.6f, 1.7f, 0.f, 1.8f, 0.9f, 0.f,
+    2.3f, 0.3f, 0.f, 2.4f, -0.5f, 0.f, 2.f, -0.8f, 0.f, 1.5f, -1.1f, 0.f,
+    0.7f, -1.f, 0.f, 0.5f, -1.1f, 0.f, 0.2f, -1.3f, 0.f, -0.3f, -1.4f, 0.f,
+    -1.1f, -1.1f, 0.f, -1.3f, -0.6f, 0.f, -1.25f, -0.2f, 0.f, -1.5f, 0.5f, 0.f,
+    -1.4f, 0.4f, 0.f, -1.65f, 1.f, 0.f, -1.6f, 1.3f, 0.f, -1.6f, 1.7f, 0.f,
+    -1.4f, 1.9f, 0.f, -1.f, 2.05f, 0.f, -0.7f, 2.07f, 0.f, -0.65f, 2.2f, 0.f,
+    -0.5f, 2.25f, 0.f};
+  for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 25.f;
+  kGfx.asteroid_tag = rgg::CreateRenderable(kVertCount, asteroid, GL_LINE_LOOP);
+  return status;
 }
 
 void
@@ -120,6 +139,16 @@ RenderGrids()
 }
 
 void
+RenderAsteroids()
+{
+  for (int i = 0; i < kGfx.asteroid_count; ++i) {
+    Primitive* asteroid = &kGfx.asteroid[i];
+    rgg::RenderTag(kGfx.asteroid_tag, asteroid->position, asteroid->scale,
+                   asteroid->orientation, asteroid->color);
+  }
+}
+
+void
 Render()
 {
   glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
@@ -131,6 +160,17 @@ Render()
   RenderRectangles();
   RenderCircles();
   RenderLines();
+  RenderAsteroids();
+
+#if 0
+  rgg::RenderTag(
+        kGfx.asteroid_tag,
+        math::Vec3f(0.f, 0.f, 0.f),
+        math::Vec3f(1.f, 1.f, 1.f),
+        math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
+        math::Vec4f(1.f, 1.f, 1.f, 1.0f));
+#endif
+
   RenderGrids();
 
   // Draw all text.
@@ -162,6 +202,7 @@ ResetRenderData()
   kGfx.grid_count = 0;
   kGfx.triangle_count = 0;
   kGfx.circle_count = 0;
+  kGfx.asteroid_count = 0;
   // Reset draw pointers.
   kGfx.text_count = 0;
 }
@@ -195,6 +236,16 @@ PushRectangle(const math::Vec3f& position, const math::Vec3f& scale,
   if (kGfx.rectangle_count + 1 >= kMaxRectangleCount) return;
   SetPrimitive(position, scale, orientation, color,
                &kGfx.rectangle[kGfx.rectangle_count++]);
+}
+
+void
+PushAsteroid(const math::Vec3f& position, const math::Vec3f& scale,
+             const math::Quatf& orientation, const math::Vec4f& color)
+{
+  assert(kGfx.asteroid_count + 1 < kMaxAsteroidCount);
+  if (kGfx.asteroid_count + 1 >= kMaxAsteroidCount) return;
+  SetPrimitive(position, scale, orientation, color,
+               &kGfx.asteroid[kGfx.asteroid_count++]);
 }
 
 void

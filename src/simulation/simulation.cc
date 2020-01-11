@@ -62,6 +62,12 @@ ToRenderer()
   using namespace tilemap;
 
   const Entity* ent_end = kReadEntity + MAX_ENTITY;
+  
+  gfx::PushAsteroid(
+      math::Vec3f(0.f, 0.f, 0.f),
+      math::Vec3f(1.f, 1.f, 1.f),
+      math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
+      math::Vec4f(1.f, 1.f, 1.f, 1.0f));
 
   for (const Entity* ent = kReadEntity; ent < ent_end; ++ent) {
     if (!EntityExists(ent)) continue;

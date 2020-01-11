@@ -74,7 +74,7 @@ main(int argc, char** argv)
     rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
     rgg::RenderGrid(25.f, 25.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.55f));
 
-    glClear(GL_COLOR_DEPTH_BUFFER_BIT);
+    glClear(GL_DEPTH_BUFFER_BIT);
     rgg::RenderText("Test", 10.f, 50.f, math::Vec4f(1.f, 1.f, 1.f, 1.f));
 
     window::SwapBuffers();
