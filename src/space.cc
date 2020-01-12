@@ -3,6 +3,7 @@
 
 #include "math/math.cc"
 
+#include "gfx/gfx.cc"
 #include "network/network.cc"
 #include "simulation/camera.cc"
 #include "simulation/command.cc"
@@ -239,9 +240,6 @@ main(int argc, char** argv)
       ++kGameState.logic_updates;
     }
 
-    // Begin Render Mutation
-    gfx::ResetRenderData();
-
     // Misc debug/feedback
     auto sz = window::GetWindowSize();
     char buffer[50];
@@ -253,9 +251,6 @@ main(int argc, char** argv)
                                             window::GetCursorPosition());
     sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
     gfx::PushText(buffer, 3.f, sz.y - 50.f);
-
-    // Game simulation to renderer
-    simulation::ToRenderer();
 
 #ifndef HEADLESS
     gfx::Render();
