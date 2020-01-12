@@ -21,8 +21,9 @@ static Thread kThread;
 DWORD WINAPI Win32ThreadFunc( LPVOID lpParam )
 {
 	ThreadInfo* ti = (ThreadInfo*)lpParam;
-	ti->return_value = ti->func(ti->arg);
-	return 0;
+	uint64_t ret = ti->func(ti->arg);
+	ti->return_value = ret;
+	return ret;
 }
 
 bool
