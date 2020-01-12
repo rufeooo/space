@@ -62,7 +62,7 @@ ToRenderer()
 {
   using namespace tilemap;
 
-  const Entity* ent_end = kPreviousEntity + MAX_ENTITY;
+  const Entity* ent_end = kEntity + MAX_ENTITY;
 
   static math::Vec3f asteroid_pos(400.f, 750.f, 0.f);
   asteroid_pos.x -= 1.f;
@@ -72,7 +72,7 @@ ToRenderer()
                     math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
                     math::Vec4f(1.f, 1.f, 1.f, 1.0f));
 
-  for (const Entity* ent = kPreviousEntity; ent < ent_end; ++ent) {
+  for (const Entity* ent = kEntity; ent < ent_end; ++ent) {
     if (!EntityExists(ent)) continue;
 
     const math::Vec3f* p = &ent->transform.position;
@@ -138,7 +138,7 @@ ToRenderer()
     }
   }
 
-  for (const Entity* ent = kPreviousEntity; ent <= kPreviousEntity; ++ent) {
+  for (const Entity* ent = kEntity; ent <= kEntity; ++ent) {
     if (!COMPONENT_EXISTS(ent, destination)) continue;
 
     math::Vec2i start = WorldToTilePos(ent->transform.position.xy());
@@ -149,7 +149,7 @@ ToRenderer()
     gfx::PushText(buffer, 3.f, 30.f);
   }
 
-  for (const Entity* ent = kPreviousEntity; ent < ent_end; ++ent) {
+  for (const Entity* ent = kEntity; ent < ent_end; ++ent) {
     if (!COMPONENT_EXISTS(ent, destination)) continue;
     const DestinationComponent* destination = &ent->destination;
     const TransformComponent* transform = &ent->transform;
