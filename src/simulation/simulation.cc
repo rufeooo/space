@@ -8,15 +8,22 @@ namespace simulation
 bool
 Initialize()
 {
+  int ent = 0;
   math::Vec3f pos[] = {
       math::Vec3f(300.f, 300.f, 0.f), math::Vec3f(100.f, 130.f, 0),
       math::Vec3f(300.f, 400.f, 0), math::Vec3f(650.f, 500.f, 0)};
   const math::Vec3f scale = math::Vec3f(0.25f, 0.25f, 0.f);
-  for (int i = 0; i < ARRAY_LENGTH(pos); ++i) {
-    kEntity[i].transform.position = pos[i];
-    kEntity[i].transform.scale = scale;
+  for (int i = 0; ent < ARRAY_LENGTH(pos); ++ent, ++i) {
+    kEntity[ent].transform.position = pos[i];
+    kEntity[ent].transform.scale = scale;
   }
   kEntity[0].kind = 1;
+  
+  // Asteroid
+  kEntity[ent].transform.position = math::Vec3f(400.f, 750.f, 0.f);
+  kEntity[ent].kind = 2;
+  ++ent;
+
   // Apply default state to kPreviousEntity
   EntityAdvance();
 
@@ -39,7 +46,16 @@ Update()
 
   const Entity* ent_end = kEntity + MAX_ENTITY;
   for (Entity* ent = kEntity; ent < ent_end; ++ent) {
+    // Asteroids.
+    if (ent->kind == 2) {
+      math::Vec3f* asteroid_pos = &ent->transform.position;
+      asteroid_pos->x -= 1.0f;
+      if (asteroid_pos->x < 0.f) asteroid_pos->x = 800.f;
+      continue;
+    }
+
     if (!COMPONENT_EXISTS(ent, destination)) continue;
+
     TransformComponent* transform = &ent->transform;
 
     math::Vec2i start = WorldToTilePos(transform->position.xy());
@@ -63,17 +79,18 @@ ToRenderer()
   using namespace tilemap;
 
   const Entity* ent_end = kEntity + MAX_ENTITY;
-
-  static math::Vec3f asteroid_pos(400.f, 750.f, 0.f);
-  asteroid_pos.x -= 1.f;
-  if (asteroid_pos.x < 0.f) asteroid_pos.x = 800.f;
-
-  gfx::PushAsteroid(asteroid_pos, math::Vec3f(1.f, 1.f, 1.f),
-                    math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
-                    math::Vec4f(1.f, 1.f, 1.f, 1.0f));
-
+  
   for (const Entity* ent = kEntity; ent < ent_end; ++ent) {
     if (!EntityExists(ent)) continue;
+
+    // Asteroids.
+    if (ent->kind == 2) {
+      gfx::PushAsteroid(ent->transform.position,
+                        ent->transform.scale,
+                        ent->transform.orientation,
+                        math::Vec4f(1.f, 1.f, 1.f, 1.0f));
+      continue;
+    }
 
     const math::Vec3f* p = &ent->transform.position;
     math::Vec2f grid = TilePosToWorld(WorldToTilePos(p->xy()));

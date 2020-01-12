@@ -165,16 +165,6 @@ Render()
   RenderCircles();
   RenderLines();
   RenderAsteroids();
-
-#if 0
-  rgg::RenderTag(
-        kGfx.asteroid_tag,
-        math::Vec3f(0.f, 0.f, 0.f),
-        math::Vec3f(1.f, 1.f, 1.f),
-        math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
-        math::Vec4f(1.f, 1.f, 1.f, 1.0f));
-#endif
-
   RenderGrids();
 }
 

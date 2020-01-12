@@ -48,4 +48,3 @@ network -
   server authoritative packet reordering
   rewrite udp_ack flow (severe packet loss cases for 2p+)
   shrink netqueue depth under good conditions
-
