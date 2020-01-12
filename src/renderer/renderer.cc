@@ -2,15 +2,15 @@
 
 #include "renderer.h"
 
-#include "platform/platform.cc"
-#include "shader.h"
-#include "ui.cc"
 #include "gl/gl.cc"
 #include "gl/shader.cc"
 #include "math/mat_ops.h"
+#include "platform/platform.cc"
+#include "shader.h"
+#include "ui.cc"
 
-namespace rgg {
-
+namespace rgg
+{
 struct GeometryProgram {
   GLuint reference;
   GLuint matrix_uniform;
@@ -47,8 +47,7 @@ bool
 SetupGeometryProgram()
 {
   GLuint vert_shader, frag_shader;
-  if (!gl::CompileShader(GL_VERTEX_SHADER, &rgg::kVertexShader,
-                         &vert_shader)) {
+  if (!gl::CompileShader(GL_VERTEX_SHADER, &rgg::kVertexShader, &vert_shader)) {
     return false;
   }
 
@@ -66,11 +65,11 @@ SetupGeometryProgram()
   glDeleteShader(vert_shader);
   glDeleteShader(frag_shader);
 
-  kRGG.geometry_program.matrix_uniform
-      = glGetUniformLocation(kRGG.geometry_program.reference, "matrix");
+  kRGG.geometry_program.matrix_uniform =
+      glGetUniformLocation(kRGG.geometry_program.reference, "matrix");
   assert(kRGG.geometry_program.matrix_uniform != uint32_t(-1));
-  kRGG.geometry_program.color_uniform
-      = glGetUniformLocation(kRGG.geometry_program.reference, "color");
+  kRGG.geometry_program.color_uniform =
+      glGetUniformLocation(kRGG.geometry_program.reference, "color");
   assert(kRGG.geometry_program.color_uniform != uint32_t(-1));
   return true;
 }
@@ -98,15 +97,15 @@ SetupCircleProgram()
   glDeleteShader(vert_shader);
   glDeleteShader(frag_shader);
 
-  kRGG.circle_program.model_uniform
-      = glGetUniformLocation(kRGG.circle_program.reference, "model");
+  kRGG.circle_program.model_uniform =
+      glGetUniformLocation(kRGG.circle_program.reference, "model");
   assert(kRGG.circle_program.model_uniform != uint32_t(-1));
-  kRGG.circle_program.view_projection_uniform
-      = glGetUniformLocation(kRGG.circle_program.reference, "view_projection");
+  kRGG.circle_program.view_projection_uniform =
+      glGetUniformLocation(kRGG.circle_program.reference, "view_projection");
   assert(kRGG.circle_program.model_uniform != uint32_t(-1));
 
-  kRGG.circle_program.color_uniform
-      = glGetUniformLocation(kRGG.circle_program.reference, "color");
+  kRGG.circle_program.color_uniform =
+      glGetUniformLocation(kRGG.circle_program.reference, "color");
   assert(kRGG.circle_program.color_uniform != uint32_t(-1));
   return true;
 }
@@ -130,12 +129,13 @@ Initialize()
 
   // Create the geometry for basic shapes.
   float m = kRGG.meter_size;
-  GLfloat tri[9] = {0.0f, m / 2.f, 0.f, m / 2.f, -m / 2.f, 0.f, -m / 2.f,
-                    -m / 2.f, 0.f};
+  GLfloat tri[9] = {0.0f, m / 2.f,  0.f,      m / 2.f, -m / 2.f,
+                    0.f,  -m / 2.f, -m / 2.f, 0.f};
   kRGG.triangle_vao_reference = gl::CreateGeometryVAO(9, tri);
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
-  GLfloat square[18] = {
+  // clang-format off
+  static GLfloat square[18] = {
       -m / 2.f, m / 2.f, 0.f,
       m / 2.f, m / 2.f, 0.f,
       m / 2.f, -m / 2.f, 0.f,
@@ -144,6 +144,7 @@ Initialize()
       -m / 2.f, m / 2.f, 0.f,
       m / 2.f, -m / 2.f, 0.f
   };
+  // clang-format on
   kRGG.rectangle_vao_reference = gl::CreateGeometryVAO(18, square);
 
   // Line is flat on the x-axis with distance m.
@@ -161,7 +162,7 @@ Initialize()
 void
 SetProjectionMatrix(const math::Mat4f& projection)
 {
-  kRGG.projection  = projection;
+  kRGG.projection = projection;
 }
 
 void
@@ -176,7 +177,6 @@ SetCameraTransformMatrix(const math::Mat4f& camera_transform)
   kRGG.camera_transform = camera_transform;
 }
 
-
 Tag
 CreateRenderable(int vert_count, GLfloat* verts, GLenum mode)
 {
@@ -188,12 +188,12 @@ CreateRenderable(int vert_count, GLfloat* verts, GLenum mode)
 }
 
 void
-RenderTag(const Tag& tag, const math::Vec3f& position,
-          const math::Vec3f& scale, const math::Quatf& orientation,
-          const math::Vec4f& color) {
+RenderTag(const Tag& tag, const math::Vec3f& position, const math::Vec3f& scale,
+          const math::Quatf& orientation, const math::Vec4f& color)
+{
   glUseProgram(kRGG.geometry_program.reference);
   glBindVertexArray(tag.vao_reference);
-   // Translate and rotate the triangle appropriately.
+  // Translate and rotate the triangle appropriately.
   math::Mat4f model = math::CreateTranslationMatrix(position) *
                       math::CreateScaleMatrix(scale) *
                       math::CreateRotationMatrix(orientation);
@@ -205,14 +205,13 @@ RenderTag(const Tag& tag, const math::Vec3f& position,
   glDrawArrays(tag.mode, 0, tag.vert_count);
 }
 
-
 void
 RenderTriangle(const math::Vec3f& position, const math::Vec3f& scale,
                const math::Quatf& orientation, const math::Vec4f& color)
 {
   glUseProgram(kRGG.geometry_program.reference);
   glBindVertexArray(kRGG.triangle_vao_reference);
-   // Translate and rotate the triangle appropriately.
+  // Translate and rotate the triangle appropriately.
   math::Mat4f model = math::CreateTranslationMatrix(position) *
                       math::CreateScaleMatrix(scale) *
                       math::CreateRotationMatrix(orientation);
@@ -242,7 +241,6 @@ RenderRectangle(const math::Vec3f& position, const math::Vec3f& scale,
   glDrawArrays(GL_TRIANGLES, 0, 6);
 }
 
-
 void
 RenderCircle(const math::Vec3f& position, const math::Vec3f& scale,
              const math::Quatf& orientation, const math::Vec4f& color)
@@ -256,12 +254,10 @@ RenderCircle(const math::Vec3f& position, const math::Vec3f& scale,
   math::Mat4f view_pojection = kRGG.projection * kRGG.view;
   glUniform4f(kRGG.circle_program.color_uniform, color.x, color.y, color.z,
               color.w);
-  glUniformMatrix4fv(kRGG.circle_program.model_uniform, 1, GL_FALSE,
-                     &model[0]);
+  glUniformMatrix4fv(kRGG.circle_program.model_uniform, 1, GL_FALSE, &model[0]);
   glUniformMatrix4fv(kRGG.circle_program.view_projection_uniform, 1, GL_FALSE,
                      &view_pojection[0]);
   glDrawArrays(GL_TRIANGLES, 0, 6);
-
 }
 
 math::Mat4f
@@ -291,8 +287,8 @@ RenderLine(const math::Vec3f& start, const math::Vec3f& end,
 {
   glUseProgram(kRGG.geometry_program.reference);
   glBindVertexArray(kRGG.line_vao_reference);
-  math::Mat4f matrix = kRGG.projection * kRGG.view *
-                       CreateLineTransform(start, end);
+  math::Mat4f matrix =
+      kRGG.projection * kRGG.view * CreateLineTransform(start, end);
   glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
               color.w);
   glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
@@ -311,11 +307,9 @@ RenderGrid(float width, float height, const math::Vec4f& color)
       kRGG.camera_transform * math::Vec3f(dims.x, dims.y, 0.f);
   math::Vec3f bottom_left =
       kRGG.camera_transform * math::Vec3f(-dims.x, -dims.y, 0.f);
-  float right_most_grid_x =
-        width - (fmod(top_right.x + width, width));
+  float right_most_grid_x = width - (fmod(top_right.x + width, width));
   float left_most_grid_x = -fmod(bottom_left.x + width, width);
-  float top_most_grid_y =
-      height - (fmod(top_right.y + height, height));
+  float top_most_grid_y = height - (fmod(top_right.y + height, height));
   float bottom_most_grid_y = -fmod(bottom_left.y + height, height);
 
   math::Vec3f top_right_transformed =
@@ -324,20 +318,18 @@ RenderGrid(float width, float height, const math::Vec4f& color)
       bottom_left + math::Vec3f(left_most_grid_x, bottom_most_grid_y, 0.f);
 
   // Draw horizontal lines.
-  for (float y = bottom_left_transformed.y; y < top_right.y;
-       y += height) {
+  for (float y = bottom_left_transformed.y; y < top_right.y; y += height) {
     auto start = math::Vec3f(bottom_left_transformed.x, y, 0.f);
     auto end = math::Vec3f(top_right_transformed.x, y, 0.f);
     RenderLine(start, end, color);
   }
 
   // Draw vertical lines.
-  for (float x = bottom_left_transformed.x; x < top_right.x;
-       x += width) {
+  for (float x = bottom_left_transformed.x; x < top_right.x; x += width) {
     auto start = math::Vec3f(x, bottom_left_transformed.y, 0.f);
     auto end = math::Vec3f(x, top_right_transformed.y, 0.f);
     RenderLine(start, end, color);
   }
 }
 
-}
+}  // namespace rgg
