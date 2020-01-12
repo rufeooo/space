@@ -63,15 +63,15 @@ drop_inactive_players(uint64_t rt_usec)
   }
 }
 
-void*
-server_main(const ThreadInfo* t)
+uint64_t
+server_main(void* void_arg)
 {
-  ServerParam* arg = (ServerParam*)t->arg;
+  ServerParam* arg = (ServerParam*)void_arg;
 
   uint8_t in_buffer[MAX_BUFFER];
   if (!udp::Init()) {
     puts("server: fail init");
-    return 0;
+    return 1;
   }
 
   Udp4 location;
@@ -79,13 +79,13 @@ server_main(const ThreadInfo* t)
     puts("server: fail GetAddr4");
     puts(arg->ip);
     puts(arg->port);
-    return 0;
+    return 2;
   }
 
   printf("Server binding %s:%s\n", arg->ip, arg->port);
   if (!udp::Bind(location)) {
     puts("server: fail Bind");
-    return 0;
+    return 3;
   }
 
   uint64_t realtime_usec = 0;

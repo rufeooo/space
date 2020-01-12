@@ -3,7 +3,7 @@
 #include <cstdint>
 
 struct ThreadInfo;
-typedef void* (*ThreadFunc)(const ThreadInfo*);
+typedef uint64_t (*ThreadFunc)(void* arg);
 
 struct ThreadInfo {
   uint64_t id;

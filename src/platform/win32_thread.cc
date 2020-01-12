@@ -20,8 +20,8 @@ static Thread kThread;
 
 DWORD WINAPI Win32ThreadFunc( LPVOID lpParam )
 {
-	const ThreadInfo* ti = (const ThreadInfo*)lpParam;
-	ti->func(ti);
+	ThreadInfo* ti = (ThreadInfo*)lpParam;
+	ti->return_value = ti->func(ti->arg);
 	return 0;
 }
 

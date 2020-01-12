@@ -4,23 +4,28 @@
 
 #include "platform.cc"
 
-void*
-whee(ThreadInfo* t)
+uint64_t
+AppThreadMain(void* t)
 {
+  printf("thread arg %p\n", t);
+
   for (int i = 0; i < 1000; ++i) {
     printf("thread fun ");
   }
 
-  t->return_value = 500;
-  return &t->return_value;
+  return 500;
 }
 
 int
-main()
+main(int argc, char** argv)
 {
-  //printf("%lu\n", sizeof(pthread_t));
+  printf("argv %p\n", argv);
+
+  // printf("%lu\n", sizeof(pthread_t));
   static ThreadInfo t;
-  platform::thread_create(&t, whee);
+  t.func = AppThreadMain;
+  t.arg = argv;
+  platform::thread_create(&t);
 
   platform::thread_join(&t);
   printf("ret %lu\n", t.return_value);
