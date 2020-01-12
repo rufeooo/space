@@ -13,11 +13,11 @@ Initialize()
       math::Vec3f(300.f, 400.f, 0), math::Vec3f(650.f, 500.f, 0)};
   const math::Vec3f scale = math::Vec3f(0.25f, 0.25f, 0.f);
   for (int i = 0; i < ARRAY_LENGTH(pos); ++i) {
-    kWriteEntity[i].transform.position = pos[i];
-    kWriteEntity[i].transform.scale = scale;
+    kEntity[i].transform.position = pos[i];
+    kEntity[i].transform.scale = scale;
   }
-  kWriteEntity[0].kind = 1;
-  // Apply default state to kReadEntity
+  kEntity[0].kind = 1;
+  // Apply default state to kPreviousEntity
   EntityAdvance();
 
   tilemap::Initialize();
@@ -28,7 +28,8 @@ Initialize()
 bool
 VerifyIntegrity()
 {
-  return memcmp(kWriteEntity, kReadEntity, sizeof(kReadEntity)) == 0;
+  // TODO (AN): Checksum of kEntity compared to end of last frame
+  return true;
 }
 
 void
@@ -36,8 +37,8 @@ Update()
 {
   using namespace tilemap;
 
-  const Entity* ent_end = kWriteEntity + MAX_ENTITY;
-  for (Entity* ent = kWriteEntity; ent < ent_end; ++ent) {
+  const Entity* ent_end = kEntity + MAX_ENTITY;
+  for (Entity* ent = kEntity; ent < ent_end; ++ent) {
     if (!COMPONENT_EXISTS(ent, destination)) continue;
     TransformComponent* transform = &ent->transform;
 
@@ -61,19 +62,17 @@ ToRenderer()
 {
   using namespace tilemap;
 
-  const Entity* ent_end = kReadEntity + MAX_ENTITY;
+  const Entity* ent_end = kPreviousEntity + MAX_ENTITY;
 
   static math::Vec3f asteroid_pos(400.f, 750.f, 0.f);
   asteroid_pos.x -= 1.f;
   if (asteroid_pos.x < 0.f) asteroid_pos.x = 800.f;
-  
-  gfx::PushAsteroid(
-      asteroid_pos,
-      math::Vec3f(1.f, 1.f, 1.f),
-      math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
-      math::Vec4f(1.f, 1.f, 1.f, 1.0f));
 
-  for (const Entity* ent = kReadEntity; ent < ent_end; ++ent) {
+  gfx::PushAsteroid(asteroid_pos, math::Vec3f(1.f, 1.f, 1.f),
+                    math::Quatf(0.f, math::Vec3f(0.f, 0.f, 1.f)),
+                    math::Vec4f(1.f, 1.f, 1.f, 1.0f));
+
+  for (const Entity* ent = kPreviousEntity; ent < ent_end; ++ent) {
     if (!EntityExists(ent)) continue;
 
     const math::Vec3f* p = &ent->transform.position;
@@ -139,7 +138,7 @@ ToRenderer()
     }
   }
 
-  for (const Entity* ent = kReadEntity; ent <= kReadEntity; ++ent) {
+  for (const Entity* ent = kPreviousEntity; ent <= kPreviousEntity; ++ent) {
     if (!COMPONENT_EXISTS(ent, destination)) continue;
 
     math::Vec2i start = WorldToTilePos(ent->transform.position.xy());
@@ -150,7 +149,7 @@ ToRenderer()
     gfx::PushText(buffer, 3.f, 30.f);
   }
 
-  for (const Entity* ent = kReadEntity; ent < ent_end; ++ent) {
+  for (const Entity* ent = kPreviousEntity; ent < ent_end; ++ent) {
     if (!COMPONENT_EXISTS(ent, destination)) continue;
     const DestinationComponent* destination = &ent->destination;
     const TransformComponent* transform = &ent->transform;

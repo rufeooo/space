@@ -212,6 +212,8 @@ main(int argc, char** argv)
     if (SlotReady(slot)) {
       // Verify the simulation has not changed outside this block
       if (!simulation::VerifyIntegrity()) exit(4);
+      // Commit current simulation state to previous
+      simulation::ApplyUpdate();
 
       // Game Mutation: Apply player commands for turn N
       InputBuffer* game_turn = GetSlot(slot);
@@ -223,27 +225,6 @@ main(int argc, char** argv)
 
       // Game Mutation: continue simulation
       simulation::Update();
-
-      // Begin Render Mutation
-      gfx::ResetRenderData();
-
-      // Misc debug/feedback
-      auto sz = window::GetWindowSize();
-      char buffer[50];
-      sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
-      gfx::PushText(buffer, 3.f, sz.y);
-      sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
-      gfx::PushText(buffer, 3.f, sz.y - 25.f);
-      auto mouse = camera::ScreenToWorldSpace(GetLocalCamera(),
-                                              window::GetCursorPosition());
-      sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
-      gfx::PushText(buffer, 3.f, sz.y - 50.f);
-
-      // Game simulation to renderer
-      simulation::ToRenderer();
-
-      // Commit new simulation state
-      simulation::ApplyUpdate();
 
       // Camera
       for (int i = 0; i < MAX_PLAYER; ++i) {
@@ -259,6 +240,24 @@ main(int argc, char** argv)
       // a fixed delta so no need to provide a delta time.
       ++kGameState.logic_updates;
     }
+
+    // Begin Render Mutation
+    gfx::ResetRenderData();
+
+    // Misc debug/feedback
+    auto sz = window::GetWindowSize();
+    char buffer[50];
+    sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
+    gfx::PushText(buffer, 3.f, sz.y);
+    sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
+    gfx::PushText(buffer, 3.f, sz.y - 25.f);
+    auto mouse = camera::ScreenToWorldSpace(GetLocalCamera(),
+                                            window::GetCursorPosition());
+    sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
+    gfx::PushText(buffer, 3.f, sz.y - 50.f);
+
+    // Game simulation to renderer
+    simulation::ToRenderer();
 
 #ifndef HEADLESS
     gfx::Render();
