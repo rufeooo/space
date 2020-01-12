@@ -113,4 +113,12 @@ PointInPolygon(const math::Vec2f& point, const uint64_t polygon_size,
   return count & 1;  // Same as (count%2 == 1)
 }
 
+bool
+PointInRect(const math::Vec2f& point, const AxisAlignedRect& rect)
+{
+  return (point.x > rect.min.x && point.x < rect.max.x) &&
+         (point.y > rect.min.y && point.y < rect.max.y);
+}
+
+
 }  // namespace math

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "vec.h"
+#include "rect.h"
 
 namespace math
 {
@@ -11,5 +12,7 @@ bool LineSegmentsIntersect(const math::Vec2f& a_start, const math::Vec2f& a_end,
 
 bool PointInPolygon(const math::Vec2f& point, const uint64_t polygon_size,
                     math::Vec2f* polygon);
+
+bool PointInRect(const math::Vec2f& point, const AxisAlignedRect& rect);
 
 }  // namespace math

@@ -252,6 +252,15 @@ main(int argc, char** argv)
     sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
     gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
+    for (int i = 0; i < kCountAsteroid; ++i) {
+      math::AxisAlignedRect aabb = gfx::kGfx.asteroid_aabb;
+      aabb.min += kAsteroid[i].transform.position;
+      aabb.max += kAsteroid[i].transform.position;
+      if (math::PointInRect(mouse, aabb)) {
+        gfx::PushText("Mouse / Asteroid collision", 3.f, sz.y - 75.f);
+      }
+    }
+
 #ifndef HEADLESS
     gfx::Render();
 #endif

@@ -3,6 +3,7 @@
 #include "math/mat.h"
 #include "math/quat.h"
 #include "math/vec.h"
+#include "math/rect.h"
 
 #include "platform/platform.cc"
 

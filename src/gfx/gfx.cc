@@ -24,6 +24,7 @@ struct Gfx {
   Text text[kMaxTextCount];
   int text_count;
   rgg::Tag asteroid_tag;
+  math::AxisAlignedRect asteroid_aabb;
 };
 
 static Gfx kGfx;
@@ -46,6 +47,20 @@ Initialize()
     -1.4f, 1.9f, 0.f, -1.f, 2.05f, 0.f, -0.7f, 2.07f, 0.f, -0.65f, 2.2f, 0.f,
     -0.5f, 2.25f, 0.f};
   for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 15.f; // HA
+  kGfx.asteroid_aabb.min = math::Vec3f(10000.0f, 10000.0f, 10000.0f);
+  kGfx.asteroid_aabb.max = math::Vec3f(-10000.0f, -10000.0f, -10000.0f);
+  for (int i = 0; i < kFloatCount; i += 3) {
+    auto& aabb = kGfx.asteroid_aabb;
+    float x = asteroid[i];
+    float y = asteroid[i];
+    float z = asteroid[i];
+    if (x < aabb.min.x) aabb.min.x = x;
+    if (x > aabb.max.x) aabb.max.x = x;
+    if (y < aabb.min.y) aabb.min.y = y;
+    if (y > aabb.max.y) aabb.max.y = y;
+    if (z < aabb.min.z) aabb.min.z = z;
+    if (z > aabb.max.z) aabb.max.z = z;
+  }
   kGfx.asteroid_tag = rgg::CreateRenderable(kVertCount, asteroid, GL_LINE_LOOP);
   return status;
 }
@@ -151,10 +166,8 @@ Render()
   rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
   rgg::RenderGrid(25.f, 25.f, math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
 
-
   kGfx.text_count = 0;
 }
-
 
 void
 PushText(const char* msg, float screen_x, float screen_y)
