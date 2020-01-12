@@ -4,6 +4,8 @@
 #include "math/quat.h"
 #include "math/vec.h"
 
+#include "platform/platform.cc"
+
 // Do our best to keep all graphics related calls in here.
 
 namespace gfx

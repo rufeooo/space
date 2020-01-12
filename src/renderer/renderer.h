@@ -2,6 +2,8 @@
 #include "math/quat.h"
 #include "math/vec.h"
 
+#include "platform/platform.cc"
+
 // rgg for render go-go!
 
 namespace rgg {
