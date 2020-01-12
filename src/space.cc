@@ -79,7 +79,7 @@ SimulationEvent(const PlatformEvent* event, const Camera* camera,
     case MOUSE_DOWN: {
       if (event->button == BUTTON_LEFT) {
         command::Move move;
-        move.entity_id = 0;
+        move.unit_id = 0;
         move.position = camera::ScreenToWorldSpace(camera, event->position);
         command::Execute(move);
       }
@@ -212,8 +212,6 @@ main(int argc, char** argv)
     if (SlotReady(slot)) {
       // Verify the simulation has not changed outside this block
       if (!simulation::VerifyIntegrity()) exit(4);
-      // Commit current simulation state to previous
-      simulation::ApplyUpdate();
 
       // Game Mutation: Apply player commands for turn N
       InputBuffer* game_turn = GetSlot(slot);

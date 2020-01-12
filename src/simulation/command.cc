@@ -1,5 +1,5 @@
 
-#include "entity.cc"
+#include "unit.cc"
 
 namespace command
 {
@@ -9,14 +9,14 @@ enum Event {
 };
 
 struct Move {
-  uint64_t entity_id;
+  uint64_t unit_id;
   math::Vec2f position;
 };
 
 void
 Execute(const Move& move)
 {
-  kEntity[move.entity_id].destination.position = move.position;
+  kUnit[move.unit_id].destination = move.position;
 }
 
 }  // namespace command
