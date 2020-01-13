@@ -32,8 +32,8 @@ namespace camera
 void
 ConfigureObserver(const Camera* cam, rgg::Observer* observer)
 {
-  observer->camera_transform =
-      math::CreateViewMatrix<float>(-cam->position, cam->orientation);
+  observer->camera_transform = math::CreateTranslationMatrix(cam->position) *
+                               math::CreateRotationMatrix(cam->orientation);
   observer->view =
       math::CreateViewMatrix<float>(cam->position, cam->orientation);
   observer->projection = cam->projection;
@@ -49,7 +49,8 @@ ScreenToWorldSpace(const Camera* cam, const math::Vec2f& screen_pos)
   // Transform matrix is orientating the click to take into consideration
   // camera rotation / scale / translation.
 
-  math::Mat4f camera_transform = math::CreateViewMatrix<float>(-cam->position, cam->orientation);
+  math::Mat4f camera_transform = math::CreateTranslationMatrix(cam->position) *
+                                 math::CreateRotationMatrix(cam->orientation);
   return (camera_transform * math::Vec3f(screen_pos - dims * 0.5f)).xy();
 }
 
