@@ -83,7 +83,7 @@ Render(const math::Rectf visible_world)
 
   using namespace tilemap;
 
-  for (int i = 0; i < kCountUnit; ++i) {
+  for (int i = 0; i < kUsedUnit; ++i) {
     Unit* unit = &kUnit[i];
 
     const math::Vec3f* p = &unit->transform.position;
@@ -136,7 +136,7 @@ Render(const math::Rectf visible_world)
     }
   }
 
-  for (int i = 0; i < kCountAsteroid; ++i) {
+  for (int i = 0; i < kUsedAsteroid; ++i) {
     Asteroid* asteroid = &kAsteroid[i];
     rgg::RenderTag(kGfx.asteroid_tag, asteroid->transform.position,
                    asteroid->transform.scale, asteroid->transform.orientation,

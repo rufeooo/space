@@ -6,7 +6,6 @@
 #include "gfx/gfx.cc"
 #include "network/network.cc"
 #include "simulation/camera.cc"
-#include "simulation/command.cc"
 #include "simulation/simulation.cc"
 
 struct State {
@@ -108,7 +107,7 @@ SimulationEvent(const PlatformEvent* event, const Camera* camera,
     case MOUSE_DOWN: {
       if (event->button == BUTTON_LEFT) {
         math::Vec3f pos = CoordToWorld(event->position);
-        Command* command = NewCommand();
+        Command* command = UseCommand();
         command->type = Command::kMove;
         command->destination = pos.xy();
       }
@@ -269,7 +268,7 @@ main(int argc, char** argv)
     sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
     gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
-    for (int i = 0; i < kCountAsteroid; ++i) {
+    for (int i = 0; i < kUsedAsteroid; ++i) {
       math::AxisAlignedRect aabb = gfx::kGfx.asteroid_aabb;
       aabb.min += kAsteroid[i].transform.position;
       aabb.max += kAsteroid[i].transform.position;

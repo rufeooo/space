@@ -1,34 +1,36 @@
 #pragma once
 
-#include <cassert>
-
-struct Transform {
-  math::Vec3f position;
-  math::Vec3f scale = math::Vec3f(1.f, 1.f, 1.f);
-  math::Quatf orientation;
-};
+#include <cstdint>
 
 // For the given type defines -
-//    kMaxSize<type> - Max allowed for the given game type.
-//    kCount<type> - The number of the given game type.
+//    kMax<type> - The upper bound count for the given type.
+//    kUsed<type> - The in-use count of the given type.
 //    k<type> - The storage for the type.
-//    New<type>() - Function to create a new of the given type.
-#define DECLARE_GAME_TYPE(type, max_count)     \
-  constexpr int kMaxSize##type = max_count;    \
-                                               \
-  static type k##type[max_count];              \
-                                               \
-  static int kCount##type;                     \
-                                               \
-  type* New##type() {                          \
-    assert(kCount##type + 1 < kMaxSize##type); \
-    type* t = &k##type[kCount##type++];        \
-    return t;                                  \
-  }                                            \
-                                               \
-  void Delete##type(int id) {                  \
-    for (int i = id; i < kCount##type; ++i) {  \
-      k##type[i] = k##type[i + 1];             \
-    }                                          \
-    --kCount##type;                            \
-  }                                            \
+//    Use<type>() - Function to request use of a instance of type.
+//    Release<type>() - Function to return an instance of type.
+#define DECLARE_GAME_TYPE(type, max_count)      \
+  constexpr uint64_t kMax##type = max_count;    \
+                                                \
+  static type k##type[max_count];               \
+                                                \
+  static uint64_t kUsed##type;                  \
+                                                \
+  type* Use##type()                             \
+  {                                             \
+    if (kUsed##type >= kMax##type) return NULL; \
+    type* t = &k##type[kUsed##type];            \
+    kUsed##type += 1;                           \
+    return t;                                   \
+  }                                             \
+                                                \
+  void Release##type(uint64_t id)               \
+  {                                             \
+    uint64_t used = kUsed##type;                \
+    if (!used) return;                          \
+    if (id >= used) return;                     \
+    used -= 1;                                  \
+    kUsed##type = used;                         \
+    if (id == used) return;                     \
+    k##type[id] = k##type[used];                \
+  }
+

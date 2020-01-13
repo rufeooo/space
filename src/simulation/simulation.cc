@@ -4,9 +4,8 @@
 
 #include "platform/macro.h"
 
+#include "entity.cc"
 #include "search.cc"
-#include "asteroid.cc"
-#include "unit.cc"
 
 namespace simulation
 {
@@ -18,18 +17,18 @@ Initialize()
       math::Vec3f(300.f, 400.f, 0), math::Vec3f(650.f, 500.f, 0)};
   const math::Vec3f scale = math::Vec3f(0.25f, 0.25f, 0.f);
   for (int i = 0; i < ARRAY_LENGTH(pos); ++i) {
-    Unit* unit = NewUnit();
+    Unit* unit = UseUnit();
     unit->transform.position = pos[i];
     unit->transform.scale = scale;
   }
 
-  for (int i = 0; i < kCountUnit; ++i) {
+  for (int i = 0; i < kUsedUnit; ++i) {
     Unit* unit = &kUnit[i];
-    printf("UNIT %i: %.2f,%.2f\n",
-           i, unit->transform.position.x, unit->transform.position.y);
+    printf("UNIT %i: %.2f,%.2f\n", i, unit->transform.position.x,
+           unit->transform.position.y);
   }
 
-  Asteroid* asteroid = NewAsteroid();
+  Asteroid* asteroid = UseAsteroid();
   asteroid->transform.position = math::Vec3f(400.f, 750.f, 0.f);
 
   tilemap::Initialize();
@@ -49,7 +48,7 @@ Update()
 {
   using namespace tilemap;
 
-  for (int i = 0; i < kCountUnit; ++i) {
+  for (int i = 0; i < kUsedUnit; ++i) {
     Unit* unit = &kUnit[i];
     Transform* transform = &unit->transform;
 
@@ -72,11 +71,12 @@ Update()
         auto dir = math::Normalize(dest - transform->position.xy());
         transform->position += dir * 1.f;
       } break;
-      default: break;
+      default:
+        break;
     }
   }
 
-  for (int i = 0; i < kCountAsteroid; ++i) {
+  for (int i = 0; i < kUsedAsteroid; ++i) {
     Asteroid* asteroid = &kAsteroid[i];
     asteroid->transform.position.x -= 1.0f;
     if (asteroid->transform.position.x < 0.f) {
@@ -84,10 +84,10 @@ Update()
     }
   }
 
-  while (kCountCommand) {
+  while (kUsedCommand) {
     // Find a unit with no command.
     Unit* unit = nullptr;
-    for (int i = 0; i < kCountUnit; ++i) {
+    for (int i = 0; i < kUsedUnit; ++i) {
       if (kUnit[i].command.type == Command::kNone) {
         printf("Assigning to %i\n", i);
         unit = &kUnit[i];
@@ -97,7 +97,7 @@ Update()
     if (!unit) break;
     // Assign the command to a unit and continue.
     unit->command = kCommand[0];
-    DeleteCommand(0);
+    ReleaseCommand(0);
   }
 }
 
