@@ -184,6 +184,15 @@ operator-(const Mat<T, M, N>& lhs, const T& rhs)
   return r;
 }
 
+template <typename T, size_t M, size_t N>
+Mat<T, M, N>
+operator-(const Mat<T, M, N>& lhs, const Mat<T, M, N>& rhs)
+{
+  Mat<T, M, N> r;
+  for (size_t i = 0; i < M * N; ++i) r.data_[i] = lhs.data_[i] - rhs.data_[i];
+  return r;
+}
+
 using Mat4i = Mat<int, 4, 4>;
 using Mat4u = Mat<uint32_t, 4, 4>;
 using Mat4f = Mat<float, 4, 4>;

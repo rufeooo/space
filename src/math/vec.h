@@ -46,6 +46,12 @@ struct Vec2 {
     return t;
   }
 
+  Vec2<T>
+  operator-() const
+  {
+    return Vec2<T>() - *this;
+  }
+
   void
   operator-=(const Vec2<T>& rhs)
   {
@@ -200,6 +206,12 @@ struct Vec3 {
     Vec3<T> t = *this;
     t -= rhs;
     return t;
+  }
+
+  Vec3<T>
+  operator-() const
+  {
+    return Vec3<T>() - *this;
   }
 
   void
@@ -373,6 +385,12 @@ struct Vec4 {
     Vec4<T> t = *this;
     t -= rhs;
     return t;
+  }
+
+  Vec4<T>
+  operator-() const
+  {
+    return Vec4<T>() - *this;
   }
 
   void
