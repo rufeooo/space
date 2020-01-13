@@ -73,7 +73,7 @@ AlignToGrid(math::Vec2f grid, math::Rectf* world)
 }
 
 void
-Render(math::Rectf visible_world)
+Render(const math::Rectf visible_world)
 {
   // Draw all text.
   for (int i = 0; i < kGfx.text_count; ++i) {
@@ -171,10 +171,15 @@ Render(math::Rectf visible_world)
     }
   }
 
-  const math::Vec2f grid(25.f, 25.f);
-  AlignToGrid(grid, &visible_world);
-  rgg::RenderGrid(grid, visible_world,
-                  math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
+  const math::Vec2f grid2(50.f, 50.f);
+  math::Rectf world2 = visible_world;
+  AlignToGrid(grid2, &world2);
+  rgg::RenderGrid(grid2, world2, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
+
+  const math::Vec2f grid1(25.f, 25.f);
+  math::Rectf world1 = visible_world;
+  AlignToGrid(grid1, &world1);
+  rgg::RenderGrid(grid1, world1, math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
 
   kGfx.text_count = 0;
 }
