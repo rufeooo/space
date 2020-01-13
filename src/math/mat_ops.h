@@ -72,18 +72,19 @@ template <class T>
 Mat<T, 4, 4>
 CreateViewMatrix(const Vec3<T>& translation, const Quat<T>& quat)
 {
+  auto mat = CreateRotationMatrix(quat).Transpose();
   Mat<T, 4, 4> view;
-  view[0] = 1.f - 2.f * quat.y * quat.y - 2.f * quat.z * quat.z;
-  view[1] = 2.f * quat.x * quat.y - 2.f * quat.w * quat.z;
-  view[2] = 2.f * quat.x * quat.z + 2 * quat.w * quat.y;
+  view[0] = mat[0];
+  view[1] = mat[1];
+  view[2] = mat[2];
   view[3] = T(0);
-  view[4] = 2.f * quat.x * quat.y + 2.f * quat.w * quat.z;
-  view[5] = 1.f - 2.f * quat.x * quat.x - 2.f * quat.z * quat.z;
-  view[6] = 2.f * quat.y * quat.z - 2.f * quat.w * quat.x;
+  view[4] = mat[4];
+  view[5] = mat[5];
+  view[6] = mat[6];
   view[7] = T(0);
-  view[8] = 2.f * quat.x * quat.z - 2.f * quat.w * quat.y;
-  view[9] = 2.f * quat.y * quat.z + 2.f * quat.w * quat.x;
-  view[10] = 1.f - 2.f * quat.x * quat.x - 2.f * quat.y * quat.y;
+  view[8] = mat[8];
+  view[9] = mat[9];
+  view[10] = mat[10];
   view[11] = T(0);
   view[12] = -translation.x;
   view[13] = -translation.y;
