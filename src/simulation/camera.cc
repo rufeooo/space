@@ -18,8 +18,6 @@
 #include "platform/platform.cc"
 #include "renderer/renderer.cc"
 
-typedef math::Mat4f CreateProjectionFunctor(void);
-
 struct Camera {
   math::Vec3f position;
   math::Quatf orientation;
@@ -31,25 +29,14 @@ struct Camera {
 
 namespace camera
 {
-CreateProjectionFunctor* _custom_projection = nullptr;
-
 void
-AimAt(const math::Vec3f& dir, Camera* cam)
+ConfigureObserver(const Camera* cam, rgg::Observer* observer)
 {
-  cam->orientation.Set(0.f, dir);
-}
-
-math::Mat4f
-transform_matrix(const Camera* cam)
-{
-  return math::CreateTranslationMatrix(cam->position) *
-         math::CreateRotationMatrix(cam->orientation);
-}
-
-math::Mat4f
-view_matrix(const Camera* cam)
-{
-  return math::CreateViewMatrix<float>(cam->position, cam->orientation);
+  observer->camera_transform =
+      math::CreateViewMatrix<float>(-cam->position, cam->orientation);
+  observer->view =
+      math::CreateViewMatrix<float>(cam->position, cam->orientation);
+  observer->projection = cam->projection;
 }
 
 math::Vec2f
@@ -61,7 +48,9 @@ ScreenToWorldSpace(const Camera* cam, const math::Vec2f& screen_pos)
   //
   // Transform matrix is orientating the click to take into consideration
   // camera rotation / scale / translation.
-  return (transform_matrix(cam) * math::Vec3f(screen_pos - dims / 2.f)).xy();
+
+  math::Mat4f camera_transform = math::CreateViewMatrix<float>(-cam->position, cam->orientation);
+  return (camera_transform * math::Vec3f(screen_pos - dims * 0.5f)).xy();
 }
 
 void
@@ -73,10 +62,9 @@ InitialCamera(Camera* cam, math::Vec2f dims)
 }
 
 void
-CustomCamera(Camera* cam, math::Mat4f custom_projection)
+OrientCamera(const math::Vec3f& dir, Camera* cam)
 {
-  cam->position = math::Vec3f(400.f, 400.f, 0.f);
-  cam->projection = custom_projection;
+  cam->orientation.Set(0.f, dir);
 }
 
 }  // namespace camera

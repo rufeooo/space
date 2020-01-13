@@ -2,15 +2,14 @@
 
 #include "renderer/renderer.cc"
 
-#include "../simulation/command.cc"
-#include "../simulation/unit.cc"
-#include "../simulation/search.cc"
 #include "../simulation/asteroid.cc"
+#include "../simulation/command.cc"
+#include "../simulation/search.cc"
 #include "../simulation/tilemap.cc"
+#include "../simulation/unit.cc"
 
 namespace gfx
 {
-
 constexpr int kMaxTextSize = 128;
 constexpr int kMaxTextCount = 32;
 
@@ -39,15 +38,16 @@ Initialize()
   constexpr int kVertCount = 29;
   constexpr int kFloatCount = kVertCount * 3;
   GLfloat asteroid[kFloatCount] = {
-    0.f, 1.6f, 0.f, 0.2f, 1.5f, 0.f, 0.4f, 1.6f, 0.f, 0.6f, 1.6f, 0.f,
-    0.68f, 1.9f, 0.f, 1.1f, 1.8f, 0.f, 1.6f, 1.7f, 0.f, 1.8f, 0.9f, 0.f,
-    2.3f, 0.3f, 0.f, 2.4f, -0.5f, 0.f, 2.f, -0.8f, 0.f, 1.5f, -1.1f, 0.f,
-    0.7f, -1.f, 0.f, 0.5f, -1.1f, 0.f, 0.2f, -1.3f, 0.f, -0.3f, -1.4f, 0.f,
-    -1.1f, -1.1f, 0.f, -1.3f, -0.6f, 0.f, -1.25f, -0.2f, 0.f, -1.5f, 0.5f, 0.f,
-    -1.4f, 0.4f, 0.f, -1.65f, 1.f, 0.f, -1.6f, 1.3f, 0.f, -1.6f, 1.7f, 0.f,
-    -1.4f, 1.9f, 0.f, -1.f, 2.05f, 0.f, -0.7f, 2.07f, 0.f, -0.65f, 2.2f, 0.f,
-    -0.5f, 2.25f, 0.f};
-  for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 15.f; // HA
+      0.f,   1.6f,   0.f,   0.2f,   1.5f,   0.f,   0.4f,  1.6f,  0.f,   0.6f,
+      1.6f,  0.f,    0.68f, 1.9f,   0.f,    1.1f,  1.8f,  0.f,   1.6f,  1.7f,
+      0.f,   1.8f,   0.9f,  0.f,    2.3f,   0.3f,  0.f,   2.4f,  -0.5f, 0.f,
+      2.f,   -0.8f,  0.f,   1.5f,   -1.1f,  0.f,   0.7f,  -1.f,  0.f,   0.5f,
+      -1.1f, 0.f,    0.2f,  -1.3f,  0.f,    -0.3f, -1.4f, 0.f,   -1.1f, -1.1f,
+      0.f,   -1.3f,  -0.6f, 0.f,    -1.25f, -0.2f, 0.f,   -1.5f, 0.5f,  0.f,
+      -1.4f, 0.4f,   0.f,   -1.65f, 1.f,    0.f,   -1.6f, 1.3f,  0.f,   -1.6f,
+      1.7f,  0.f,    -1.4f, 1.9f,   0.f,    -1.f,  2.05f, 0.f,   -0.7f, 2.07f,
+      0.f,   -0.65f, 2.2f,  0.f,    -0.5f,  2.25f, 0.f};
+  for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 15.f;  // HA
   kGfx.asteroid_aabb.min = math::Vec3f(10000.0f, 10000.0f, 10000.0f);
   kGfx.asteroid_aabb.max = math::Vec3f(-10000.0f, -10000.0f, -10000.0f);
   for (int i = 0; i < kFloatCount; i += 3) {
@@ -76,7 +76,7 @@ Render()
   }
 
   using namespace tilemap;
-  
+
   for (int i = 0; i < kCountUnit; ++i) {
     Unit* unit = &kUnit[i];
 
@@ -134,9 +134,9 @@ Render()
     Asteroid* asteroid = &kAsteroid[i];
     rgg::RenderTag(kGfx.asteroid_tag, asteroid->transform.position,
                    asteroid->transform.scale, asteroid->transform.orientation,
-                   math::Vec4f(1.f, 1.f, 1.f, 1.f)); 
+                   math::Vec4f(1.f, 1.f, 1.f, 1.f));
   }
-  
+
   for (int i = 0; i < kMapHeight; ++i) {
     for (int j = 0; j < kMapWidth; ++j) {
       Tile* tile = &kTilemap.map[i][j];
@@ -165,9 +165,11 @@ Render()
     }
   }
 
-  // TODO: Wny does this stall when vsync is on??
-  rgg::RenderGrid(50.f, 50.f, math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
-  rgg::RenderGrid(25.f, 25.f, math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
+  math::Vec2f dims = window::GetWindowSize();
+  rgg::RenderGrid(math::Vec2f(50.f, 50.f), dims,
+                  math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
+  rgg::RenderGrid(math::Vec2f(25.f, 25.f), dims,
+                  math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
 
   kGfx.text_count = 0;
 }

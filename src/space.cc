@@ -32,7 +32,7 @@ struct State {
 static State kGameState;
 
 // TODO (AN): Revisit cameras
-Camera*
+const Camera*
 GetLocalCamera()
 {
   return &kGameState.player_camera[kNetworkState.player_id];
@@ -177,10 +177,7 @@ main(int argc, char** argv)
   for (int i = 0; i < MAX_PLAYER; ++i) {
     camera::InitialCamera(&kGameState.player_camera[i], dims);
   }
-  const Camera* cam = GetLocalCamera();
-  rgg::SetProjectionMatrix(cam->projection);
-  rgg::SetViewMatrix(camera::view_matrix(cam));
-  rgg::SetCameraTransformMatrix(camera::transform_matrix(cam));
+  camera::ConfigureObserver(GetLocalCamera(), rgg::GetObserver());
 
   // Game init
   if (!simulation::Initialize()) {
@@ -231,10 +228,7 @@ main(int argc, char** argv)
         kGameState.player_camera[i].position +=
             kGameState.player_camera[i].translation;
       }
-      const Camera* cam = GetLocalCamera();
-      rgg::SetProjectionMatrix(cam->projection);
-      rgg::SetViewMatrix(camera::view_matrix(cam));
-      rgg::SetCameraTransformMatrix(camera::transform_matrix(cam));
+      camera::ConfigureObserver(GetLocalCamera(), rgg::GetObserver());
 
       // Give the user an update tick. The engine runs with
       // a fixed delta so no need to provide a delta time.

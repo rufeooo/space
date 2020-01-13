@@ -25,11 +25,13 @@ struct CircleProgram {
   GLuint radius_uniform;
 };
 
-struct RGG {
+struct Observer {
   math::Mat4f projection;
   math::Mat4f view;
   math::Mat4f camera_transform;
+};
 
+struct RGG {
   GeometryProgram geometry_program;
   CircleProgram circle_program;
 
@@ -41,7 +43,14 @@ struct RGG {
   int meter_size = 50;
 };
 
+static Observer kObserver;
 static RGG kRGG;
+
+Observer*
+GetObserver()
+{
+  return &kObserver;
+}
 
 bool
 SetupGeometryProgram()
@@ -159,24 +168,6 @@ Initialize()
   return true;
 }
 
-void
-SetProjectionMatrix(const math::Mat4f& projection)
-{
-  kRGG.projection = projection;
-}
-
-void
-SetViewMatrix(const math::Mat4f& view)
-{
-  kRGG.view = view;
-}
-
-void
-SetCameraTransformMatrix(const math::Mat4f& camera_transform)
-{
-  kRGG.camera_transform = camera_transform;
-}
-
 Tag
 CreateRenderable(int vert_count, GLfloat* verts, GLenum mode)
 {
@@ -197,7 +188,7 @@ RenderTag(const Tag& tag, const math::Vec3f& position, const math::Vec3f& scale,
   math::Mat4f model = math::CreateTranslationMatrix(position) *
                       math::CreateScaleMatrix(scale) *
                       math::CreateRotationMatrix(orientation);
-  math::Mat4f matrix = kRGG.projection * kRGG.view * model;
+  math::Mat4f matrix = kObserver.projection * kObserver.view * model;
   glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
               color.w);
   glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
@@ -215,7 +206,7 @@ RenderTriangle(const math::Vec3f& position, const math::Vec3f& scale,
   math::Mat4f model = math::CreateTranslationMatrix(position) *
                       math::CreateScaleMatrix(scale) *
                       math::CreateRotationMatrix(orientation);
-  math::Mat4f matrix = kRGG.projection * kRGG.view * model;
+  math::Mat4f matrix = kObserver.projection * kObserver.view * model;
   glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
               color.w);
   glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
@@ -233,7 +224,7 @@ RenderRectangle(const math::Vec3f& position, const math::Vec3f& scale,
   math::Mat4f model = math::CreateTranslationMatrix(position) *
                       math::CreateScaleMatrix(scale) *
                       math::CreateRotationMatrix(orientation);
-  math::Mat4f matrix = kRGG.projection * kRGG.view * model;
+  math::Mat4f matrix = kObserver.projection * kObserver.view * model;
   glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
               color.w);
   glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
@@ -251,7 +242,7 @@ RenderCircle(const math::Vec3f& position, const math::Vec3f& scale,
   math::Mat4f model = math::CreateTranslationMatrix(position) *
                       math::CreateScaleMatrix(scale) *
                       math::CreateRotationMatrix(orientation);
-  math::Mat4f view_pojection = kRGG.projection * kRGG.view;
+  math::Mat4f view_pojection = kObserver.projection * kObserver.view;
   glUniform4f(kRGG.circle_program.color_uniform, color.x, color.y, color.z,
               color.w);
   glUniformMatrix4fv(kRGG.circle_program.model_uniform, 1, GL_FALSE, &model[0]);
@@ -288,7 +279,7 @@ RenderLine(const math::Vec3f& start, const math::Vec3f& end,
   glUseProgram(kRGG.geometry_program.reference);
   glBindVertexArray(kRGG.line_vao_reference);
   math::Mat4f matrix =
-      kRGG.projection * kRGG.view * CreateLineTransform(start, end);
+      kObserver.projection * kObserver.view * CreateLineTransform(start, end);
   glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
               color.w);
   glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
@@ -297,38 +288,45 @@ RenderLine(const math::Vec3f& start, const math::Vec3f& end,
 }
 
 void
-RenderGrid(float width, float height, const math::Vec4f& color)
+RenderGrid(math::Vec2f grid, math::Vec2f dims, const math::Vec4f& color)
 {
+  // Prepare Geometry and color
   glUseProgram(kRGG.geometry_program.reference);
   glBindVertexArray(kRGG.line_vao_reference);
-  // The bottom left and top right of the screen with regards to the camera.
-  auto dims = window::GetWindowSize();
-  math::Vec3f top_right =
-      kRGG.camera_transform * math::Vec3f(dims.x, dims.y, 0.f);
-  math::Vec3f bottom_left =
-      kRGG.camera_transform * math::Vec3f(-dims.x, -dims.y, 0.f);
-  float right_most_grid_x = width - (fmod(top_right.x + width, width));
-  float left_most_grid_x = -fmod(bottom_left.x + width, width);
-  float top_most_grid_y = height - (fmod(top_right.y + height, height));
-  float bottom_most_grid_y = -fmod(bottom_left.y + height, height);
+  glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
+              color.w);
 
-  math::Vec3f top_right_transformed =
-      top_right + math::Vec3f(right_most_grid_x, top_most_grid_y, 0.f);
-  math::Vec3f bottom_left_transformed =
-      bottom_left + math::Vec3f(left_most_grid_x, bottom_most_grid_y, 0.f);
+  // The bottom left and top right of the screen with regards to the camera.
+  dims *= .5;
+  math::Vec3f top_right =
+      kObserver.camera_transform * math::Vec3f(dims.x, dims.y, 0.f);
+  math::Vec3f bottom_left =
+      kObserver.camera_transform * math::Vec3f(-dims.x, -dims.y, 0.f);
+  bottom_left.x += (-fmod(bottom_left.x, grid.x)) - grid.x;
+  bottom_left.y += (-fmod(bottom_left.y, grid.y)) - grid.y;
+  top_right.x += (grid.x - fmod(top_right.x, grid.x));
+  top_right.y += (grid.y - fmod(top_right.y, grid.y));
 
   // Draw horizontal lines.
-  for (float y = bottom_left_transformed.y; y < top_right.y; y += height) {
-    auto start = math::Vec3f(bottom_left_transformed.x, y, 0.f);
-    auto end = math::Vec3f(top_right_transformed.x, y, 0.f);
-    RenderLine(start, end, color);
+  for (float y = bottom_left.y; y < top_right.y; y += grid.y) {
+    auto start = math::Vec3f(bottom_left.x, y, 0.f);
+    auto end = math::Vec3f(top_right.x, y, 0.f);
+    math::Mat4f matrix =
+        kObserver.projection * kObserver.view * CreateLineTransform(start, end);
+    glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
+                       &matrix[0]);
+    glDrawArrays(GL_LINES, 0, 2);
   }
 
   // Draw vertical lines.
-  for (float x = bottom_left_transformed.x; x < top_right.x; x += width) {
-    auto start = math::Vec3f(x, bottom_left_transformed.y, 0.f);
-    auto end = math::Vec3f(x, top_right_transformed.y, 0.f);
-    RenderLine(start, end, color);
+  for (float x = bottom_left.x; x < top_right.x; x += grid.x) {
+    auto start = math::Vec3f(x, bottom_left.y, 0.f);
+    auto end = math::Vec3f(x, top_right.y, 0.f);
+    math::Mat4f matrix =
+        kObserver.projection * kObserver.view * CreateLineTransform(start, end);
+    glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
+                       &matrix[0]);
+    glDrawArrays(GL_LINES, 0, 2);
   }
 }
 
