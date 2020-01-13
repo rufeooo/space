@@ -73,17 +73,44 @@ ProcessInput()
 }
 
 void
+SetProjection()
+{
+  // TODO (AN): revisit camera assumptions
+#ifdef HEADLESS
+  math::Vec2f size = {1280.0f, 720.0f};
+#else
+  math::Vec2f size = window::GetWindowSize();
+#endif
+  rgg::GetObserver()->projection = math::CreateOrthographicMatrix<float>(
+      size.x, 0.f, size.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+}
+
+// Orienting the ui position to have (0,0) be the middle of the screen.
+// TODO (AN): Move this to platform layer?
+math::Vec3f
+CoordToScreen(math::Vec2f xy)
+{
+  auto dims = window::GetWindowSize();
+  return math::Vec3f(xy - dims * 0.5f);
+}
+
+math::Vec3f
+CoordToWorld(math::Vec2f xy)
+{
+  return camera::ScreenToWorldSpace(GetLocalCamera(), CoordToScreen(xy));
+}
+
+void
 SimulationEvent(const PlatformEvent* event, const Camera* camera,
                 math::Vec2f* translation)
 {
   switch (event->type) {
     case MOUSE_DOWN: {
       if (event->button == BUTTON_LEFT) {
-        math::Vec2f pos = camera::ScreenToWorldSpace(camera, event->position);
+        math::Vec3f pos = CoordToWorld(event->position);
         Command* command = NewCommand();
         command->type = Command::kMove;
-        command->destination =
-            camera::ScreenToWorldSpace(camera, event->position);
+        command->destination = pos.xy();
       }
     } break;
     case KEY_DOWN: {
@@ -134,7 +161,7 @@ ProcessSimulation(int player_id, uint64_t event_count,
   // Shared player control of the ship for now
   for (int i = 0; i < event_count; ++i) {
     SimulationEvent(&event[i], &kGameState.player_camera[player_id],
-                    &kGameState.player_camera[player_id].translation);
+                    &kGameState.player_camera[player_id].motion);
   }
 }
 
@@ -168,16 +195,13 @@ main(int argc, char** argv)
 #endif
 
   // Camera init
-  // TODO (AN): don't assume every camera uses local window size
-#ifndef HEADLESS
-  math::Vec2f dims = window::GetWindowSize();
-#else
-  math::Vec2f dims = {1280.0f, 720.0f};
-#endif
   for (int i = 0; i < MAX_PLAYER; ++i) {
-    camera::InitialCamera(&kGameState.player_camera[i], dims);
+    camera::InitialCamera(&kGameState.player_camera[i]);
   }
-  camera::ConfigureObserver(GetLocalCamera(), rgg::GetObserver());
+  camera::SetView(GetLocalCamera(), &rgg::GetObserver()->view);
+
+  // Projection init
+  SetProjection();
 
   // Game init
   if (!simulation::Initialize()) {
@@ -225,10 +249,9 @@ main(int argc, char** argv)
 
       // Camera
       for (int i = 0; i < MAX_PLAYER; ++i) {
-        kGameState.player_camera[i].position +=
-            kGameState.player_camera[i].translation;
+        camera::Update(&kGameState.player_camera[i]);
       }
-      camera::ConfigureObserver(GetLocalCamera(), rgg::GetObserver());
+      camera::SetView(GetLocalCamera(), &rgg::GetObserver()->view);
 
       // Give the user an update tick. The engine runs with
       // a fixed delta so no need to provide a delta time.
@@ -242,8 +265,7 @@ main(int argc, char** argv)
     gfx::PushText(buffer, 3.f, sz.y);
     sprintf(buffer, "Window Size:%ix%i", (int)sz.x, (int)sz.y);
     gfx::PushText(buffer, 3.f, sz.y - 25.f);
-    auto mouse = camera::ScreenToWorldSpace(GetLocalCamera(),
-                                            window::GetCursorPosition());
+    auto mouse = CoordToWorld(window::GetCursorPosition());
     sprintf(buffer, "Mouse Pos In World:(%.1f,%.1f)", mouse.x, mouse.y);
     gfx::PushText(buffer, 3.f, sz.y - 50.f);
 
@@ -251,7 +273,7 @@ main(int argc, char** argv)
       math::AxisAlignedRect aabb = gfx::kGfx.asteroid_aabb;
       aabb.min += kAsteroid[i].transform.position;
       aabb.max += kAsteroid[i].transform.position;
-      if (math::PointInRect(mouse, aabb)) {
+      if (math::PointInRect(mouse.xy(), aabb)) {
         gfx::PushText("Mouse / Asteroid collision", 3.f, sz.y - 75.f);
       }
     }

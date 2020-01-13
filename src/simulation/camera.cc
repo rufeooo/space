@@ -21,48 +21,42 @@
 struct Camera {
   math::Vec3f position;
   math::Quatf orientation;
-  math::Mat4f projection;
-  // Useful for stateful translation (i.e. continue change for duration of
-  // keypress)
-  math::Vec2f translation;
+  // Vector of movement for the camera
+  //   Useful for stateful translation (i.e. the duration of keypress)
+  math::Vec2f motion;
 };
 
 namespace camera
 {
 void
-ConfigureObserver(const Camera* cam, rgg::Observer* observer)
+Update(Camera* cam)
 {
-  observer->camera_transform =
-      math::CreateRotationMatrix(cam->orientation) *
-      math::CreateTranslationMatrix(cam->position);
-  observer->view =
-      math::CreateViewMatrix<float>(cam->position, cam->orientation);
-  observer->projection = cam->projection;
-}
-
-math::Vec2f
-ScreenToWorldSpace(const Camera* cam, const math::Vec2f& screen_pos)
-{
-  auto dims = window::GetWindowSize();
-  // Inner expression is orienting the click position to have (0,0) be the
-  // middle of the screen.
-  //
-  // Transform matrix is orientating the click to take into consideration
-  // camera rotation / scale / translation.
-
-  math::Mat4f camera_transform =
-      math::CreateRotationMatrix(cam->orientation) *
-      math::CreateTranslationMatrix(cam->position);
-  return (camera_transform * math::Vec3f(screen_pos - dims * 0.5f)).xy();
+  cam->position += cam->motion;
 }
 
 void
-InitialCamera(Camera* cam, math::Vec2f dims)
+SetView(const Camera* cam, math::Mat4f* view)
+{
+  *view = math::CreateViewMatrix<float>(cam->position, cam->orientation);
+}
+
+// Transform matrix is orientating the click to take into consideration
+// camera rotation / scale / translation.
+math::Vec3f
+ScreenToWorldSpace(const Camera* cam, const math::Vec3f screen)
+{
+  math::Mat4f camera_transform = math::CreateRotationMatrix(cam->orientation) *
+                                 math::CreateTranslationMatrix(cam->position);
+  math::Vec3f ret = camera_transform * screen;
+
+  return ret;
+}
+
+void
+InitialCamera(Camera* cam)
 {
   cam->position = math::Vec3f(400.f, 400.f, 0.f);
-  cam->projection = math::CreateOrthographicMatrix<float>(
-      dims.x, 0.f, dims.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
-  //cam->orientation.Set(45.f, math::Vec3f(0.f, 0.f, 1.f));
+  // cam->orientation.Set(45.f, math::Vec3f(0.f, 0.f, 1.f));
 }
 
 void
