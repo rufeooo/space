@@ -4,7 +4,7 @@
 
 #include "gl/gl.cc"
 #include "gl/shader.cc"
-#include "math/mat_ops.h"
+#include "math/math.cc"
 #include "platform/platform.cc"
 #include "shader.h"
 #include "ui.cc"
@@ -28,7 +28,6 @@ struct CircleProgram {
 struct Observer {
   math::Mat4f projection;
   math::Mat4f view;
-  math::Mat4f camera_transform;
 };
 
 struct RGG {
@@ -288,7 +287,7 @@ RenderLine(const math::Vec3f& start, const math::Vec3f& end,
 }
 
 void
-RenderGrid(math::Vec2f grid, math::Vec2f dims, const math::Vec4f& color)
+RenderGrid(math::Vec2f grid, math::Rectf bounds, const math::Vec4f& color)
 {
   // Prepare Geometry and color
   glUseProgram(kRGG.geometry_program.reference);
@@ -296,16 +295,8 @@ RenderGrid(math::Vec2f grid, math::Vec2f dims, const math::Vec4f& color)
   glUniform4f(kRGG.geometry_program.color_uniform, color.x, color.y, color.z,
               color.w);
 
-  // The bottom left and top right of the screen with regards to the camera.
-  dims *= .5;
-  math::Vec3f top_right =
-      kObserver.camera_transform * math::Vec3f(dims.x, dims.y, 0.f);
-  math::Vec3f bottom_left =
-      kObserver.camera_transform * math::Vec3f(-dims.x, -dims.y, 0.f);
-  bottom_left.x += (-fmod(bottom_left.x, grid.x)) - grid.x;
-  bottom_left.y += (-fmod(bottom_left.y, grid.y)) - grid.y;
-  top_right.x += (grid.x - fmod(top_right.x, grid.x));
-  top_right.y += (grid.y - fmod(top_right.y, grid.y));
+  math::Vec2f& bottom_left = bounds.min;
+  math::Vec2f& top_right = bounds.max;
 
   // Draw horizontal lines.
   for (float y = bottom_left.y; y < top_right.y; y += grid.y) {

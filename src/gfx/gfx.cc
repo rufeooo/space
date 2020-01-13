@@ -2,11 +2,7 @@
 
 #include "renderer/renderer.cc"
 
-#include "../simulation/asteroid.cc"
-#include "../simulation/command.cc"
-#include "../simulation/search.cc"
-#include "../simulation/tilemap.cc"
-#include "../simulation/unit.cc"
+#include "../simulation/simulation.cc"
 
 namespace gfx
 {
@@ -67,7 +63,17 @@ Initialize()
 }
 
 void
-Render()
+AlignToGrid(math::Vec2f grid, math::Rectf* world)
+{
+  float x_align = fmodf(world->min.x, grid.x);
+  float y_align = fmodf(world->min.y, grid.y);
+
+  world->min.x -= x_align + grid.x;
+  world->min.y -= y_align + grid.y;
+}
+
+void
+Render(math::Rectf visible_world)
 {
   // Draw all text.
   for (int i = 0; i < kGfx.text_count; ++i) {
@@ -165,10 +171,9 @@ Render()
     }
   }
 
-  math::Vec2f dims = window::GetWindowSize();
-  rgg::RenderGrid(math::Vec2f(50.f, 50.f), dims,
-                  math::Vec4f(0.207f, 0.317f, 0.360f, 0.60f));
-  rgg::RenderGrid(math::Vec2f(25.f, 25.f), dims,
+  const math::Vec2f grid(25.f, 25.f);
+  AlignToGrid(grid, &visible_world);
+  rgg::RenderGrid(grid, visible_world,
                   math::Vec4f(0.050f, 0.215f, 0.050f, 0.45f));
 
   kGfx.text_count = 0;

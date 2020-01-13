@@ -279,7 +279,12 @@ main(int argc, char** argv)
     }
 
 #ifndef HEADLESS
-    gfx::Render();
+    // The bottom left and top right of the screen with regards to the camera.
+    const Camera* cam = GetLocalCamera();
+    const math::Vec2f dims = window::GetWindowSize();
+    math::Vec3f top_right = CoordToWorld(dims);
+    math::Vec3f bottom_left = CoordToWorld({0.f, 0.f});
+    gfx::Render(math::Rectf{bottom_left.xy(), top_right.xy()});
 #endif
 
     // Capture frame time before the potential stall on vertical sync

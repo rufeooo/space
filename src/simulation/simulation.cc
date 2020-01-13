@@ -1,3 +1,9 @@
+#pragma once
+
+#include <cstdio>
+
+#include "platform/macro.h"
+
 #include "search.cc"
 #include "asteroid.cc"
 #include "unit.cc"
