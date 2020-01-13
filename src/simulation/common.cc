@@ -25,3 +25,10 @@ struct Transform {
     type* t = &k##type[kCount##type++];        \
     return t;                                  \
   }                                            \
+                                               \
+  void Delete##type(int id) {                  \
+    for (int i = id; i < kCount##type; ++i) {  \
+      k##type[i] = k##type[i + 1];             \
+    }                                          \
+    --kCount##type;                            \
+  }                                            \

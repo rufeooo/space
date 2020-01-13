@@ -79,10 +79,11 @@ SimulationEvent(const PlatformEvent* event, const Camera* camera,
   switch (event->type) {
     case MOUSE_DOWN: {
       if (event->button == BUTTON_LEFT) {
-        command::Move move;
-        move.unit_id = 0;
-        move.position = camera::ScreenToWorldSpace(camera, event->position);
-        command::Execute(move);
+        math::Vec2f pos = camera::ScreenToWorldSpace(camera, event->position);
+        Command* command = NewCommand();
+        command->type = Command::kMove;
+        command->destination =
+            camera::ScreenToWorldSpace(camera, event->position);
       }
     } break;
     case KEY_DOWN: {

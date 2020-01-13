@@ -1,22 +1,16 @@
+#pragma once
 
-#include "unit.cc"
+#include "common.cc"
+#include "math/vec.h"
 
-namespace command
-{
-enum Event {
-  INVALID = 0,
-  MOVE = 1,
+struct Command {
+  enum Type {
+    kNone = 0,
+    kMine = 1,
+    kMove = 2,
+  };
+  Type type;
+  math::Vec2f destination;
 };
 
-struct Move {
-  uint64_t unit_id;
-  math::Vec2f position;
-};
-
-void
-Execute(const Move& move)
-{
-  kUnit[move.unit_id].destination = move.position;
-}
-
-}  // namespace command
+DECLARE_GAME_TYPE(Command, 16);

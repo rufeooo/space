@@ -1,12 +1,13 @@
 #pragma once
 
 #include "common.cc"
+#include "command.cc"
 
 #include <cassert>
 
 struct Unit {
   Transform transform;
-  math::Vec2f destination;
+  Command command;
   int kind = 0;
 };
 

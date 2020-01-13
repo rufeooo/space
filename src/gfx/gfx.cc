@@ -2,6 +2,7 @@
 
 #include "renderer/renderer.cc"
 
+#include "../simulation/command.cc"
 #include "../simulation/unit.cc"
 #include "../simulation/search.cc"
 #include "../simulation/asteroid.cc"
@@ -109,9 +110,11 @@ Render()
                          math::Vec3f(1.f / 2.f, 1.f / 2.f, 1.f),
                          math::Quatf(0.f, 0.f, 0.f, 1.f), hilite);
 
+    if (unit->command.type == Command::kNone) continue;
+
     // Show the path they are on if they have one.
     math::Vec2i start = WorldToTilePos(p->xy());
-    math::Vec2i end = WorldToTilePos(unit->destination);
+    math::Vec2i end = WorldToTilePos(unit->command.destination);
 
     auto* path = search::PathTo(start, end);
     if (!path || path->size <= 1) {

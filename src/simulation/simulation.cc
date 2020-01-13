@@ -14,8 +14,13 @@ Initialize()
   for (int i = 0; i < ARRAY_LENGTH(pos); ++i) {
     Unit* unit = NewUnit();
     unit->transform.position = pos[i];
-    unit->destination = pos[i].xy();
     unit->transform.scale = scale;
+  }
+
+  for (int i = 0; i < kCountUnit; ++i) {
+    Unit* unit = &kUnit[i];
+    printf("UNIT %i: %.2f,%.2f\n",
+           i, unit->transform.position.x, unit->transform.position.y);
   }
 
   Asteroid* asteroid = NewAsteroid();
@@ -42,17 +47,27 @@ Update()
     Unit* unit = &kUnit[i];
     Transform* transform = &unit->transform;
 
-    math::Vec2i start = WorldToTilePos(transform->position.xy());
-    math::Vec2i end = WorldToTilePos(unit->destination);
+    switch (unit->command.type) {
+      case Command::kNone: {
+      } break;
+      case Command::kMine: {
+      } break;
+      case Command::kMove: {
+        math::Vec2i start = WorldToTilePos(transform->position.xy());
+        math::Vec2i end = WorldToTilePos(unit->command.destination);
 
-    auto* path = search::PathTo(start, end);
-    if (!path || path->size <= 1) {
-      continue;
+        auto* path = search::PathTo(start, end);
+        if (!path || path->size <= 1) {
+          unit->command = {};
+          continue;
+        }
+
+        math::Vec3f dest = TilePosToWorld(path->tile[1]);
+        auto dir = math::Normalize(dest - transform->position.xy());
+        transform->position += dir * 1.f;
+      } break;
+      default: break;
     }
-
-    math::Vec3f dest = TilePosToWorld(path->tile[1]);
-    auto dir = math::Normalize(dest - transform->position.xy());
-    transform->position += dir * 1.f;
   }
 
   for (int i = 0; i < kCountAsteroid; ++i) {
@@ -61,6 +76,22 @@ Update()
     if (asteroid->transform.position.x < 0.f) {
       asteroid->transform.position.x = 800.f;
     }
+  }
+
+  while (kCountCommand) {
+    // Find a unit with no command.
+    Unit* unit = nullptr;
+    for (int i = 0; i < kCountUnit; ++i) {
+      if (kUnit[i].command.type == Command::kNone) {
+        printf("Assigning to %i\n", i);
+        unit = &kUnit[i];
+        break;
+      }
+    }
+    if (!unit) break;
+    // Assign the command to a unit and continue.
+    unit->command = kCommand[0];
+    DeleteCommand(0);
   }
 }
 
