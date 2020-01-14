@@ -1,12 +1,12 @@
 #include <cstdio>
 
-#include "simulation/common.cc"
+#include "array.cc"
 
 struct Entity {
   uint64_t id;
 };
 
-DECLARE_GAME_TYPE(Entity, 8);
+DECLARE_ARRAY(Entity, 8);
 
 Entity* ents[kMaxEntity + 1];
 

@@ -1,7 +1,10 @@
 
+#include "common/common.cc"
 #include "math/math.cc"
 
-#include "common.cc"
+// Data used by game simulation
+#define DECLARE_GAME_TYPE(type, count) DECLARE_ARRAY(type, count)
+#define DECLARE_GAME_QUEUE(type, count) DECLARE_QUEUE(type, count)
 
 struct Transform {
   math::Vec3f position;

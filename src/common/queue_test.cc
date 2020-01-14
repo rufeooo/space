@@ -1,7 +1,7 @@
 #include <cassert>
 #include <cstdio>
 
-#include "common.cc"
+#include "queue.cc"
 
 struct Command {
   uint64_t action;
@@ -13,9 +13,9 @@ struct Packet {
 };
 
 // declare 1 game queue
-DECLARE_GAME_QUEUE(Command, 8);
+DECLARE_QUEUE(Command, 8);
 // declare 1+1 game queue
-DECLARE_GAME_QUEUE(Packet, 8);
+DECLARE_QUEUE(Packet, 8);
 
 int
 main()
