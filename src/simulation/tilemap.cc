@@ -107,6 +107,14 @@ TilePosToWorld(const math::Vec2i& pos)
           ((float)pos.y * kTileHeight) + kTileHeight / 2.f};
 }
 
+math::Vec2i
+WorldToTilePos(const math::Vec2f& pos)
+{
+  int x = (int)pos.x / kTileWidth;
+  int y = (int)pos.y / kTileHeight;
+  return {x, y};
+}
+
 // Returns true for positions that exist as a tile in kTilemap
 bool
 TileOk(math::Vec2i pos)
@@ -118,12 +126,34 @@ TileOk(math::Vec2i pos)
   return true;
 }
 
+// Returns any tile with type kTileOpen within distance 1 of pos
 math::Vec2i
-WorldToTilePos(const math::Vec2f& pos)
+TileOpenAdjacent(const math::Vec2i pos)
 {
-  int x = (int)pos.x / kTileWidth;
-  int y = (int)pos.y / kTileHeight;
-  return {x, y};
+  for (int i = -1; i < 2; ++i) {
+    for (int j = -1; j < 2; ++j) {
+      math::Vec2i cell = {pos.x + j, pos.y + i};
+      if (!TileOk(cell)) continue;
+
+      if (kTilemap.map[cell.y][cell.x].type == kTileOpen) return cell;
+    }
+  }
+
+  return kInvalidTile;
+}
+
+bool
+EngineWorldPosition(math::Vec2f* world)
+{
+  for (int i = 0; i < MAX_POD; ++i) {
+    math::Vec2i near_engine = TileOpenAdjacent(kTilemap.engine_pod[i]);
+    if (near_engine == kInvalidTile) continue;
+
+    *world = TilePosToWorld(near_engine);
+    return true;
+  }
+
+  return false;
 }
 
 }  // namespace tilemap

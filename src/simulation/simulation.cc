@@ -114,10 +114,12 @@ Decide()
         unit->command = Command{.type = Command::kMove,
                                 .destination = math::Vec2f(384.0f, 368.0f)};
         break;
-      case kAiThrust:
-        unit->command = Command{.type = Command::kMove,
-                                .destination = math::Vec2f(196.f, 407.f)};
-        break;
+      case kAiThrust: {
+        math::Vec2f pos;
+        if (tilemap::EngineWorldPosition(&pos)) {
+          unit->command = Command{.type = Command::kMove, .destination = pos};
+        }
+      } break;
     };
     kShip[0].satisfied_flags |= 1 << action;
   }
