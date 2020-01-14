@@ -27,7 +27,7 @@ struct Command {
   math::Vec2f destination;
 };
 
-DECLARE_GAME_TYPE(Command, 16);
+DECLARE_GAME_QUEUE(Command, 16);
 struct Unit {
   Transform transform;
   Command command;

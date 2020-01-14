@@ -89,9 +89,8 @@ Decide()
 
     // Obedient Unit
     if (unit->think_flags == 0) {
-      if (kUsedCommand) {
-        unit->command = kCommand[0];
-        ReleaseCommand(0);
+      if (CountCommand()) {
+        unit->command = PopCommand();
       }
       continue;
     }

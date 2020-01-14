@@ -10,7 +10,7 @@
 // Methods:
 //    Pop<type>() - return the next queued element
 //    Push<type>(value) - append value to the queue
-#define DECLARE_QUEUE(type, max_count)               \
+#define DECLARE_QUEUE(type, max_count)                    \
                                                           \
   static_assert((max_count & (max_count - 1)) == 0,       \
                 "max_count must be a power of 2");        \
@@ -34,5 +34,10 @@
     if (kWrite##type - kRead##type == kMax##type) return; \
     k##type[kWrite##type % kMax##type] = val;             \
     kWrite##type += 1;                                    \
+  }                                                       \
+                                                          \
+  uint64_t Count##type()                                  \
+  {                                                       \
+    return kWrite##type - kRead##type;                    \
   }
 
