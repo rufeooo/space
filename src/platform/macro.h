@@ -18,7 +18,7 @@
 #define INLINE __forceinline
 #else
 // ALIGN macro taken in macos.
-#define ALIGNAS(n) __attribute__((aligned(PAGE)))
+#define ALIGNAS(n) __attribute__((aligned(n)))
 #define INLINE __attribute__((always_inline)) inline
 #endif
 
