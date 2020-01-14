@@ -67,7 +67,7 @@ ProcessInput()
 #ifndef HEADLESS
   ProcessWindowInput(buffer);
 #else
-  buffer->event_count = 0;
+  buffer->used_input_event = 0;
 #endif
 }
 
@@ -257,6 +257,7 @@ main(int argc, char** argv)
     }
 
     // Misc debug/feedback
+    gfx::Reset();
     auto sz = window::GetWindowSize();
     char buffer[50];
     sprintf(buffer, "Frame Time:%06lu us", kGameState.frame_time_usec);
