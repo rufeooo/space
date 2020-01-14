@@ -31,9 +31,10 @@ struct Tilemap {
 };
 
 static Tilemap kTilemap;
+static math::Vec2i kInvalidTile = math::Vec2i{-1, -1};
 
 // clang-format off
-static int kDefaultMap[32][32] = {
+static int kDefaultMap[kMapHeight][kMapWidth] = {
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
   {0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0},
@@ -85,7 +86,8 @@ Initialize()
   }
 
   for (int i = 0; i < MAX_POD; ++i) {
-    printf("Engine pod: %d %d\n", kTilemap.engine_pod[i].x, kTilemap.engine_pod[i].y);
+    printf("Engine pod: %d %d\n", kTilemap.engine_pod[i].x,
+           kTilemap.engine_pod[i].y);
   }
 }
 
@@ -103,6 +105,17 @@ TilePosToWorld(const math::Vec2i& pos)
 {
   return {((float)pos.x * kTileWidth) + kTileWidth / 2.f,
           ((float)pos.y * kTileHeight) + kTileHeight / 2.f};
+}
+
+// Returns true for positions that exist as a tile in kTilemap
+bool
+TileOk(math::Vec2i pos)
+{
+  if (pos.x < 0) return false;
+  if (pos.x >= kMapWidth) return false;
+  if (pos.y < 0) return false;
+  if (pos.y >= kMapHeight) return false;
+  return true;
 }
 
 math::Vec2i

@@ -38,8 +38,7 @@ struct NeighborSet {
 void
 AddIfOpen(const math::Vec2i& pos, NeighborSet* neighbor_set)
 {
-  if (pos.x >= tilemap::kMapWidth || pos.x < 0) return;
-  if (pos.y >= tilemap::kMapHeight || pos.y < 0) return;
+  if (!tilemap::TileOk(pos)) return;
   if (kSearch.path_map[pos.y][pos.x].checked == true) return;
   auto& tile = tilemap::kTilemap.map[pos.y][pos.x];
   if (tile.type != tilemap::kTileOpen) return;
@@ -66,10 +65,10 @@ Neighbors(const math::Vec2i& source, NeighborSet* neighbor_set)
 Path*
 PathTo(const math::Vec2i& start, const math::Vec2i& end)
 {
-  if (end.x >= tilemap::kMapWidth || end.x < 0) return nullptr;
-  if (end.y >= tilemap::kMapHeight || end.y < 0) return nullptr;
+  if (!tilemap::TileOk(end)) return nullptr;
+  if (!tilemap::TileOk(start)) return nullptr;
 
-  int N = tilemap::kMapHeight * tilemap::kMapWidth;
+  constexpr int N = tilemap::kMapHeight * tilemap::kMapWidth;
   memset(kSearch.path_map, 0, sizeof(PathNode) * N);
   kSearch.queue_size = 0;
   kSearch.queue_ptr = 0;
