@@ -3,24 +3,35 @@
 #include <cstdio>
 
 #include "platform/macro.h"
+#include "platform/x64_intrin.h"
 
 #include "entity.cc"
 #include "search.cc"
 
 namespace simulation
 {
+enum AiGoals {
+  kAiPower = 0,
+  kAiMine,
+  kAiThrust,
+  kAiGoals = 64,
+};
+
 bool
 Initialize()
 {
   math::Vec3f pos[] = {
       math::Vec3f(300.f, 300.f, 0.f), math::Vec3f(100.f, 130.f, 0),
-      math::Vec3f(300.f, 400.f, 0), math::Vec3f(650.f, 500.f, 0)};
+      math::Vec3f(300.f, 400.f, 0), math::Vec3f(650.f, 460.f, 0)};
   const math::Vec3f scale = math::Vec3f(0.25f, 0.25f, 0.f);
   for (int i = 0; i < ARRAY_LENGTH(pos); ++i) {
     Unit* unit = UseUnit();
     unit->transform.position = pos[i];
     unit->transform.scale = scale;
   }
+  kUnit[1].kind = 1;
+  kUnit[2].kind = 2;
+  kUnit[3].kind = 3;
 
   for (int i = 0; i < kUsedUnit; ++i) {
     Unit* unit = &kUnit[i];
@@ -44,8 +55,82 @@ VerifyIntegrity()
 }
 
 void
+Think()
+{
+  for (int i = 0; i < kUsedUnit; ++i) {
+    switch (kUnit[i].kind) {
+      default:
+      case 0:
+        // Just takes orders
+        kUnit[i].think_flags = 0;
+        break;
+      case 1:
+        kUnit[i].think_flags = FLAG(kAiPower);
+        break;
+      case 2:
+        kUnit[i].think_flags = FLAG(kAiMine);
+        break;
+      case 3:
+        kUnit[i].think_flags = FLAG(kAiThrust);
+        break;
+    };
+  }
+}
+
+void
+Decide()
+{
+  for (int i = 0; i < kUsedUnit; ++i) {
+    Unit* unit = &kUnit[i];
+    // Busy unit
+    if (unit->command.type != Command::kNone) {
+      continue;
+    }
+
+    // Obedient Unit
+    if (unit->think_flags == 0) {
+      if (kUsedCommand) {
+        unit->command = kCommand[0];
+        ReleaseCommand(0);
+      }
+      continue;
+    }
+
+    // Self-motivated Unit
+    uint64_t possible = ANDN(kShip[0].satisfied_flags, unit->think_flags);
+    if (!possible) continue;
+
+    uint64_t action = TZCNT(possible);
+#if 1
+    printf(
+        "[ %d unit ] [ 0x%lx think ] [ 0x%lx possible ] ship satisfied_flags "
+        "0x%lx \n",
+        i, unit->think_flags, possible, kShip[0].satisfied_flags);
+    printf("%lu action\n", action);
+#endif
+    switch (action) {
+      case kAiMine:
+        unit->command = Command{.type = Command::kMine};
+        break;
+      case kAiPower:
+        unit->command = Command{.type = Command::kMove,
+                                .destination = math::Vec2f(384.0f, 368.0f)};
+        break;
+      case kAiThrust:
+        unit->command = Command{.type = Command::kMove,
+                                .destination = math::Vec2f(196.f, 407.f)};
+        break;
+    };
+    kShip[0].satisfied_flags |= 1 << action;
+  }
+}
+
+void
 Update()
 {
+  Think();
+  Decide();
+
   using namespace tilemap;
 
   for (int i = 0; i < kUsedUnit; ++i) {
@@ -82,22 +167,6 @@ Update()
     if (asteroid->transform.position.x < 0.f) {
       asteroid->transform.position.x = 800.f;
     }
-  }
-
-  while (kUsedCommand) {
-    // Find a unit with no command.
-    Unit* unit = nullptr;
-    for (int i = 0; i < kUsedUnit; ++i) {
-      if (kUnit[i].command.type == Command::kNone) {
-        printf("Assigning to %i\n", i);
-        unit = &kUnit[i];
-        break;
-      }
-    }
-    if (!unit) break;
-    // Assign the command to a unit and continue.
-    unit->command = kCommand[0];
-    ReleaseCommand(0);
   }
 }
 

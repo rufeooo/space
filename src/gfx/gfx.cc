@@ -91,11 +91,19 @@ Render(const math::Rectf visible_world)
 
     math::Vec4f color;
     switch (unit->kind) {
+      case 0:
+        color = math::Vec4f(0.26f, 0.33f, 0.68f, 1.f);
+        break;
       case 1:
-        color = math::Vec4f(0.26f, 0.33f, 0.78f, 1.f);
+        color = math::Vec4f(0.66f, 0.33f, 0.33f, 1.f);
+        break;
+      case 2:
+        color = math::Vec4f(0.86f, 0.33f, 0.33f, 1.f);
+        break;
+      case 3:
+        color = math::Vec4f(0.99f, 0.33f, 0.33f, 1.f);
         break;
       default:
-        color = math::Vec4f(1.0, .4, .4, 1.f);
         break;
     }
     // Draw the player.
@@ -104,7 +112,7 @@ Render(const math::Rectf visible_world)
 
     math::Vec4f hilite;
     switch (unit->kind) {
-      case 1:
+      case 0:
         hilite = math::Vec4f(1.f, 0.f, 0.f, .45f);
         break;
       default:

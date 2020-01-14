@@ -28,7 +28,14 @@ DECLARE_GAME_TYPE(Command, 16);
 struct Unit {
   Transform transform;
   Command command;
+  uint64_t think_flags = 0;
   int kind = 0;
 };
 
 DECLARE_GAME_TYPE(Unit, 8);
+
+struct Ship {
+  uint64_t satisfied_flags = 0;
+};
+DECLARE_GAME_TYPE(Ship, 1);
+

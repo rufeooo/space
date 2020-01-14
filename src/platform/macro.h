@@ -26,3 +26,5 @@
 #define ARRAY_LENGTH(x) (sizeof(x) / sizeof(x[0]))
 #endif
 
+#define FLAG(x) (1<<x)
+
