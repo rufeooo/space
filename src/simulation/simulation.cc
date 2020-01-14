@@ -28,10 +28,9 @@ Initialize()
     Unit* unit = UseUnit();
     unit->transform.position = pos[i];
     unit->transform.scale = scale;
+    // Everybody is unique!
+    unit->kind = i;
   }
-  kUnit[1].kind = 1;
-  kUnit[2].kind = 2;
-  kUnit[3].kind = 3;
 
   for (int i = 0; i < kUsedUnit; ++i) {
     Unit* unit = &kUnit[i];

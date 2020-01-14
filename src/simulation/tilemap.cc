@@ -1,18 +1,22 @@
 #pragma once
 
+#include <cstdio>
+
 #include "math/vec.h"
 
-namespace tilemap {
-
+namespace tilemap
+{
 constexpr int kMapWidth = 32;
 constexpr int kMapHeight = 32;
 
 constexpr float kTileWidth = 25.0f;
 constexpr float kTileHeight = 25.0f;
+constexpr int MAX_POD = 3;
 
 enum TileType {
-  NONE = 0,
-  BLOCK = 1,
+  kTileOpen = 0,
+  kTileBlock = 1,
+  kTileEngine,
 };
 
 struct Tile {
@@ -22,6 +26,8 @@ struct Tile {
 
 struct Tilemap {
   Tile map[kMapHeight][kMapWidth];
+  uint64_t engines;
+  math::Vec2i engine_pod[MAX_POD];
 };
 
 static Tilemap kTilemap;
@@ -72,7 +78,14 @@ Initialize()
       tile->type = (TileType)kDefaultMap[i][j];
       tile->pos.x = j;
       tile->pos.y = i;
+      if (kTilemap.engines < MAX_POD)
+        kTilemap.engine_pod[kTilemap.engines] = math::Vec2i(tile->pos);
+      kTilemap.engines += (tile->type == 2);
     }
+  }
+
+  for (int i = 0; i < MAX_POD; ++i) {
+    printf("Engine pod: %d %d\n", kTilemap.engine_pod[i].x, kTilemap.engine_pod[i].y);
   }
 }
 
@@ -100,4 +113,4 @@ WorldToTilePos(const math::Vec2f& pos)
   return {x, y};
 }
 
-}
+}  // namespace tilemap

@@ -162,7 +162,7 @@ Render(const math::Rectf visible_world)
       Tile* tile = &kTilemap.map[i][j];
       uint64_t type_id = tile->type;
 
-      if (type_id == NONE) continue;
+      if (type_id == kTileOpen) continue;
 
       math::Vec4f color;
       switch (type_id) {
