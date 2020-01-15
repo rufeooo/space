@@ -20,6 +20,7 @@ struct Gfx {
   Text text[kMaxTextCount];
   int text_count;
   rgg::Tag asteroid_tag;
+  rgg::Tag pod_tag;
   math::AxisAlignedRect asteroid_aabb;
 };
 
@@ -33,6 +34,7 @@ Initialize()
   auto status = rgg::Initialize();
   constexpr int kVertCount = 29;
   constexpr int kFloatCount = kVertCount * 3;
+  // clang-format off
   GLfloat asteroid[kFloatCount] = {
       0.f,   1.6f,   0.f,   0.2f,   1.5f,   0.f,   0.4f,  1.6f,  0.f,   0.6f,
       1.6f,  0.f,    0.68f, 1.9f,   0.f,    1.1f,  1.8f,  0.f,   1.6f,  1.7f,
@@ -43,7 +45,13 @@ Initialize()
       -1.4f, 0.4f,   0.f,   -1.65f, 1.f,    0.f,   -1.6f, 1.3f,  0.f,   -1.6f,
       1.7f,  0.f,    -1.4f, 1.9f,   0.f,    -1.f,  2.05f, 0.f,   -0.7f, 2.07f,
       0.f,   -0.65f, 2.2f,  0.f,    -0.5f,  2.25f, 0.f};
+  constexpr int kPodVert = 6;
+  GLfloat pod[kPodVert*3] = 
+  {0.0f, 0.0f, 0.0f, 0.5f, -0.5f, 0.0f, 1.0f, 0.0f, 0.0f,
+   1.5f, 1.0f, 0.0f, 0.5f, 2.0f, 0.0f, 0.0f, 1.0f, 0.0f};
+  // clang-format on
   for (int i = 0; i < kFloatCount; ++i) asteroid[i] *= 15.f;  // HA
+  for (int i = 0; i < kPodVert * 3; ++i) pod[i] *= 15.f;      // HA
   kGfx.asteroid_aabb.min = math::Vec3f(10000.0f, 10000.0f, 10000.0f);
   kGfx.asteroid_aabb.max = math::Vec3f(-10000.0f, -10000.0f, -10000.0f);
   for (int i = 0; i < kFloatCount; i += 3) {
@@ -59,6 +67,7 @@ Initialize()
     if (z > aabb.max.z) aabb.max.z = z;
   }
   kGfx.asteroid_tag = rgg::CreateRenderable(kVertCount, asteroid, GL_LINE_LOOP);
+  kGfx.pod_tag = rgg::CreateRenderable(kPodVert, pod, GL_LINE_LOOP);
   return status;
 }
 
@@ -155,6 +164,12 @@ Render(const math::Rectf visible_world)
     rgg::RenderTag(kGfx.asteroid_tag, asteroid->transform.position,
                    asteroid->transform.scale, asteroid->transform.orientation,
                    math::Vec4f(1.f, 1.f, 1.f, 1.f));
+  }
+
+  for (int i = 0; i < kUsedPod; ++i) {
+    Pod* pod = &kPod[i];
+    rgg::RenderTag(kGfx.pod_tag, pod->transform.position, pod->transform.scale,
+                   pod->transform.orientation, math::Vec4f(1.f, 1.f, 1.f, 1.f));
   }
 
   for (int i = 0; i < kMapHeight; ++i) {

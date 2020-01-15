@@ -41,6 +41,9 @@ Initialize()
   Asteroid* asteroid = UseAsteroid();
   asteroid->transform.position = math::Vec3f(400.f, 750.f, 0.f);
 
+  Pod* pod = UsePod();
+  pod->transform.position = math::Vec3f(520.f, 600.f, 0.f);
+
   tilemap::Initialize();
 
   return true;
@@ -169,6 +172,13 @@ Update()
     asteroid->transform.position.x -= 1.0f;
     if (asteroid->transform.position.x < 0.f) {
       asteroid->transform.position.x = 800.f;
+    }
+
+    for (int i = 0; i < kUsedPod; ++i) {
+      Pod* pod = &kPod[i];
+      math::Vec3f goal =
+          Normalize(asteroid->transform.position - pod->transform.position);
+      pod->transform.position += goal;
     }
   }
 }

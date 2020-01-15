@@ -17,6 +17,11 @@ struct Asteroid {
 };
 DECLARE_GAME_TYPE(Asteroid, 8);
 
+struct Pod {
+  Transform transform;
+};
+DECLARE_GAME_TYPE(Pod, 8);
+
 struct Command {
   enum Type {
     kNone = 0,
