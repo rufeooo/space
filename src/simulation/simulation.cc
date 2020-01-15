@@ -158,19 +158,9 @@ Update()
           continue;
         }
 
-        math::Vec2i avoidance = {};
-        for (int i = 0; i < tilemap::kMaxNeighbor; ++i) {
-          math::Vec2i neighbor = start + tilemap::kNeighbor[i];
-          if (TileTypeSafe(neighbor) != kTileOpen) {
-            math::Vec2i away = (start - neighbor);
-            avoidance += away;
-          }
-        }
-
         math::Vec3f dest = TilePosToWorld(path->tile[1]);
         auto dir = math::Normalize(dest - transform->position.xy());
-        math::Vec3f wall_avoidance = {avoidance.x, avoidance.y, 0.0f};
-        transform->position += (dir * 1.f) + (wall_avoidance * .2f);
+        transform->position += (dir * 1.f) + (TileAvoidWalls(start) * .15f);
       } break;
       default:
         break;
