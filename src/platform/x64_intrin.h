@@ -2,13 +2,13 @@
 
 #include <cstdint>
 
-#include <ammintrin.h>
-#include <immintrin.h>
 
 #ifdef _WIN32
 #include <intrin.h>
 #else
 #include <x86intrin.h>
+#include <immintrin.h>
+#include <ammintrin.h>
 #endif
 
 #ifdef _WIN32
@@ -31,11 +31,7 @@ inline uint64_t TARGET("lzcnt") LZCNT(uint64_t f) { return _lzcnt_u64(f); }
 // 1s Population count
 inline uint64_t TARGET("popcnt") POPCNT(uint64_t f)
 {
-#ifdef _WIN32
-  return _popcnt_u64(f);
-#else
   return _mm_popcnt_u64(f);
-#endif
 }
 
 // Bits in 'a' are cleared in 'f'

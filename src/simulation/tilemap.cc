@@ -159,7 +159,7 @@ TileAvoidWalls(const math::Vec2i pos)
     }
   }
 
-  return math::Vec3f{avoidance.x, avoidance.y, 0.0f};
+  return math::Vec3f(avoidance.x, avoidance.y, 0.0f);
 }
 
 bool
