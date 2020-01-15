@@ -106,20 +106,23 @@ Decide()
         i, unit->think_flags, possible, kShip[0].satisfied_flags);
     printf("%lu action\n", action);
 #endif
+    math::Vec2f pos;
     switch (action) {
       case kAiMine:
-        unit->command = Command{.type = Command::kMine};
-        break;
-      case kAiPower:
-        unit->command = Command{.type = Command::kMove,
-                                .destination = math::Vec2f(384.0f, 368.0f)};
-        break;
-      case kAiThrust: {
-        math::Vec2f pos;
-        if (tilemap::EngineWorldPosition(&pos)) {
+        if (WorldPositionOfTile(tilemap::kTileMine, &pos)) {
           unit->command = Command{.type = Command::kMove, .destination = pos};
         }
-      } break;
+        break;
+      case kAiPower:
+        if (WorldPositionOfTile(tilemap::kTilePower, &pos)) {
+          unit->command = Command{.type = Command::kMove, .destination = pos};
+        }
+        break;
+      case kAiThrust:
+        if (WorldPositionOfTile(tilemap::kTileEngine, &pos)) {
+          unit->command = Command{.type = Command::kMove, .destination = pos};
+        }
+        break;
     };
     kShip[0].satisfied_flags |= 1 << action;
   }

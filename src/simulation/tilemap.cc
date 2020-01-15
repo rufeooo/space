@@ -16,7 +16,9 @@ constexpr int MAX_POD = 3;
 enum TileType {
   kTileOpen = 0,
   kTileBlock = 1,
-  kTileEngine,
+  kTileEngine = 2,
+  kTilePower = 3,
+  kTileMine = 4,
 };
 
 struct Tile {
@@ -26,8 +28,6 @@ struct Tile {
 
 struct Tilemap {
   Tile map[kMapHeight][kMapWidth];
-  uint64_t engines;
-  math::Vec2i engine_pod[MAX_POD];
 };
 
 static Tilemap kTilemap;
@@ -79,15 +79,7 @@ Initialize()
       tile->type = (TileType)kDefaultMap[i][j];
       tile->pos.x = j;
       tile->pos.y = i;
-      if (kTilemap.engines < MAX_POD)
-        kTilemap.engine_pod[kTilemap.engines] = math::Vec2i(tile->pos);
-      kTilemap.engines += (tile->type == 2);
     }
-  }
-
-  for (int i = 0; i < MAX_POD; ++i) {
-    printf("Engine pod: %d %d\n", kTilemap.engine_pod[i].x,
-           kTilemap.engine_pod[i].y);
   }
 }
 
@@ -143,14 +135,18 @@ TileOpenAdjacent(const math::Vec2i pos)
 }
 
 bool
-EngineWorldPosition(math::Vec2f* world)
+WorldPositionOfTile(TileType type, math::Vec2f* world)
 {
-  for (int i = 0; i < MAX_POD; ++i) {
-    math::Vec2i near_engine = TileOpenAdjacent(kTilemap.engine_pod[i]);
-    if (near_engine == kInvalidTile) continue;
-
-    *world = TilePosToWorld(near_engine);
-    return true;
+  for (int i = 0; i < kMapHeight; ++i) {
+    for (int j = 0; j < kMapWidth; ++j) {
+      Tile* tile = &kTilemap.map[i][j];
+      tile->type = (TileType)kDefaultMap[i][j];
+      if (tile->type == type) {
+        math::Vec2i near_engine = TileOpenAdjacent(tile->pos);
+        *world = TilePosToWorld(near_engine);
+        return true;
+      }
+    }
   }
 
   return false;
