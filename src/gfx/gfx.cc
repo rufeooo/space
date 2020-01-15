@@ -181,16 +181,16 @@ Render(const math::Rectf visible_world)
 
       math::Vec4f color;
       switch (type_id) {
-        case 1:
+        case kTileBlock:
           color = math::Vec4f(1.f, 1.f, 1.f, 1.f);
           break;
-        case 2:
+        case kTileEngine:
           color = math::Vec4f(1.0f, 0.0f, 0.f, 1.0f);
           break;
-        case 3:
+        case kTilePower:
           color = math::Vec4f(0.0f, 0.0f, 0.75f, 1.0f);
           break;
-        case 4:
+        case kTileMine:
           color = math::Vec4f(0.0, 0.75f, 0.0f, 1.0f);
       };
 
