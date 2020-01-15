@@ -30,6 +30,13 @@ struct Tilemap {
   Tile map[kMapHeight][kMapWidth];
 };
 
+constexpr int kMaxNeighbor = 8;
+static const math::Vec2i kNeighbor[kMaxNeighbor] = {
+    math::Vec2i(-1, 0), math::Vec2i(1, 0),   math::Vec2i(0, 1),
+    math::Vec2i(0, -1), math::Vec2i(1, 1),   math::Vec2i(-1, 1),
+    math::Vec2i(1, -1), math::Vec2i(-1, -1),
+};
+
 static Tilemap kTilemap;
 static math::Vec2i kInvalidTile = math::Vec2i{-1, -1};
 
@@ -118,17 +125,23 @@ TileOk(math::Vec2i pos)
   return true;
 }
 
-// Returns any tile with type kTileOpen within distance 1 of pos
+// Returns kTileBlock for non-existent tiles, and TileType otherwise.
+TileType
+TileTypeSafe(const math::Vec2i& pos)
+{
+  if (!TileOk(pos)) return kTileBlock;
+  return kTilemap.map[pos.y][pos.x].type;
+}
+
+// Returns any neighbor of type kTileOpen
 math::Vec2i
 TileOpenAdjacent(const math::Vec2i pos)
 {
-  for (int i = -1; i < 2; ++i) {
-    for (int j = -1; j < 2; ++j) {
-      math::Vec2i cell = {pos.x + j, pos.y + i};
-      if (!TileOk(cell)) continue;
+  if (TileTypeSafe(pos) == kTileOpen) return pos;
 
-      if (kTilemap.map[cell.y][cell.x].type == kTileOpen) return cell;
-    }
+  for (int i = 0; i < kMaxNeighbor; ++i) {
+    math::Vec2i neighbor = pos + kNeighbor[i];
+    if (TileTypeSafe(neighbor) == kTileOpen) return neighbor;
   }
 
   return kInvalidTile;
