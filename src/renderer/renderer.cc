@@ -671,12 +671,6 @@ RenderCrew(v3f pos, v3f scale, const math::Quatf& quat, const v4f& color)
 void
 RenderLineCube(const math::Cubef& cube, const v4f& color)
 {
-  glUseProgram(kRGG.geometry_program.reference);
-  math::Mat4f matrix = kObserver.view * kObserver.projection;
-  glUniform4f(kRGG.geometry_program_3d.color_uniform, color.x, color.y,
-              color.z, color.w);
-  glUniformMatrix4fv(kRGG.geometry_program.matrix_uniform, 1, GL_FALSE,
-                     &matrix.data_[0]);
   v3f pos =
       cube.pos - v3f(cube.width / 2.f, cube.height / 2.f, cube.depth / 2.f);
   v3f back_top_left = pos + v3f(0.f, cube.height, 0.f);
