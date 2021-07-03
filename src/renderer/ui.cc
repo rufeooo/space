@@ -106,6 +106,8 @@ GetTextRect(const char* msg, int msg_len, v2f pos)
 void
 RenderText(const char* msg, v2f pos, float scale, const v4f& color)
 {
+  if (msg[0] == 0) return;
+
   auto& font = kUI.font;
 
   struct TextPoint {
