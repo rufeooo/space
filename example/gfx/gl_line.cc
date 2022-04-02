@@ -1,3 +1,4 @@
+#include "common/macro.h"
 #include "platform/window.cc"
 
 #include <iostream>
@@ -19,15 +20,13 @@ const char* fragment_shader =
 int
 main()
 {
-  int window_result = window::Create("Hello Line", 640, 480);
+  int window_result = window::Create("Hello Line", 640, 480, false);
   std::cout << "Window create: " << window_result << std::endl;
   // Only for mac I need this?
   const GLubyte* renderer = glGetString(GL_RENDERER);
   const GLubyte* version = glGetString(GL_VERSION);
   std::cout << renderer << std::endl;
   std::cout << version << std::endl;
-  glEnable(GL_DEPTH_TEST);
-  glDepthFunc(GL_LESS);
   GLfloat points[] = {
       0.0f, 0.5f, 0.0f, 0.0f, -0.5f, 0.0f,
   };
