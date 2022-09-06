@@ -7,30 +7,34 @@ EXTERN(const char* platform_optarg);
 int
 platform_getopt(int argc, char* const argv[], const char* optstring)
 {
-  int argi = platform_optind;
+  int ret = -1;
+  int idx = platform_optind;
+  const char* opt = kEmptyString;
 
-  platform_optarg = kEmptyString;
-  for (; argi < argc; ++argi) {
-    const char* arg = argv[argi];
+  for (int it = idx; it < argc; ++it) {
+    const char* arg = argv[it];
     const char* optiter = optstring;
 
+    if (arg[0] != '-') continue;
+
+    ret = '?';
     for (; *optiter; ++optiter) {
-      int val_param = *(optiter + 1) == ':';
-      if (arg[0] == '-' && *optiter == arg[1]) {
-        unsigned used_param = 1;
-        if (val_param && argi + 1 < argc) {
-          platform_optarg = argv[argi + 1];
-          used_param += 1;
-          argi += 1;
-        }
-        platform_optind = argi + 1;
-        return *optiter;
+      if (*optiter != arg[1]) continue;
+
+      ret = *optiter;
+      int val_param = (optiter[1] == ':') && (it + 1 < argc);
+      if (val_param) {
+        opt = argv[it + 1];
+        it += 1;
       }
+      break;
     }
 
-    platform_optind = argi + 1;
-    return '?';
+    platform_optind = it + 1;
+    goto done;
   }
 
-  return -1;
+done:
+  platform_optarg = opt;
+  return ret;
 }
