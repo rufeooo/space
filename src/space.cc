@@ -108,14 +108,37 @@ SetProjection()
       math::Perspective(67.f, size.x / size.y, .1f, 2000.f);
 }
 
+void
+usage()
+{
+  printf(
+      "Usage: space [-f?] ...\n"
+      "\n-i ip of server"
+      "\n-p port of server"
+      "\n-n number of players"
+      "\n-l limit total frames of play"
+      "\n-s scenario name"
+      "\n-w window width"
+      "\n-h window height"
+      "\n-x window x"
+      "\n-y window y"
+      "\n"
+      "\n-? help"
+      "\n-f fullscreen"
+      "\n");
+}
+
 int
 main(int argc, char** argv)
 {
   while (1) {
-    int opt = platform_getopt(argc, argv, "i:p:n:l:s:w:h:x:y:f");
+    int opt = platform_getopt(argc, argv, "i:p:n:l:s:w:h:x:y:f?");
     if (opt == -1) break;
 
     switch (opt) {
+      case '?':
+        usage();
+        return 1;
       case 'i':
         kNetworkState.server_ip = platform_optarg;
         break;
