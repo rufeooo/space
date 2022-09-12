@@ -8,9 +8,3 @@
 #include "constants.h"
 #include "macro.h"
 #include "typedef.h"
-
-#include "array.cc"
-#include "blackboard.cc"
-#include "hash_array.cc"
-#include "queue.cc"
-#include "util.cc"
