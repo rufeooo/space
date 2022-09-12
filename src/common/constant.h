@@ -15,3 +15,20 @@
 
 #define kMaxBlackboardItems 16
 #define kMaxBlackboardValueSize 64
+
+enum PlatformEventType {
+  NOT_IMPLEMENTED,  // Event does not have translation implemented yet.
+  MOUSE_DOWN,
+  MOUSE_UP,
+  MOUSE_WHEEL,
+  KEY_DOWN,
+  KEY_UP,
+  MOUSE_POSITION,
+};
+
+enum PlatformButton {
+  BUTTON_UNKNOWN,
+  BUTTON_LEFT = 1,
+  BUTTON_MIDDLE,
+  BUTTON_RIGHT,
+};

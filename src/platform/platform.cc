@@ -1,30 +1,19 @@
 #pragma once
 
-#if _WIN32
-// Windows #defines min/max. This stops it from doing so.
-#define NOMINMAX
-// Reduce header size.
-#define WIN32_LEAN_AND_MEAN
-// Disable unneeded warnings.
-// Warns about using %lu to printf uint64_t
-#pragma warning(disable : 4477)
-#endif
-
-#include "common/common.h"
+#include "platform/platform.h"
 
 #include "x64_intrin.h"
 
 #include "platform_clock.cc"
-#include "window.cc"
+
 
 #if _WIN32
+#include "win32_window.cc"
 #include "win32_sleep.cc"
-#include "win32_thread.cc"
-#include "win32_udp.cc"
+//#include "win32_thread.cc"
+//#include "win32_udp.cc"
 #else
-#include "unix_sleep.cc"
-#include "unix_thread.cc"
-#include "unix_udp.cc"
+#include "unix/unix.cc"
 #endif
 
-#include "affinity.cc"
+//#include "affinity.cc"

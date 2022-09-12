@@ -1,25 +1,25 @@
-#define GL_GLEXT_PROTOTYPES
+
+#include "platform/platform.h"
+
 #include <X11/Xlib.h>
+
+#define GL_GLEXT_PROTOTYPES
 
 #include "EGL/egl.h"
 #include "EGL/eglext.h"
 #include "GL/gl.h"
 #include "GL/glext.h"
 
-#include "window.h"
+static int width_pixels;
+static int height_pixels;
+static int mouse_x;
+static int mouse_y;
 
-EXTERN(int width_pixels);
-EXTERN(int height_pixels);
-EXTERN(int mouse_x);
-EXTERN(int mouse_y);
+static Display* display;
+static int window_id;
+static EGLDisplay egl_display;
+static EGLSurface egl_surface;
 
-Display* display;
-int window_id;
-EGLDisplay egl_display;
-EGLSurface egl_surface;
-
-namespace window
-{
 int
 x11_error_handler(Display*, XErrorEvent*)
 {
@@ -33,8 +33,11 @@ x11_ioerror_handler(Display*)
 }
 
 int
-Create(const char* name, int width, int height, bool fullscreen)
+platform_init(const char* name, int fullscreen, Rect* window)
 {
+  int width = window->w;
+  int height = window->h;
+
   if (window_id) return 0;
 
   display = XOpenDisplay(NULL);
@@ -220,13 +223,6 @@ Create(const char* name, int width, int height, bool fullscreen)
   return 1;
 }
 
-int
-Create(const char* name, const CreateInfo& create_info)
-{
-  return Create(name, create_info.window_width, create_info.window_height,
-                create_info.fullscreen);
-}
-
 void
 SwapBuffers()
 {
@@ -304,7 +300,7 @@ GetWindowSize(int* x, int* y)
 }
 
 void
-GetCursorPosition(int* x, int *y)
+GetCursorPosition(int* x, int* y)
 {
   *x = mouse_x;
   *y = mouse_y;
@@ -316,4 +312,4 @@ ShouldClose()
   return false;
 }
 
-}  // namespace window
+// namespace window

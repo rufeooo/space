@@ -4,8 +4,8 @@
 #include <stdbool.h>
 #include <stdint.h>
 
-// config.h
-#include "constants.h"
+#include "config.h"
+#include "constant.h"
 #include "macro.h"
 #include "typedef.h"
 #include "extern.h"
