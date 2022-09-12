@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 // For the given type defines:
 //    kMax<type> - The upper bound count for the given type.
 //    k<type> - The storage for the type.
@@ -13,15 +11,16 @@
 #define DECLARE_QUEUE(type, max_count)                                  \
                                                                         \
   static_assert(POWEROF2(max_count), "max_count must be a power of 2"); \
-  constexpr uint64_t kMax##type = max_count;                            \
+  enum { kMax##type = max_count };                                      \
                                                                         \
+  static type k##typeDefault;                                           \
   static type k##type[max_count];                                       \
   static uint64_t kRead##type;                                          \
   static uint64_t kWrite##type;                                         \
                                                                         \
   type Pop##type()                                                      \
   {                                                                     \
-    if (kWrite##type - kRead##type == 0) return type{};                 \
+    if (kWrite##type - kRead##type == 0) return k##typeDefault;         \
     type ret = k##type[MOD_BUCKET(kRead##type, max_count)];             \
     kRead##type += 1;                                                   \
     return ret;                                                         \

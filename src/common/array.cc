@@ -1,7 +1,5 @@
 #pragma once
 
-#include <cstdint>
-
 // For the given type defines:
 //    kMax<type> - The upper bound count for the given type.
 //    k<type> - The storage for the type.

@@ -1,12 +1,10 @@
 
 #include "queue.cc"
 
-#include <cstring>
-
 #define MAX_LOGLINE 64
-struct LogMessage {
+typedef struct log_messageS {
   char buffer[MAX_LOGLINE];
-};
+} LogMessage;
 
 DECLARE_QUEUE(LogMessage, 32);
 static char kLogBuffer[MAX_LOGLINE];

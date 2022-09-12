@@ -1,8 +1,5 @@
 #pragma once
 
-#include <cassert>
-#include <cstdint>
-
 struct HashEntry {
   uint32_t id;
   uint32_t array_idx;

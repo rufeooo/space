@@ -1,6 +1,6 @@
 
-EXTERN(int platform_optind = 1);
-EXTERN(const char* platform_optarg);
+static int platform_optind = 1;
+static const char* platform_optarg;
 
 void
 djb2_hash_more(const uint8_t *bytes, unsigned len, uint64_t *hash)

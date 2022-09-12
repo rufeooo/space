@@ -6,9 +6,12 @@
 
 // Invalid offset into an array type 
 // Equivalent to memset(0xff) for up to 64 bits
-constexpr uint64_t kInvalidIndex = -1;
+#define kInvalidIndex ((uint64_t){-1})
 
 // Invalid unique identifier ('id') for assigning stable identification numbers
 // Equivalent to memset(0x00) for up to 64 bits
 // Allows for boolean tests: (id ? "exists: "not-exists")
-constexpr uint64_t kInvalidId = 0;
+#define kInvalidId ((uint64_t){0})
+
+#define kMaxBlackboardItems 16
+#define kMaxBlackboardValueSize 64
