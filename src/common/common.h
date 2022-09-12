@@ -8,3 +8,4 @@
 #include "constants.h"
 #include "macro.h"
 #include "typedef.h"
+#include "extern.h"
