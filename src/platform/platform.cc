@@ -10,7 +10,7 @@
 #pragma warning(disable : 4477)
 #endif
 
-#include "common/macro.h"
+#include "common/common.h"
 
 #include "x64_intrin.h"
 

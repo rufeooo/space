@@ -6,10 +6,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-#include <cassert>
-#include <cstdint>
-#include <cstring>
-
 #include "udp.h"
 
 EXTERN(int udp_errno);
