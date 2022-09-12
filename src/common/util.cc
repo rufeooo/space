@@ -1,15 +1,21 @@
 
-static const char* kEmptyString = "";
-
 EXTERN(int platform_optind = 1);
 EXTERN(const char* platform_optarg);
 
+void
+djb2_hash_more(const uint8_t *bytes, unsigned len, uint64_t *hash)
+{
+  for (int i = 0; i < len; ++i) {
+    *hash = (*hash << 5) + *hash + bytes[i];
+  }
+}
+
 int
-platform_getopt(int argc, char* const argv[], const char* optstring)
+common_getopt(int argc, char* const argv[], const char* optstring)
 {
   int ret = -1;
   int idx = platform_optind;
-  const char* opt = kEmptyString;
+  const char* opt = "";
 
   for (int it = idx; it < argc; ++it) {
     const char* arg = argv[it];

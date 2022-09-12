@@ -11,7 +11,7 @@ main(int argc, char** argv)
   const char* num_players = "1";
 
   while (1) {
-    int opt = platform_getopt(argc, argv, "i:p:");
+    int opt = common_getopt(argc, argv, "i:p:");
     if (opt == -1) break;
 
     switch (opt) {

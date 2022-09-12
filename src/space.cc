@@ -132,7 +132,7 @@ int
 main(int argc, char** argv)
 {
   while (1) {
-    int opt = platform_getopt(argc, argv, "i:p:n:l:s:w:h:x:y:f?");
+    int opt = common_getopt(argc, argv, "i:p:n:l:s:w:h:x:y:f?");
     if (opt == -1) break;
 
     switch (opt) {
