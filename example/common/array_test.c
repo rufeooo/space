@@ -1,10 +1,10 @@
-#include <cstdio>
+#include "common/common.h"
 
-#include "array.cc"
+#include "common/array.c"
 
-struct Entity {
+typedef struct entityS {
   uint64_t id;
-};
+} Entity;
 
 DECLARE_ARRAY(Entity, 8);
 
@@ -42,13 +42,13 @@ main()
   print_all();
 
   for (uint64_t i = 0; i <= kMaxEntity / 2; ++i) {
-    ReleaseEntity(kMaxEntity / 2);
+    CompressEntity(kMaxEntity / 2);
   }
 
   print_ids();
 
   for (uint64_t i = 0; i < kMaxEntity / 2; ++i) {
-    ReleaseEntity(0);
+    CompressEntity(0);
   }
 
   puts("-- None expected");
@@ -56,9 +56,8 @@ main()
   puts("--");
 
   puts("--Safe to call release too many times");
-  ReleaseEntity(0);
+  CompressEntity(0);
   print_ids();
 
   return 0;
 }
-
