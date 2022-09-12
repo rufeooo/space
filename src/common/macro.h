@@ -1,5 +1,9 @@
 #pragma once
 
+#ifndef STATIC
+#define STATIC static
+#endif
+
 #ifdef __cplusplus
 #define EXTERN(x) \
   extern "C" {    \

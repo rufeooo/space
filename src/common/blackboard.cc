@@ -2,15 +2,16 @@
 
 static uint8_t kEmptyValue[kMaxBlackboardValueSize];
 
-bool
+STATIC bool
 blackboard_test(Blackboard* bb, uint64_t idx)
 {
   assert(idx < kMaxBlackboardItems);
   return memcmp(&bb->value[idx], &kEmptyValue, kMaxBlackboardValueSize) != 0;
 }
 
-bool
-blackboard_set(Blackboard* bb, uint64_t idx, const uint8_t* bytes, uint64_t size)
+STATIC bool
+blackboard_set(Blackboard* bb, uint64_t idx, const uint8_t* bytes,
+               uint64_t size)
 {
   assert(idx < kMaxBlackboardItems);
   assert(size < kMaxBlackboardValueSize);
@@ -18,7 +19,7 @@ blackboard_set(Blackboard* bb, uint64_t idx, const uint8_t* bytes, uint64_t size
   return true;
 }
 
-bool
+STATIC bool
 blackboard_get(Blackboard* bb, uint64_t idx, const uint8_t** bytes)
 {
   assert(idx < kMaxBlackboardItems);
@@ -27,7 +28,7 @@ blackboard_get(Blackboard* bb, uint64_t idx, const uint8_t** bytes)
   return true;
 }
 
-void
+STATIC void
 blackboard_remove(Blackboard* bb, uint64_t idx)
 {
   assert(idx < kMaxBlackboardItems);
