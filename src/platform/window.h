@@ -1,7 +1,5 @@
 #pragma once
 
-#include "math/vec.h"
-
 // Cross-platform window / opengl context abstraction. The purpose
 // of these functions are to setup a window on the screen and setup
 // the opengl context.
@@ -30,7 +28,8 @@ struct PlatformEvent {
   // Type of event.
   PlatformEventType type;
   // Screen space the event took place in.
-  v2f position;
+  int x;
+  int y;
   // Event Detail
   union {
     float wheel_delta;
@@ -63,7 +62,7 @@ void SwapBuffers();
 
 bool ShouldClose();
 
-v2f GetWindowSize();
+void GetWindowSize(int *x, int* y);
 
-v2f GetCursorPosition();
+void GetCursorPosition(int *x, int *y);
 }  // namespace window

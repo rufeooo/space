@@ -8,10 +8,10 @@
 
 #include "window.h"
 
-EXTERN(float width_pixels);
-EXTERN(float height_pixels);
-EXTERN(float mouse_x);
-EXTERN(float mouse_y);
+EXTERN(int width_pixels);
+EXTERN(int height_pixels);
+EXTERN(int mouse_x);
+EXTERN(int mouse_y);
 
 Display* display;
 int window_id;
@@ -236,9 +236,7 @@ SwapBuffers()
 bool
 PollEvent(PlatformEvent* event)
 {
-  event->type = NOT_IMPLEMENTED;
-  event->key = 0;
-  event->position = v2f(0.f, 0.f);
+  memset(event, 0, sizeof(PlatformEvent));
 
   XEvent xev;
   while (XCheckWindowEvent(display, window_id, -1, &xev)) {
@@ -254,12 +252,14 @@ PollEvent(PlatformEvent* event)
       case KeyPress:
         event->type = KEY_DOWN;
         event->key = XLookupKeysym(&xev.xkey, 0);
-        event->position = {xev.xkey.x, xev.xkey.y};
+        event->x = xev.xkey.x;
+        event->y = xev.xkey.y;
         break;
       case KeyRelease:
         event->type = KEY_UP;
         event->key = XLookupKeysym(&xev.xkey, 0);
-        event->position = {xev.xkey.x, xev.xkey.y};
+        event->x = xev.xkey.x;
+        event->y = xev.xkey.y;
         break;
       case ButtonPress:
         switch (xev.xbutton.button) {
@@ -278,32 +278,36 @@ PollEvent(PlatformEvent* event)
             event->wheel_delta = -1.0f;
             break;
         }
-        event->position = {xev.xbutton.x, xev.xbutton.y};
+        event->x = xev.xbutton.x;
+        event->y = xev.xbutton.y;
         break;
       case ButtonRelease:
         event->type = MOUSE_UP;
         event->button = (PlatformButton)xev.xbutton.button;
-        event->position = {xev.xbutton.x, xev.xbutton.y};
+        event->x = xev.xbutton.x;
+        event->y = xev.xbutton.y;
         break;
     }
 
-    event->position.y = height_pixels - event->position.y;
+    event->y = height_pixels - event->y;
     return true;
   }
 
   return false;
 }
 
-v2f
-GetWindowSize()
+void
+GetWindowSize(int* x, int* y)
 {
-  return v2f(width_pixels, height_pixels);
+  *x = width_pixels;
+  *y = height_pixels;
 }
 
-v2f
-GetCursorPosition()
+void
+GetCursorPosition(int* x, int *y)
 {
-  return v2f(mouse_x, mouse_y);
+  *x = mouse_x;
+  *y = mouse_y;
 }
 
 bool
