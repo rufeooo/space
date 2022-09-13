@@ -1,14 +1,9 @@
 #pragma once
 
-#include "renderer/renderer.cc"
-
-#include "../common/common.cc"
-
-EXTERN(unsigned imui_errno);
+static unsigned imui_errno;
 
 namespace imui
 {
-
 enum SpaceType {
   kHorizontal = 0,
   kVertical = 1,
@@ -31,8 +26,10 @@ static const v4f kHeaderMinimizeColor(0.45f, 0.68f, 0.906f, 0.7f);
 
 struct Result {
   Result() = default;
-  Result(const Rectf& rect, bool highlighted, bool clicked) :
-      rect(rect), highlighted(highlighted), clicked(clicked) {}
+  Result(const Rectf& rect, bool highlighted, bool clicked)
+      : rect(rect), highlighted(highlighted), clicked(clicked)
+  {
+  }
   Rectf rect;
   bool highlighted = false;
   bool clicked = false;
@@ -41,8 +38,9 @@ struct Result {
 #define IMUI_RESULT(rect) \
   Result(rect, IsRectHighlighted(rect), IsRectClicked(rect))
 
-#define IMUI_RESULT_CIRCLE(center, radius) \
-  Result(rect, IsCircleHighlighted(center, radius), IsCircleClicked(center, radius))
+#define IMUI_RESULT_CIRCLE(center, radius)          \
+  Result(rect, IsCircleHighlighted(center, radius), \
+         IsCircleClicked(center, radius))
 
 #define IF_HIDDEN(jmp) \
   if (kIMUI.begin_mode.show && !(*kIMUI.begin_mode.show)) jmp;
@@ -107,7 +105,6 @@ struct Line {
   Pane* pane;
 };
 
-
 // imui metadata.
 
 struct MouseDown {
@@ -119,7 +116,6 @@ struct MouseUp {
   v2f pos;
   PlatformButton button;
 };
-
 
 struct MousePosition {
   v2f pos;
@@ -149,8 +145,9 @@ struct BeginMode {
   Pane* pane;
 };
 
-constexpr uint32_t kMaxTags = MAX_PLAYER + 1;
-constexpr uint32_t kEveryoneTag = MAX_PLAYER;
+_Static_assert(kMaxTags == MAX_PLAYER + 1,
+               "Tags must exceed maximum players by one");
+enum { kEveryoneTag = MAX_PLAYER };
 
 struct IMUI {
   BeginMode begin_mode;
@@ -217,8 +214,7 @@ v2f
 MouseDelta()
 {
   uint32_t tag = kIMUI.begin_mode.tag;
-  if (kUsedMousePosition[tag] < 1 || kUsedLastMousePosition[tag] < 1)
-    return {};
+  if (kUsedMousePosition[tag] < 1 || kUsedLastMousePosition[tag] < 1) return {};
   return kMousePosition[tag][0].pos - kLastMousePosition[tag][0].pos;
 }
 
@@ -226,8 +222,9 @@ void
 Render(uint32_t tag)
 {
   glDisable(GL_DEPTH_TEST);
-  auto dims = window::GetWindowSize();
-  rgg::ModifyObserver mod(math::Ortho2(dims.x, 0.0f, dims.y, 0.0f, 0.0f, 0.0f),
+  int x, y;
+  GetWindowSize(&x, &y);
+  rgg::ModifyObserver mod(math::Ortho2(x, 0.0f, y, 0.0f, 0.0f, 0.0f),
                           math::Identity());
 
   for (int i = 0; i < kUsedPane[tag]; ++i) {
@@ -238,11 +235,9 @@ Render(uint32_t tag)
       pane->options.header_rect.y =
           pane->rect.y + pane->rect.height - pane->options.header_rect.height;
       pane->options.header_rect.width = pane->rect.width;
-      rgg::RenderRectangle(pane->options.header_rect,
-                           kPaneHeaderColor);
+      rgg::RenderRectangle(pane->options.header_rect, kPaneHeaderColor);
     }
-    rgg::RenderLineRectangle(
-        pane->rect, 0.f, v4f(0.2f, 0.2f, 0.2f, 0.7f));
+    rgg::RenderLineRectangle(pane->rect, 0.f, v4f(0.2f, 0.2f, 0.2f, 0.7f));
   }
 
   for (int i = 0; i < kUsedButton[tag]; ++i) {
@@ -336,7 +331,7 @@ void
 Indent(int spaces)
 {
   assert(kIMUI.begin_mode.set);
-  IF_HIDDEN(return);
+  IF_HIDDEN(return );
   auto& font = rgg::kUI.font;
   rgg::FontMetadataRow* row = &rgg::kFontMetadataRow[' '];
   if (!row || !row->id) return;
@@ -381,7 +376,7 @@ void
 UpdatePaneOnEnd(Pane* pane)
 {
   if (!pane) return;
-  IF_HIDDEN(return);
+  IF_HIDDEN(return );
   auto& begin_mode = kIMUI.begin_mode;
   uint32_t tag = begin_mode.tag;
   assert(begin_mode.set);
@@ -427,7 +422,7 @@ Text(const char* msg, TextOptions options)
     imui_errno = 2;
     return data;
   }
-  Rectf text_rect = 
+  Rectf text_rect =
       rgg::GetTextRect(msg, strlen(msg), begin_mode.pos, kTextScale);
   Rectf rect = UpdatePane(text_rect.width, text_rect.height);
   strcpy(text->msg, msg);
@@ -455,7 +450,7 @@ HorizontalLine(const v4f& color)
 {
   assert(kIMUI.begin_mode.set);
   uint32_t tag = kIMUI.begin_mode.tag;
-  IF_HIDDEN(return);
+  IF_HIDDEN(return );
   Line* line = UseLine(tag);
   if (!line) {
     imui_errno = 5;
@@ -472,7 +467,7 @@ void
 Space(SpaceType type, int count)
 {
   assert(kIMUI.begin_mode.set);
-  IF_HIDDEN(return);
+  IF_HIDDEN(return );
   if (type == kHorizontal) {
     UpdatePane(count, 0.f);
   } else {
@@ -526,7 +521,7 @@ void
 ToggleSameLine()
 {
   assert(kIMUI.begin_mode.set);
-  IF_HIDDEN(return);
+  IF_HIDDEN(return );
   kIMUI.begin_mode.flow_type = kSameLine;
   kIMUI.begin_mode.flow_switch = true;
   kIMUI.begin_mode.x_reset = kIMUI.begin_mode.pos.x;
@@ -536,7 +531,7 @@ void
 ToggleNewLine()
 {
   assert(kIMUI.begin_mode.set);
-  IF_HIDDEN(return);
+  IF_HIDDEN(return );
   kIMUI.begin_mode.flow_type = kNewLine;
   kIMUI.begin_mode.flow_switch = true;
   kIMUI.begin_mode.pos.x = kIMUI.begin_mode.x_reset;
@@ -565,8 +560,8 @@ Begin(v2f* start, uint32_t tag, const PaneOptions& pane_options,
   if (pane_options.title) {
     ToggleSameLine();
     begin_mode.pos.x += 5.f;
-    Rectf t = rgg::GetTextRect(
-        pane_options.title, strlen(pane_options.title), *start, kTextScale);
+    Rectf t = rgg::GetTextRect(pane_options.title, strlen(pane_options.title),
+                               *start, kTextScale);
     if (ButtonCircle(10.f, kHeaderMinimizeColor).clicked) {
       if (show) (*show) = !(*show);
     }
@@ -679,7 +674,6 @@ LastErrorString()
       return ("imui click count exhausted.");
     case 5:
       return ("imui line count exhausted.");
-
   };
 
   return 0;

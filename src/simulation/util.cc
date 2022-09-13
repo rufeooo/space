@@ -10,6 +10,10 @@
 namespace simulation
 {
 constexpr float kDsqSelect = 25.f * 25.f;
+constexpr float kDsqGather = 25.f * 25.f;
+constexpr float kDsqOperate = 50.f * 35.f;
+constexpr float kDsqOperatePod = 75.f * 75.f;
+constexpr float kAvoidanceScaling = 0.15f;
 
 int
 AssignPlayerId()

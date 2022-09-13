@@ -36,8 +36,8 @@ blackboard_remove(Blackboard* bb, uint64_t idx)
 }
 
 #define BB_SET(bb, idx, val) \
-  blackboard_set(bb, idx, reinterpret_cast<const uint8_t*>(&val), sizeof(val))
+  blackboard_set(&bb, idx, reinterpret_cast<const uint8_t*>(&val), sizeof(val))
 #define BB_GET(bb, idx, ptr) \
-  blackboard_get(bb, idx, reinterpret_cast<const uint8_t**>(&ptr))
-#define BB_EXI(bb, idx) blackboard_test(bb, idx)
-#define BB_REM(bb, idx) blackboard_remove(bb, idx)
+  blackboard_get(&bb, idx, reinterpret_cast<const uint8_t**>(&ptr))
+#define BB_EXI(bb, idx) blackboard_test(&bb, idx)
+#define BB_REM(bb, idx) blackboard_remove(&bb, idx)

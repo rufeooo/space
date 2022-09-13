@@ -1,12 +1,4 @@
 
-#include <cassert>
-#include <cstdint>
-#include <cstring>
-
-#include <cstdio>
-
-#include "common/common.cc"
-
 struct Registry {
   void* ptr;
   void* zero_ptr;

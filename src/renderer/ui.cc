@@ -27,8 +27,7 @@ SetupUI()
   Font& font = kUI.font;
   font.texture = CreateTexture2D(GL_RED, kFontWidth, kFontHeight, kFontData);
   GLuint vert_shader, frag_shader;
-  if (!gl::CompileShader(GL_VERTEX_SHADER, &kFontVertexShader,
-                         &vert_shader)) {
+  if (!gl::CompileShader(GL_VERTEX_SHADER, &kFontVertexShader, &vert_shader)) {
     return false;
   }
   if (!gl::CompileShader(GL_FRAGMENT_SHADER, &kFontFragmentShader,
@@ -93,8 +92,8 @@ GetTextRect(const char* msg, int msg_len, v2f pos, float scale)
 {
   float width, height, min_y_offset;
   GetTextInfo(msg, msg_len, &width, &height, &min_y_offset);
-  return Rectf(
-      pos.x, pos.y, width * scale, height * scale - min_y_offset * scale);
+  return Rectf(pos.x, pos.y, width * scale,
+               height * scale - min_y_offset * scale);
 }
 
 Rectf
@@ -115,16 +114,21 @@ RenderText(const char* msg, v2f pos, float scale, const v4f& color)
     GLfloat y;
     GLfloat u;
     GLfloat v;
-    void Pr() { printf("%.1f,%.1f,%.1f,%.1f\n", x, y, u, v); }
+    void
+    Pr()
+    {
+      printf("%.1f,%.1f,%.1f,%.1f\n", x, y, u, v);
+    }
   };
 
   glUseProgram(font.program);
   glBindVertexArray(font.vao);
   glBindTexture(GL_TEXTURE_2D, font.texture.reference);
 
-  auto sz = window::GetWindowSize();
-  math::Mat4f projection = math::Ortho2(
-      sz.x, 0.f, sz.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  int x, y;
+  GetWindowSize(&x, &y);
+  math::Mat4f projection =
+      math::Ortho2(x, 0.f, y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
   glUniformMatrix4fv(font.matrix_uniform, 1, GL_FALSE, &projection.data_[0]);
   glUniform4f(font.color_uniform, color.x, color.y, color.z, color.w);
 
@@ -137,7 +141,7 @@ RenderText(const char* msg, v2f pos, float scale, const v4f& color)
   int kerning_offset = 0;
   for (int i = 0; i < msg_len; ++i) {
     const FontMetadataRow* row = &kFontMetadataRow[msg[i]];
-    //printf("%i\n", msg[i]);
+    // printf("%i\n", msg[i]);
     // The character trying to render is invalid. This means the font sheet
     // has no corresponding entry for the ascii id msg[i].
     // This could occur if you are attempting to render a '\n'
@@ -153,11 +157,11 @@ RenderText(const char* msg, v2f pos, float scale, const v4f& color)
     // using the screen width and height.
     float v_w = (float)row->width * scale;
     float v_h = (float)row->height * scale;
-    
-    float offset_start_x = pos.x + (float)row->xoffset * scale +
-                                   (float)kerning_offset * scale;
-    float offset_start_y = pos.y - (float)row->yoffset * scale +
-                                   (float)kFontLineHeight * scale;
+
+    float offset_start_x =
+        pos.x + (float)row->xoffset * scale + (float)kerning_offset * scale;
+    float offset_start_y =
+        pos.y - (float)row->yoffset * scale + (float)kFontLineHeight * scale;
 
 #if 0
     printf("id=%i char=%c width=%i height=%i xoffset=%i yoffset=%i"
@@ -167,13 +171,14 @@ RenderText(const char* msg, v2f pos, float scale, const v4f& color)
 #endif
 
     TextPoint text_point[6] = {
-      {offset_start_x, offset_start_y, tex_x, tex_y},
-      {offset_start_x + v_w, offset_start_y, tex_x + tex_w, tex_y},
-      {offset_start_x + v_w, offset_start_y - v_h, tex_x + tex_w, tex_y + tex_h},
-      {offset_start_x + v_w, offset_start_y - v_h, tex_x + tex_w, tex_y + tex_h},
-      {offset_start_x, offset_start_y - v_h, tex_x, tex_y + tex_h},
-      {offset_start_x, offset_start_y, tex_x, tex_y}
-    };
+        {offset_start_x, offset_start_y, tex_x, tex_y},
+        {offset_start_x + v_w, offset_start_y, tex_x + tex_w, tex_y},
+        {offset_start_x + v_w, offset_start_y - v_h, tex_x + tex_w,
+         tex_y + tex_h},
+        {offset_start_x + v_w, offset_start_y - v_h, tex_x + tex_w,
+         tex_y + tex_h},
+        {offset_start_x, offset_start_y - v_h, tex_x, tex_y + tex_h},
+        {offset_start_x, offset_start_y, tex_x, tex_y}};
 
 #if 0
     text_point[0].Pr();
@@ -184,8 +189,9 @@ RenderText(const char* msg, v2f pos, float scale, const v4f& color)
     text_point[5].Pr();
 #endif
     glBindBuffer(GL_ARRAY_BUFFER, font.vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point, GL_DYNAMIC_DRAW);
-    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draw the character 
+    glBufferData(GL_ARRAY_BUFFER, sizeof(text_point), text_point,
+                 GL_DYNAMIC_DRAW);
+    glDrawArrays(GL_TRIANGLES, 0, 6);  // Draw the character
     pos.x += (float)row->xadvance * scale + (float)kerning_offset * scale;
     kerning_offset = GetNextKerning(msg, msg_len, i, i + 1);
 #if 0
@@ -202,16 +208,17 @@ RenderText(const char* msg, v2f pos, const v4f& color)
 }
 
 void
-RenderButton(const char* text, const Rectf& rect,
-             const v4f& color) {
+RenderButton(const char* text, const Rectf& rect, const v4f& color)
+{
   glUseProgram(kRGG.smooth_rectangle_program.reference);
   glBindVertexArray(kTextureState.vao_reference);
   v3f pos(rect.x + rect.width / 2.f, rect.y + rect.height / 2.f, 0.0f);
   v3f scale(rect.width, rect.height, 1.f);
   math::Mat4f model = math::Model(pos, scale);
-  auto sz = window::GetWindowSize();
-  math::Mat4f projection = math::Ortho2(
-      sz.x, 0.f, sz.y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
+  int x, y;
+  GetWindowSize(&x, &y);
+  math::Mat4f projection =
+      math::Ortho2(x, 0.f, y, 0.f, /* 2d so leave near/far 0*/ 0.f, 0.f);
   math::Mat4f view_projection = projection;
   glUniform1f(kRGG.smooth_rectangle_program.smoothing_radius_uniform,
               rect.width - rect.width * 0.40f);

@@ -1,9 +1,7 @@
 #pragma once
 
-#include <cassert>
-#include <cstdio>
+#include "common/common.h"
 
-#include "common/constants.h"
 #include "math/math.cc"
 
 #include "server.cc"

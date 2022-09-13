@@ -339,7 +339,7 @@ main(int argc, char** argv)
                               kGameState.game_clock.jerk, frame_queue);
     simulation::ReadOnlyUnits(window::GetWindowSize(), imui::kEveryoneTag);
 
-    gfx::Render(kNetworkState.player_index);
+    simulation::Render(kNetworkState.player_index);
 #endif
 
     // Capture frame time before the potential stall on vertical sync

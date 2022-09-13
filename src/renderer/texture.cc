@@ -107,8 +107,9 @@ void
 EndRenderTo()
 {
   glBindFramebuffer(GL_FRAMEBUFFER, 0);
-  auto dims = window::GetWindowSize();
-  glViewport(0, 0, dims.x, dims.y);
+  int x, y;
+  GetWindowSize(&x, &y);
+  glViewport(0, 0, x, y);
 }
 
 void

@@ -1,7 +1,6 @@
-#include <cstdio>
-#include <cstring>
 
-#include "platform/platform.cc"
+#include "common/common.h"
+
 #include "protocol.cc"
 
 static ThreadInfo thread;

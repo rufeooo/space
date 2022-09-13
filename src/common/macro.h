@@ -58,3 +58,6 @@
 
 // Non-branching equivalence to: (condition) ? a : b
 #define TERNARY(condition, a, b) (((a) * (condition)) + ((b) * !(condition)))
+
+// TODO
+#define LOGFMT(x, ...)

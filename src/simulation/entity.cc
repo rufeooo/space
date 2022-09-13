@@ -1,8 +1,6 @@
 #pragma once
 
-#include "common/common.cc"
 #include "math/math.cc"
-#include "platform/platform.cc"
 
 #include "camera.cc"
 #include "entity_registry.cc"

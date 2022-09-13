@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cfloat>
-#include <cmath>
-#include <cstdio>
-#include <cstdlib>
+#include "gfx/gfx.cc"
 
 #include "util.cc"
 
@@ -12,6 +9,7 @@
 #include "ftl.cc"
 #include "module.cc"
 #include "phitu.cc"
+#include "render.cc"
 #include "scenario.cc"
 #include "search.cc"
 #include "selection.cc"
@@ -19,10 +17,6 @@
 
 namespace simulation
 {
-constexpr float kDsqGather = 25.f * 25.f;
-constexpr float kDsqOperate = 50.f * 35.f;
-constexpr float kDsqOperatePod = 75.f * 75.f;
-constexpr float kAvoidanceScaling = 0.15f;
 constexpr uint64_t kTileVisibleDistance = 3;
 static uint64_t kSimulationHash = DJB2_CONST;
 static bool kSimulationOver = false;

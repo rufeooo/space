@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../common/common.cc"
+#include "math/math.cc"
 
 namespace rgg
 {
@@ -27,10 +27,6 @@ struct CameraState {
 };
 
 static CameraState kCameraState;
-
-constexpr uint32_t kMaxCameras = 16;
-constexpr uint32_t kMaxTags = 3;
-constexpr uint32_t kLocalCameraTag = 2;
 
 DECLARE_2D_ARRAY(Camera, kMaxTags, kMaxCameras);
 

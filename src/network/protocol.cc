@@ -1,9 +1,6 @@
 #pragma once
 
-#include <cstdint>
-
-#include "common/constants.h"
-#include "platform/platform.cc"
+#include "platform/platform.h"
 
 const uint64_t greeting_size = 8;
 #define GREETING "spacehi"

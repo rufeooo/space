@@ -1,18 +1,20 @@
 #pragma once
 
+#include "common/common.h"
+
+#include "math/math.cc"
+
 #include "shader.h"
 
 #include "asset/asteroid.cc"
-#include "asset/cube.cc"
 #include "asset/cone.cc"
 #include "asset/crew.cc"
+#include "asset/cube.cc"
 #include "asset/exhaust.cc"
 #include "asset/gear.cc"
 #include "asset/pod.cc"
 #include "asset/sphere.cc"
 #include "gl/gl.cc"
-#include "math/math.cc"
-#include "platform/platform.cc"
 
 struct RenderTag {
   // TODO(abrunasso): Support custom shaders.
@@ -37,7 +39,6 @@ struct GeometryProgram3d {
   GLuint color_uniform = -1;
   GLuint light_position_world_uniform = -1;
 };
-
 
 struct SmoothRectangleProgram {
   GLuint reference = -1;
@@ -127,7 +128,8 @@ SetupGeometryProgram3d()
     return false;
   }
 
-  if (!gl::CompileShader(GL_FRAGMENT_SHADER, &kFragmentShader3d, &frag_shader)) {
+  if (!gl::CompileShader(GL_FRAGMENT_SHADER, &kFragmentShader3d,
+                         &frag_shader)) {
     return false;
   }
 
@@ -148,15 +150,14 @@ SetupGeometryProgram3d()
   kRGG.geometry_program_3d.model_uniform =
       glGetUniformLocation(kRGG.geometry_program_3d.reference, "model");
   assert(kRGG.geometry_program_3d.model_uniform != uint32_t(-1));
-  kRGG.geometry_program_3d.light_position_world_uniform =
-      glGetUniformLocation(kRGG.geometry_program_3d.reference, "light_position_world");
+  kRGG.geometry_program_3d.light_position_world_uniform = glGetUniformLocation(
+      kRGG.geometry_program_3d.reference, "light_position_world");
   assert(kRGG.geometry_program_3d.light_position_world_uniform != uint32_t(-1));
   kRGG.geometry_program_3d.color_uniform =
       glGetUniformLocation(kRGG.geometry_program_3d.reference, "color");
   assert(kRGG.geometry_program_3d.color_uniform != uint32_t(-1));
   return true;
 }
-
 
 bool
 SetupGeometryProgram()
@@ -291,7 +292,7 @@ Initialize()
 
   // Rectangle. Notice it's a square. Scale to make rectangly.
   // clang-format off
-  static GLfloat square[18] = {
+  GLfloat square[18] = {
       -m / 2.f, m / 2.f, 0.f,
       m / 2.f, m / 2.f, 0.f,
       m / 2.f, -m / 2.f, 0.f,
@@ -308,8 +309,7 @@ Initialize()
   GLfloat line[6] = {-1.f, 0.f, 0.f, 1.f, 0.f, 0.f};
   glGenBuffers(1, &kRGG.line_vbo_reference);
   glBindBuffer(GL_ARRAY_BUFFER, kRGG.line_vbo_reference);
-  glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), &line[0],
-               GL_STATIC_DRAW);
+  glBufferData(GL_ARRAY_BUFFER, 6 * sizeof(GLfloat), &line[0], GL_STATIC_DRAW);
   glGenVertexArrays(1, &kRGG.line_vao_reference);
   glBindVertexArray(kRGG.line_vao_reference);
   glEnableVertexAttribArray(0);
@@ -569,8 +569,7 @@ Render3d(const v3f& pos, const v3f& scale, const v4f& color, GLuint vao,
   glUniformMatrix4fv(kRGG.geometry_program_3d.model_uniform, 1, GL_FALSE,
                      &model.data_[0]);
   glUniform3f(kRGG.geometry_program_3d.light_position_world_uniform,
-              kObserver.position.x, kObserver.position.y,
-              kObserver.position.z);
+              kObserver.position.x, kObserver.position.y, kObserver.position.z);
   glDrawArrays(GL_TRIANGLES, 0, verts);
 }
 
@@ -590,16 +589,14 @@ Render3dWithRotation(const v3f& pos, const v3f& scale, const math::Quatf& quat,
   glUniformMatrix4fv(kRGG.geometry_program_3d.model_uniform, 1, GL_FALSE,
                      &model.data_[0]);
   glUniform3f(kRGG.geometry_program_3d.light_position_world_uniform,
-              kObserver.position.x, kObserver.position.y,
-              kObserver.position.z);
+              kObserver.position.x, kObserver.position.y, kObserver.position.z);
   glDrawArrays(GL_TRIANGLES, 0, verts);
 }
 
 void
 RenderAsteroid(v3f pos, v3f scale, const v4f& color)
 {
-  Render3d(pos, scale, color, kRGG.asteroid_vao_reference,
-           kAsteroidVertCount);
+  Render3d(pos, scale, color, kRGG.asteroid_vao_reference, kAsteroidVertCount);
 }
 
 void
@@ -678,10 +675,10 @@ RenderLineCube(const math::Cubef& cube, const v4f& color)
   v3f back_bottom_left = pos;
   v3f back_bottom_right = pos + v3f(cube.width, 0.f, 0.f);
 
-
   v3f front_top_left = pos + v3f(0.f, cube.height, cube.depth);
   v3f front_top_right = pos + v3f(cube.width, cube.height, cube.depth);
-  v3f front_bottom_left = pos + v3f(0.f, 0.f, cube.depth);;
+  v3f front_bottom_left = pos + v3f(0.f, 0.f, cube.depth);
+  ;
   v3f front_bottom_right = pos + v3f(cube.width, 0.f, cube.depth);
 
   // TODO(abrunasso): Probably a cheapear way to do this.

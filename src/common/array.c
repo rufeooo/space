@@ -72,7 +72,7 @@
     if (kUsed##type[dim] >= kMax##type) return 0;  \
     type* t = &k##type[dim][kUsed##type[dim]];     \
     kUsed##type[dim] += 1;                         \
-    *t = {};                                       \
+    *t = INIT(type);                               \
     return t;                                      \
   }                                                \
                                                    \
